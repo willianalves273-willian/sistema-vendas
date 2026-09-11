@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistema de Vendas</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    margin:0;
+    background:#f3f4f6;
+    color:#222;
+}
+header{
+    background:#1f2937;
+    color:white;
+    padding:18px;
+}
+header h1{margin:0 0 5px}
+nav{
+    background:white;
+    padding:10px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    box-shadow:0 2px 5px #ccc;
+}
+button{
+    padding:10px 14px;
+    border:0;
+    border-radius:6px;
+    cursor:pointer;
+    background:#2563eb;
+    color:white;
+}
+button:hover{opacity:.9}
+.container{
+    max-width:1100px;
+    margin:20px auto;
+    padding:0 15px;
+}
+.card{
+    background:white;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px #ddd;
+}
+input,select{
+    padding:10px;
+    margin:5px;
+    border:1px solid #bbb;
+    border-radius:5px;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+th,td{
+    border:1px solid #ddd;
+    padding:9px;
+    text-align:left;
+}
+th{background:#e5e7eb}
+.valor{
+    font-size:24px;
+    font-weight:bold;
+}
+.oculto{display:none}
+.alerta{color:#b91c1c;font-weight:bold}
+.ok{color:#15803d;font-weight:bold}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Sistema de Vendas</h1>
+<div>Controle de produtos, estoque e vendas</div>
+</header>
+
+<nav>
+<button onclick="mostrar('inicio')">Inicio</button>
+<button onclick="mostrar('produtos')">Produtos</button>
+<button onclick="mostrar('venda')">Nova Venda</button>
+<button onclick="mostrar('vendas')">Vendas</button>
+<button onclick="mostrar('estoque')">Estoque</button>
+<button onclick="mostrar('relatorios')">Relatorios</button>
+</nav>
+
+<div class="container">
+
+<!-- INICIO -->
+<section id="inicio" class="card">
+<h2>Painel</h2>
+
+<div class="grid">
+
+<div class="card">
+<div>Produtos cadastrados</div>
+<div class="valor" id="totalProdutos">0</div>
+</div>
+
+<div class="card">
+<div>Itens em estoque</div>
+<div class="valor" id="totalEstoque">0</div>
+</div>
+
+<div class="card">
+<div>Vendas realizadas</div>
+<div class="valor" id="totalVendas">0</div>
+</div>
+
+<div class="card">
+<div>Faturamento</div>
+<div class="valor" id="faturamento">R$ 0,00</div>
+</div>
+
+</div>
+
+<h3>Estoque baixo</h3>
+<div id="alertas"></div>
+</section>
+
+
+<!-- PRODUTOS -->
+<section id="produtos" class="card oculto">
+
+<h2>Cadastro de Produtos</h2>
+
+<input id="nomeProduto" placeholder="Nome do produto">
+<input id="precoProduto" type="number" step="0.01" placeholder="Preco de venda">
+<input id="custoProduto" type="number" step="0.01" placeholder="Custo">
+<input id="estoqueProduto" type="number" placeholder="Quantidade">
+<input id="estoqueMinimo" type="number" placeholder="Estoque minimo">
+
+<button onclick="cadastrarProduto()">Cadastrar</button>
+
+<table>
+<thead>
+<tr>
+<th>Produto</th>
+<th>Preco</th>
+<th>Custo</th>
+<th>Estoque</th>
+<th>Minimo</th>
+<th>Acao</th>
+</tr>
+</thead>
+<tbody id="tabelaProdutos"></tbody>
+</table>
+
+</section>
+
+
+<!-- VENDA -->
+<section id="venda" class="card oculto">
+
+<h2>Nova Venda</h2>
+
+<select id="produtoVenda" onchange="mostrarPreco()">
+<option value="">Selecione o produto</option>
+</select>
+
+<input id="quantidadeVenda" type="number" min="1" value="1" placeholder="Quantidade">
+
+<div id="precoVenda"></div>
+
+<select id="pagamento">
+<option>Dinheiro</option>
+<option>Pix</option>
+<option>Cartao de debito</option>
+<option>Cartao de credito</option>
+<option>Outro</option>
+</select>
+
+<button onclick="registrarVenda()">Registrar Venda</button>
+
+</section>
+
+
+<!-- VENDAS -->
+<section id="vendas" class="card oculto">
+
+<h2>Historico de Vendas</h2>
+
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Produto</th>
+<th>Quantidade</th>
+<th>Pagamento</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody id="tabelaVendas"></tbody>
+</table>
+
+</section>
+
+
+<!-- ESTOQUE -->
+<section id="estoque" class="card oculto">
+
+<h2>Controle de Estoque</h2>
+
+<table>
+<thead>
+<tr>
+<th>Produto</th>
+<th>Estoque atual</th>
+<th>Estoque minimo</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="tabelaEstoque"></tbody>
+</table>
+
+</section>
+
+
+<!-- RELATORIOS -->
+<section id="relatorios" class="card oculto">
+
+<h2>Relatorios</h2>
+
+<div class="grid">
+
+<div class="card">
+<h3>Total vendido</h3>
+<div class="valor" id="relTotal">R$ 0,00</div>
+</div>
+
+<div class="card">
+<h3>Quantidade de vendas</h3>
+<div class="valor" id="relQtd">0</div>
+</div>
+
+<div class="card">
+<h3>Estoque</h3>
+<div class="valor" id="relEstoque">0</div>
+</div>
+
+</div>
+
+<button onclick="backup()">Fazer Backup</button>
+<button onclick="limparDados()">Apagar todos os dados</button>
+
+</section>
+
+</div>
+
+<script>
+
+let produtos = JSON.parse(localStorage.getItem("produtos_vendas") || "[]");
+let vendas = JSON.parse(localStorage.getItem("vendas_vendas") || "[]");
+
+function salvar(){
+    localStorage.setItem("produtos_vendas",JSON.stringify(produtos));
+    localStorage.setItem("vendas_vendas",JSON.stringify(vendas));
+}
+
+function dinheiro(valor){
+    return Number(valor).toLocaleString("pt-BR",{
+        style:"currency",
+        currency:"BRL"
+    });
+}
+
+function mostrar(id){
+
+    document.querySelectorAll("section").forEach(
+        x=>x.classList.add("oculto")
+    );
+
+    document.getElementById(id).classList.remove("oculto");
+
+    atualizar();
+}
+
+function cadastrarProduto(){
+
+    let nome=document.getElementById("nomeProduto").value.trim();
+    let preco=Number(document.getElementById("precoProduto").value);
+    let custo=Number(document.getElementById("custoProduto").value);
+    let estoque=Number(document.getElementById("estoqueProduto").value);
+    let minimo=Number(document.getElementById("estoqueMinimo").value);
+
+    if(!nome || preco<=0){
+        alert("Informe o nome e o preco do produto.");
+        return;
+    }
+
+    produtos.push({
+        id:Date.now(),
+        nome:nome,
+        preco:preco,
+        custo:custo,
+        estoque:estoque,
+        minimo:minimo
+    });
+
+    salvar();
+
+    document.getElementById("nomeProduto").value="";
+    document.getElementById("precoProduto").value="";
+    document.getElementById("custoProduto").value="";
+    document.getElementById("estoqueProduto").value="";
+    document.getElementById("estoqueMinimo").value="";
+
+    atualizar();
+
+    alert("Produto cadastrado.");
+}
+
+function excluirProduto(id){
+
+    if(confirm("Excluir este produto?")){
+        produtos=produtos.filter(p=>p.id!==id);
+        salvar();
+        atualizar();
+    }
+}
+
+function mostrarPreco(){
+
+    let id=Number(document.getElementById("produtoVenda").value);
+    let p=produtos.find(x=>x.id===id);
+
+    if(p){
+        document.getElementById("precoVenda").innerHTML=
+        "Preco: <b>"+dinheiro(p.preco)+"</b> | Estoque: <b>"+p.estoque+"</b>";
+    }else{
+        document.getElementById("precoVenda").innerHTML="";
+    }
+}
+
+function registrarVenda(){
+
+    let id=Number(document.getElementById("produtoVenda").value);
+    let qtd=Number(document.getElementById("quantidadeVenda").value);
+    let pagamento=document.getElementById("pagamento").value;
+
+    let p=produtos.find(x=>x.id===id);
+
+    if(!p){
+        alert("Selecione um produto.");
+        return;
+    }
+
+    if(qtd<=0){
+        alert("Informe uma quantidade valida.");
+        return;
+    }
+
+    if(qtd>p.estoque){
+        alert("Estoque insuficiente.");
+        return;
+    }
+
+    let total=p.preco*qtd;
+
+    p.estoque-=qtd;
+
+    vendas.push({
+        data:new Date().toLocaleString("pt-BR"),
+        produto:p.nome,
+        quantidade:qtd,
+        pagamento:pagamento,
+        total:total
+    });
+
+    salvar();
+    atualizar();
+
+    alert("Venda registrada: "+dinheiro(total));
+
+    document.getElementById("quantidadeVenda").value=1;
+}
+
+function atualizar(){
+
+    document.getElementById("totalProdutos").textContent=produtos.length;
+
+    let estoque=produtos.reduce((s,p)=>s+Number(p.estoque),0);
+    document.getElementById("totalEstoque").textContent=estoque;
+
+    document.getElementById("totalVendas").textContent=vendas.length;
+
+    let faturamento=vendas.reduce((s,v)=>s+Number(v.total),0);
+
+    document.getElementById("faturamento").textContent=dinheiro(faturamento);
+
+    document.getElementById("relTotal").textContent=dinheiro(faturamento);
+    document.getElementById("relQtd").textContent=vendas.length;
+    document.getElementById("relEstoque").textContent=estoque;
+
+    preencherProdutos();
+    preencherVenda();
+    preencherVendas();
+    preencherEstoque();
+    alertas();
+}
+
+function preencherProdutos(){
+
+    let tabela=document.getElementById("tabelaProdutos");
+    tabela.innerHTML="";
+
+    produtos.forEach(p=>{
+
+        tabela.innerHTML+=`
+        <tr>
+        <td>${p.nome}</td>
+        <td>${dinheiro(p.preco)}</td>
+        <td>${dinheiro(p.custo)}</td>
+        <td>${p.estoque}</td>
+        <td>${p.minimo}</td>
+        <td>
+        <button onclick="excluirProduto(${p.id})">Excluir</button>
+        </td>
+        </tr>`;
+    });
+}
+
+function preencherVenda(){
+
+    let select=document.getElementById("produtoVenda");
+
+    let valor=select.value;
+
+    select.innerHTML='<option value="">Selecione o produto</option>';
+
+    produtos.forEach(p=>{
+        if(p.estoque>0){
+            select.innerHTML+=
+            `<option value="${p.id}">${p.nome}</option>`;
+        }
+    });
+
+    if(valor) select.value=valor;
+}
+
+function preencherVendas(){
+
+    let tabela=document.getElementById("tabelaVendas");
+    tabela.innerHTML="";
+
+    [...vendas].reverse().forEach(v=>{
+
+        tabela.innerHTML+=`
+        <tr>
+        <td>${v.data}</td>
+        <td>${v.produto}</td>
+        <td>${v.quantidade}</td>
+        <td>${v.pagamento}</td>
+        <td>${dinheiro(v.total)}</td>
+        </tr>`;
+    });
+}
+
+function preencherEstoque(){
+
+    let tabela=document.getElementById("tabelaEstoque");
+    tabela.innerHTML="";
+
+    produtos.forEach(p=>{
+
+        let baixo=p.estoque<=p.minimo;
+
+        tabela.innerHTML+=`
+        <tr>
+        <td>${p.nome}</td>
+        <td>${p.estoque}</td>
+        <td>${p.minimo}</td>
+        <td class="${baixo?'alerta':'ok'}">
+        ${baixo?'ESTOQUE BAIXO':'OK'}
+        </td>
+        </tr>`;
+    });
+}
+
+function alertas(){
+
+    let div=document.getElementById("alertas");
+
+    let baixos=produtos.filter(p=>p.estoque<=p.minimo);
+
+    if(!baixos.length){
+        div.innerHTML="<span class='ok'>Nenhum produto com estoque baixo.</span>";
+        return;
+    }
+
+    div.innerHTML=baixos.map(p=>
+        `<p class="alerta">${p.nome}: ${p.estoque} unidade(s)</p>`
+    ).join("");
+}
+
+function backup(){
+
+    let dados={
+        produtos:produtos,
+        vendas:vendas,
+        data:new Date().toISOString()
+    };
+
+    let arquivo=new Blob(
+        [JSON.stringify(dados,null,2)],
+        {type:"application/json"}
+    );
+
+    let url=URL.createObjectURL(arquivo);
+
+    let a=document.createElement("a");
+    a.href=url;
+    a.download="backup_sistema_vendas.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function limparDados(){
+
+    if(confirm("ATENCAO: apagar todos os produtos e vendas?")){
+
+        if(confirm("Tem certeza? Esta operacao nao pode ser desfeita.")){
+
+            produtos=[];
+            vendas=[];
+
+            salvar();
+            atualizar();
+        }
+    }
+}
+
+atualizar();
+
+</script>
+
+</body>
+</html>
