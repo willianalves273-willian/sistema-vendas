@@ -6,18 +6,27 @@
 <title>Sistema de Vendas</title>
 
 <style>
+*{
+    box-sizing:border-box;
+}
+
 body{
     font-family:Arial,sans-serif;
     margin:0;
     background:#f3f4f6;
     color:#222;
 }
+
 header{
     background:#1f2937;
     color:white;
     padding:18px;
 }
-header h1{margin:0 0 5px}
+
+header h1{
+    margin:0 0 5px;
+}
+
 nav{
     background:white;
     padding:10px;
@@ -26,6 +35,7 @@ nav{
     flex-wrap:wrap;
     box-shadow:0 2px 5px #ccc;
 }
+
 button{
     padding:10px 14px;
     border:0;
@@ -33,13 +43,27 @@ button{
     cursor:pointer;
     background:#2563eb;
     color:white;
+    font-size:14px;
 }
-button:hover{opacity:.9}
+
+button:hover{
+    opacity:.9;
+}
+
+button.excluir{
+    background:#dc2626;
+}
+
+button.secundario{
+    background:#6b7280;
+}
+
 .container{
     max-width:1100px;
     margin:20px auto;
     padding:0 15px;
 }
+
 .card{
     background:white;
     padding:20px;
@@ -47,34 +71,159 @@ button:hover{opacity:.9}
     border-radius:10px;
     box-shadow:0 2px 8px #ddd;
 }
+
 input,select{
     padding:10px;
     margin:5px;
     border:1px solid #bbb;
     border-radius:5px;
+    font-size:16px;
+    max-width:100%;
 }
+
 table{
     width:100%;
     border-collapse:collapse;
     margin-top:15px;
 }
+
 th,td{
     border:1px solid #ddd;
     padding:9px;
     text-align:left;
 }
-th{background:#e5e7eb}
+
+th{
+    background:#e5e7eb;
+}
+
 .valor{
     font-size:24px;
     font-weight:bold;
 }
-.oculto{display:none}
-.alerta{color:#b91c1c;font-weight:bold}
-.ok{color:#15803d;font-weight:bold}
+
+.oculto{
+    display:none;
+}
+
+.alerta{
+    color:#b91c1c;
+    font-weight:bold;
+}
+
+.ok{
+    color:#15803d;
+    font-weight:bold;
+}
+
+.aviso{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    padding:12px;
+    border-radius:7px;
+    margin:10px 0;
+}
+
+.sucesso{
+    background:#ecfdf5;
+    border:1px solid #a7f3d0;
+    padding:12px;
+    border-radius:7px;
+    margin:10px 0;
+}
+
 .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:15px;
+}
+
+.carrinho-total{
+    font-size:26px;
+    font-weight:bold;
+    margin:18px 0;
+    padding:12px;
+    background:#f3f4f6;
+    border-radius:7px;
+}
+
+.acoes-venda{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+
+@media(max-width:700px){
+
+    header{
+        padding:14px;
+    }
+
+    header h1{
+        font-size:23px;
+    }
+
+    nav{
+        padding:8px;
+    }
+
+    nav button{
+        flex:1 1 45%;
+        min-height:45px;
+    }
+
+    .container{
+        margin:10px auto;
+        padding:0 8px;
+    }
+
+    .card{
+        padding:14px;
+        margin-bottom:12px;
+    }
+
+    input,select{
+        width:100%;
+        margin:5px 0;
+    }
+
+    table{
+        font-size:13px;
+    }
+
+    th,td{
+        padding:7px 5px;
+    }
+
+    .tabela-responsiva{
+        overflow-x:auto;
+        width:100%;
+    }
+
+    button{
+        min-height:42px;
+    }
+
+    .acoes-venda button{
+        width:100%;
+    }
+}
+
+@media print{
+    nav{
+        display:none;
+    }
+
+    header{
+        background:white;
+        color:black;
+        border-bottom:1px solid #999;
+    }
+
+    .card{
+        box-shadow:none;
+    }
 }
 </style>
 </head>
@@ -87,19 +236,19 @@ th{background:#e5e7eb}
 </header>
 
 <nav>
-<button onclick="mostrar('inicio')">Inicio</button>
+<button onclick="mostrar('inicio')">Início</button>
 <button onclick="mostrar('produtos')">Produtos</button>
 <button onclick="mostrar('venda')">Nova Venda</button>
 <button onclick="mostrar('vendas')">Vendas</button>
-    <button onclick="imprimirVendas()">🖨️ Imprimir Vendas</button>
+<button onclick="imprimirVendas()">🖨️ Imprimir Vendas</button>
 <button onclick="mostrar('estoque')">Estoque</button>
-<button onclick="mostrar('relatorios')">Relatorios</button>
+<button onclick="mostrar('relatorios')">Relatórios</button>
 </nav>
 
 <div class="container">
 
-<!-- INICIO -->
 <section id="inicio" class="card">
+
 <h2>Painel</h2>
 
 <div class="grid">
@@ -128,69 +277,138 @@ th{background:#e5e7eb}
 
 <h3>Estoque baixo</h3>
 <div id="alertas"></div>
+
 </section>
 
 
-<!-- PRODUTOS -->
 <section id="produtos" class="card oculto">
 
 <h2>Cadastro de Produtos</h2>
 
 <input id="nomeProduto" placeholder="Nome do produto">
-<input id="precoProduto" type="number" step="0.01" placeholder="Preco de venda">
+<input id="precoProduto" type="number" step="0.01" placeholder="Preço de venda">
 <input id="custoProduto" type="number" step="0.01" placeholder="Custo">
 <input id="estoqueProduto" type="number" placeholder="Quantidade">
-<input id="estoqueMinimo" type="number" placeholder="Estoque minimo">
+<input id="estoqueMinimo" type="number" placeholder="Estoque mínimo">
 
 <button onclick="cadastrarProduto()">Cadastrar</button>
+
+<div class="tabela-responsiva">
 
 <table>
 <thead>
 <tr>
 <th>Produto</th>
-<th>Preco</th>
+<th>Preço</th>
 <th>Custo</th>
 <th>Estoque</th>
-<th>Minimo</th>
-<th>Acao</th>
+<th>Mínimo</th>
+<th>Ação</th>
 </tr>
 </thead>
+
 <tbody id="tabelaProdutos"></tbody>
+
 </table>
+
+</div>
 
 </section>
 
 
-<!-- VENDA -->
+<!-- NOVA VENDA -->
+
 <section id="venda" class="card oculto">
 
 <h2>Nova Venda</h2>
+
+<div class="aviso">
+<b>IMPORTANTE:</b> primeiro monte toda a compra.
+<br>
+O estoque e o histórico só serão alterados quando você clicar em
+<b>Finalizar e Registrar Compra</b>.
+</div>
+
+<h3>Adicionar produto</h3>
 
 <select id="produtoVenda" onchange="mostrarPreco()">
 <option value="">Selecione o produto</option>
 </select>
 
-<input id="quantidadeVenda" type="number" min="1" value="1" placeholder="Quantidade">
+<input
+id="quantidadeVenda"
+type="number"
+min="1"
+value="1"
+placeholder="Quantidade">
 
 <div id="precoVenda"></div>
+
+<button onclick="adicionarItemVenda()">
+Adicionar item à compra
+</button>
+
+
+<h3>Itens da compra</h3>
+
+<div class="tabela-responsiva">
+
+<table>
+<thead>
+<tr>
+<th>Produto</th>
+<th>Quantidade</th>
+<th>Preço</th>
+<th>Total</th>
+<th>Ação</th>
+</tr>
+</thead>
+
+<tbody id="tabelaCarrinhoVenda"></tbody>
+
+</table>
+
+</div>
+
+<div class="carrinho-total">
+TOTAL DA COMPRA:
+<span id="totalCarrinhoVenda">R$ 0,00</span>
+</div>
+
+
+<h3>Pagamento</h3>
 
 <select id="pagamento">
 <option>Dinheiro</option>
 <option>Pix</option>
-<option>Cartao de debito</option>
-<option>Cartao de credito</option>
+<option>Cartão de débito</option>
+<option>Cartão de crédito</option>
 <option>Outro</option>
 </select>
 
-<button onclick="registrarVenda()">Registrar Venda</button>
+
+<div class="acoes-venda">
+
+<button onclick="finalizarVenda()">
+✅ Finalizar e Registrar Compra
+</button>
+
+<button class="secundario" onclick="limparCarrinho()">
+Limpar compra
+</button>
+
+</div>
 
 </section>
 
 
 <!-- VENDAS -->
+
 <section id="vendas" class="card oculto">
 
-<h2>Historico de Vendas</h2>
+<h2>Histórico de Vendas</h2>
+
+<div class="tabela-responsiva">
 
 <table>
 <thead>
@@ -200,39 +418,51 @@ th{background:#e5e7eb}
 <th>Quantidade</th>
 <th>Pagamento</th>
 <th>Total</th>
-<th class="acao">Ações</th>
+<th>Ações</th>
 </tr>
 </thead>
+
 <tbody id="tabelaVendas"></tbody>
+
 </table>
+
+</div>
 
 </section>
 
 
 <!-- ESTOQUE -->
+
 <section id="estoque" class="card oculto">
 
 <h2>Controle de Estoque</h2>
+
+<div class="tabela-responsiva">
 
 <table>
 <thead>
 <tr>
 <th>Produto</th>
 <th>Estoque atual</th>
-<th>Estoque minimo</th>
+<th>Estoque mínimo</th>
 <th>Status</th>
 </tr>
 </thead>
+
 <tbody id="tabelaEstoque"></tbody>
+
 </table>
+
+</div>
 
 </section>
 
 
-<!-- RELATORIOS -->
+<!-- RELATÓRIOS -->
+
 <section id="relatorios" class="card oculto">
 
-<h2>Relatorios</h2>
+<h2>Relatórios</h2>
 
 <div class="grid">
 
@@ -254,61 +484,147 @@ th{background:#e5e7eb}
 </div>
 
 <button onclick="backup()">Fazer Backup</button>
-<button onclick="limparDados()">Apagar todos os dados</button>
+
+<button onclick="limparDados()" class="excluir">
+Apagar todos os dados
+</button>
 
 </section>
 
 </div>
 
+
 <script>
 
-let produtos = JSON.parse(localStorage.getItem("produtos_vendas") || "[]");
-let vendas = JSON.parse(localStorage.getItem("vendas_vendas") || "[]");
+let produtos =
+JSON.parse(localStorage.getItem("produtos_vendas") || "[]");
+
+let vendas =
+JSON.parse(localStorage.getItem("vendas_vendas") || "[]");
+
+let carrinhoVenda =
+JSON.parse(localStorage.getItem("carrinho_venda") || "[]");
+
 
 function salvar(){
-    localStorage.setItem("produtos_vendas",JSON.stringify(produtos));
-    localStorage.setItem("vendas_vendas",JSON.stringify(vendas));
+
+    localStorage.setItem(
+        "produtos_vendas",
+        JSON.stringify(produtos)
+    );
+
+    localStorage.setItem(
+        "vendas_vendas",
+        JSON.stringify(vendas)
+    );
+
+    localStorage.setItem(
+        "carrinho_venda",
+        JSON.stringify(carrinhoVenda)
+    );
 }
 
+
 function dinheiro(valor){
-    return Number(valor).toLocaleString("pt-BR",{
-        style:"currency",
-        currency:"BRL"
-    });
+
+    return Number(valor || 0).toLocaleString(
+        "pt-BR",
+        {
+            style:"currency",
+            currency:"BRL"
+        }
+    );
+
 }
+
 
 function mostrar(id){
 
-    document.querySelectorAll("section").forEach(
-        x=>x.classList.add("oculto")
-    );
+    document
+    .querySelectorAll("section")
+    .forEach(function(x){
 
-    document.getElementById(id).classList.remove("oculto");
+        x.classList.add("oculto");
+
+    });
+
+    let secao=document.getElementById(id);
+
+    if(secao){
+
+        secao.classList.remove("oculto");
+
+    }
 
     atualizar();
+
 }
+
 
 function cadastrarProduto(){
 
-    let nome=document.getElementById("nomeProduto").value.trim();
-    let preco=Number(document.getElementById("precoProduto").value);
-    let custo=Number(document.getElementById("custoProduto").value);
-    let estoque=Number(document.getElementById("estoqueProduto").value);
-    let minimo=Number(document.getElementById("estoqueMinimo").value);
+    let nome=
+    document
+    .getElementById("nomeProduto")
+    .value
+    .trim();
+
+    let preco=
+    Number(
+        document
+        .getElementById("precoProduto")
+        .value
+    );
+
+    let custo=
+    Number(
+        document
+        .getElementById("custoProduto")
+        .value
+    );
+
+    let estoque=
+    Number(
+        document
+        .getElementById("estoqueProduto")
+        .value
+    );
+
+    let minimo=
+    Number(
+        document
+        .getElementById("estoqueMinimo")
+        .value
+    );
+
 
     if(!nome || preco<=0){
-        alert("Informe o nome e o preco do produto.");
+
+        alert(
+            "Informe o nome e o preço do produto."
+        );
+
         return;
+
     }
 
+
     produtos.push({
+
         id:Date.now(),
+
         nome:nome,
+
         preco:preco,
+
         custo:custo,
+
         estoque:estoque,
+
         minimo:minimo
+
     });
+
 
     salvar();
 
@@ -318,421 +634,1594 @@ function cadastrarProduto(){
     document.getElementById("estoqueProduto").value="";
     document.getElementById("estoqueMinimo").value="";
 
+
     atualizar();
 
     alert("Produto cadastrado.");
+
 }
+
 
 function excluirProduto(id){
 
-    if(confirm("Excluir este produto?")){
-        produtos=produtos.filter(p=>p.id!==id);
+    if(
+        confirm(
+            "Excluir este produto?"
+        )
+    ){
+
+        produtos=
+        produtos.filter(
+            function(p){
+                return p.id!==id;
+            }
+        );
+
         salvar();
+
         atualizar();
+
     }
+
 }
+
 
 function mostrarPreco(){
 
-    let id=Number(document.getElementById("produtoVenda").value);
-    let p=produtos.find(x=>x.id===id);
+    let id=
+    Number(
+        document
+        .getElementById("produtoVenda")
+        .value
+    );
+
+    let p=
+    produtos.find(
+        function(x){
+            return x.id===id;
+        }
+    );
+
 
     if(p){
-        document.getElementById("precoVenda").innerHTML=
-        "Preco: <b>"+dinheiro(p.preco)+"</b> | Estoque: <b>"+p.estoque+"</b>";
+
+        document
+        .getElementById("precoVenda")
+        .innerHTML=
+        "Preço: <b>"
+        +dinheiro(p.preco)
+        +"</b> | Estoque disponível: <b>"
+        +p.estoque
+        +"</b>";
+
     }else{
-        document.getElementById("precoVenda").innerHTML="";
+
+        document
+        .getElementById("precoVenda")
+        .innerHTML="";
+
     }
+
 }
 
-function registrarVenda(){
 
-    let id=Number(document.getElementById("produtoVenda").value);
-    let qtd=Number(document.getElementById("quantidadeVenda").value);
-    let pagamento=document.getElementById("pagamento").value;
+/* =========================
+   NOVA VENDA / CARRINHO
+========================= */
 
-    let p=produtos.find(x=>x.id===id);
+
+function adicionarItemVenda(){
+
+    let id=
+    Number(
+        document
+        .getElementById("produtoVenda")
+        .value
+    );
+
+    let qtd=
+    Number(
+        document
+        .getElementById("quantidadeVenda")
+        .value
+    );
+
+
+    let p=
+    produtos.find(
+        function(x){
+            return x.id===id;
+        }
+    );
+
 
     if(!p){
-        alert("Selecione um produto.");
+
+        alert(
+            "Selecione um produto."
+        );
+
         return;
+
     }
+
 
     if(qtd<=0){
-        alert("Informe uma quantidade valida.");
+
+        alert(
+            "Informe uma quantidade válida."
+        );
+
         return;
+
     }
 
-    if(qtd>p.estoque){
-        alert("Estoque insuficiente.");
+
+    let existente=
+    carrinhoVenda.find(
+        function(item){
+            return item.produtoId===id;
+        }
+    );
+
+
+    let quantidadeAnterior=
+    existente
+    ? Number(existente.quantidade)
+    : 0;
+
+
+    let novaQuantidade=
+    quantidadeAnterior+qtd;
+
+
+    if(novaQuantidade>Number(p.estoque)){
+
+        alert(
+            "A quantidade informada é maior que o estoque disponível."
+        );
+
         return;
+
     }
 
-    let total=p.preco*qtd;
 
-    p.estoque-=qtd;
+    if(existente){
 
-    vendas.push({
-        data:new Date().toLocaleString("pt-BR"),
-        produto:p.nome,
-        quantidade:qtd,
-        pagamento:pagamento,
-        total:total
-    });
+        existente.quantidade=
+        novaQuantidade;
+
+        existente.preco=
+        Number(p.preco);
+
+    }else{
+
+        carrinhoVenda.push({
+
+            produtoId:p.id,
+
+            produto:p.nome,
+
+            quantidade:qtd,
+
+            preco:Number(p.preco)
+
+        });
+
+    }
+
 
     salvar();
+
+    preencherCarrinhoVenda();
+
+    document
+    .getElementById("quantidadeVenda")
+    .value=1;
+
+    document
+    .getElementById("produtoVenda")
+    .value="";
+
+    document
+    .getElementById("precoVenda")
+    .innerHTML="";
+
+}
+
+
+function removerItemCarrinho(indice){
+
+    if(
+        indice<0 ||
+        indice>=carrinhoVenda.length
+    ){
+
+        return;
+
+    }
+
+
+    carrinhoVenda.splice(
+        indice,
+        1
+    );
+
+
+    salvar();
+
+    preencherCarrinhoVenda();
+
+}
+
+
+function limparCarrinho(){
+
+    if(!carrinhoVenda.length){
+
+        return;
+
+    }
+
+
+    if(
+        confirm(
+            "Limpar toda a compra que ainda não foi lançada?"
+        )
+    ){
+
+        carrinhoVenda=[];
+
+        salvar();
+
+        preencherCarrinhoVenda();
+
+    }
+
+}
+
+
+function preencherCarrinhoVenda(){
+
+    let tabela=
+    document
+    .getElementById(
+        "tabelaCarrinhoVenda"
+    );
+
+    let total=
+    document
+    .getElementById(
+        "totalCarrinhoVenda"
+    );
+
+
+    if(!tabela || !total){
+
+        return;
+
+    }
+
+
+    tabela.innerHTML="";
+
+    let totalCompra=0;
+
+
+    carrinhoVenda.forEach(
+        function(item,indice){
+
+            let subtotal=
+            Number(item.preco)*
+            Number(item.quantidade);
+
+
+            totalCompra+=subtotal;
+
+
+            tabela.innerHTML+=`
+
+            <tr>
+
+            <td>
+            ${item.produto}
+            </td>
+
+            <td>
+            ${item.quantidade}
+            </td>
+
+            <td>
+            ${dinheiro(item.preco)}
+            </td>
+
+            <td>
+            ${dinheiro(subtotal)}
+            </td>
+
+            <td>
+
+            <button
+            class="excluir"
+            onclick="removerItemCarrinho(${indice})">
+
+            Remover
+
+            </button>
+
+            </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
+
+
+    if(!carrinhoVenda.length){
+
+        tabela.innerHTML=`
+
+        <tr>
+
+        <td
+        colspan="5"
+        style="text-align:center">
+
+        Nenhum item adicionado à compra.
+
+        </td>
+
+        </tr>
+
+        `;
+
+    }
+
+
+    total.textContent=
+    dinheiro(totalCompra);
+
+}
+
+
+function finalizarVenda(){
+
+    if(!carrinhoVenda.length){
+
+        alert(
+            "Adicione pelo menos um item à compra."
+        );
+
+        return;
+
+    }
+
+
+    let pagamento=
+    document
+    .getElementById("pagamento")
+    .value;
+
+
+    /*
+       PRIMEIRO CONFERIMOS TODO O CARRINHO.
+       NADA É ALTERADO AINDA.
+    */
+
+    for(
+        let item of carrinhoVenda
+    ){
+
+        let p=
+        produtos.find(
+            function(x){
+                return x.id===item.produtoId;
+            }
+        );
+
+
+        if(!p){
+
+            alert(
+                "O produto "
+                +item.produto
+                +" não existe mais no cadastro."
+            );
+
+            return;
+
+        }
+
+
+        if(
+            Number(item.quantidade)
+            >
+            Number(p.estoque)
+        ){
+
+            alert(
+                "Estoque insuficiente para "
+                +p.nome
+                +". Disponível: "
+                +p.estoque
+                +"."
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    let total=
+    carrinhoVenda.reduce(
+        function(soma,item){
+
+            return soma+
+            Number(item.preco)*
+            Number(item.quantidade);
+
+        },
+        0
+    );
+
+
+    /*
+       CONFIRMAÇÃO FINAL
+    */
+
+    let resumo=
+    carrinhoVenda
+    .map(
+        function(item){
+
+            return (
+                item.produto+
+                " - "+
+                item.quantidade+
+                " x "+
+                dinheiro(item.preco)
+            );
+
+        }
+    )
+    .join("\n");
+
+
+    let confirmar=
+    confirm(
+        "CONFIRMAR COMPRA?\n\n"+
+        resumo+
+        "\n\nPagamento: "+
+        pagamento+
+        "\nTotal: "+
+        dinheiro(total)
+    );
+
+
+    if(!confirmar){
+
+        return;
+
+    }
+
+
+    /*
+       SOMENTE AGORA O ESTOQUE É BAIXADO.
+    */
+
+    carrinhoVenda.forEach(
+        function(item){
+
+            let p=
+            produtos.find(
+                function(x){
+                    return x.id===item.produtoId;
+                }
+            );
+
+            p.estoque-=
+            Number(item.quantidade);
+
+        }
+    );
+
+
+    /*
+       REGISTRA UMA ÚNICA VENDA
+       COM TODOS OS ITENS.
+    */
+
+    vendas.push({
+
+        data:
+        new Date()
+        .toLocaleString("pt-BR"),
+
+        itens:
+        carrinhoVenda.map(
+            function(item){
+
+                return {
+
+                    produtoId:item.produtoId,
+
+                    produto:item.produto,
+
+                    quantidade:
+                    Number(item.quantidade),
+
+                    preco:
+                    Number(item.preco)
+
+                };
+
+            }
+        ),
+
+        pagamento:pagamento,
+
+        total:total
+
+    });
+
+
+    carrinhoVenda=[];
+
+
+    salvar();
+
     atualizar();
 
-    alert("Venda registrada: "+dinheiro(total));
 
-    document.getElementById("quantidadeVenda").value=1;
+    alert(
+        "Compra registrada com sucesso!\n"+
+        "Total: "+
+        dinheiro(total)
+    );
+
+
+    document
+    .getElementById("quantidadeVenda")
+    .value=1;
+
+    document
+    .getElementById("produtoVenda")
+    .value="";
+
+    document
+    .getElementById("precoVenda")
+    .innerHTML="";
+
 }
+
+
+/* =========================
+   ATUALIZAÇÃO
+========================= */
+
 
 function atualizar(){
 
-    document.getElementById("totalProdutos").textContent=produtos.length;
+    document
+    .getElementById("totalProdutos")
+    .textContent=
+    produtos.length;
 
-    let estoque=produtos.reduce((s,p)=>s+Number(p.estoque),0);
-    document.getElementById("totalEstoque").textContent=estoque;
 
-    document.getElementById("totalVendas").textContent=vendas.length;
+    let estoque=
+    produtos.reduce(
+        function(s,p){
 
-    let faturamento=vendas.reduce((s,v)=>s+Number(v.total),0);
+            return s+
+            Number(p.estoque);
 
-    document.getElementById("faturamento").textContent=dinheiro(faturamento);
+        },
+        0
+    );
 
-    document.getElementById("relTotal").textContent=dinheiro(faturamento);
-    document.getElementById("relQtd").textContent=vendas.length;
-    document.getElementById("relEstoque").textContent=estoque;
+
+    document
+    .getElementById("totalEstoque")
+    .textContent=
+    estoque;
+
+
+    document
+    .getElementById("totalVendas")
+    .textContent=
+    vendas.length;
+
+
+    let faturamento=
+    vendas.reduce(
+        function(s,v){
+
+            return s+
+            Number(v.total || 0);
+
+        },
+        0
+    );
+
+
+    document
+    .getElementById("faturamento")
+    .textContent=
+    dinheiro(faturamento);
+
+
+    document
+    .getElementById("relTotal")
+    .textContent=
+    dinheiro(faturamento);
+
+
+    document
+    .getElementById("relQtd")
+    .textContent=
+    vendas.length;
+
+
+    document
+    .getElementById("relEstoque")
+    .textContent=
+    estoque;
+
 
     preencherProdutos();
+
     preencherVenda();
+
+    preencherCarrinhoVenda();
+
     preencherVendas();
+
     preencherEstoque();
+
     alertas();
+
 }
+
+
+/* =========================
+   PRODUTOS
+========================= */
+
 
 function preencherProdutos(){
 
-    let tabela=document.getElementById("tabelaProdutos");
+    let tabela=
+    document
+    .getElementById(
+        "tabelaProdutos"
+    );
+
     tabela.innerHTML="";
 
-    produtos.forEach(p=>{
 
-        tabela.innerHTML+=`
-        <tr>
-        <td>${p.nome}</td>
-        <td>${dinheiro(p.preco)}</td>
-        <td>${dinheiro(p.custo)}</td>
-        <td>${p.estoque}</td>
-        <td>${p.minimo}</td>
-        <td>
-        <button onclick="excluirProduto(${p.id})">Excluir</button>
-        </td>
-        </tr>`;
-    });
+    produtos.forEach(
+        function(p){
+
+            tabela.innerHTML+=`
+
+            <tr>
+
+            <td>
+            ${p.nome}
+            </td>
+
+            <td>
+            ${dinheiro(p.preco)}
+            </td>
+
+            <td>
+            ${dinheiro(p.custo)}
+            </td>
+
+            <td>
+            ${p.estoque}
+            </td>
+
+            <td>
+            ${p.minimo}
+            </td>
+
+            <td>
+
+            <button
+            class="excluir"
+            onclick="excluirProduto(${p.id})">
+
+            Excluir
+
+            </button>
+
+            </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
+
 }
+
+
+/* =========================
+   SELEÇÃO DE PRODUTO
+========================= */
+
 
 function preencherVenda(){
 
-    let select=document.getElementById("produtoVenda");
+    let select=
+    document
+    .getElementById(
+        "produtoVenda"
+    );
 
-    let valor=select.value;
 
-    select.innerHTML='<option value="">Selecione o produto</option>';
+    let valor=
+    select.value;
 
-    produtos.forEach(p=>{
-        if(p.estoque>0){
-            select.innerHTML+=
-            `<option value="${p.id}">${p.nome}</option>`;
+
+    select.innerHTML=
+    '<option value="">Selecione o produto</option>';
+
+
+    produtos.forEach(
+        function(p){
+
+            if(
+                Number(p.estoque)>0
+            ){
+
+                select.innerHTML+=`
+
+                <option
+                value="${p.id}">
+
+                ${p.nome}
+
+                </option>
+
+                `;
+
+            }
+
         }
-    });
+    );
 
-    if(valor) select.value=valor;
+
+    if(valor){
+
+        select.value=valor;
+
+    }
+
 }
+
+
+/* =========================
+   HISTÓRICO DE VENDAS
+========================= */
+
+
+function descricaoVenda(v){
+
+    /*
+       VENDA NOVA:
+       possui vários itens.
+    */
+
+    if(
+        Array.isArray(v.itens)
+    ){
+
+        return v.itens
+        .map(
+            function(item){
+
+                return (
+                    item.produto+
+                    " x "+
+                    item.quantidade
+                );
+
+            }
+        )
+        .join("<br>");
+
+    }
+
+
+    /*
+       COMPATIBILIDADE COM
+       VENDAS ANTIGAS.
+    */
+
+    return (
+        v.produto || ""
+    );
+
+}
+
+
+function quantidadeTotalVenda(v){
+
+    if(
+        Array.isArray(v.itens)
+    ){
+
+        return v.itens.reduce(
+            function(soma,item){
+
+                return soma+
+                Number(item.quantidade || 0);
+
+            },
+            0
+        );
+
+    }
+
+
+    return Number(
+        v.quantidade || 0
+    );
+
+}
+
 
 function preencherVendas(){
 
-    let tabela=document.getElementById("tabelaVendas");
+    let tabela=
+    document
+    .getElementById(
+        "tabelaVendas"
+    );
+
+
     tabela.innerHTML="";
 
-    vendas.forEach(function(v,index){
 
-        tabela.innerHTML+=`
+    vendas.forEach(
+        function(v,index){
+
+            tabela.innerHTML+=`
+
+            <tr>
+
+            <td>
+            ${v.data || ""}
+            </td>
+
+            <td>
+            ${descricaoVenda(v)}
+            </td>
+
+            <td>
+            ${quantidadeTotalVenda(v)}
+            </td>
+
+            <td>
+            ${v.pagamento || ""}
+            </td>
+
+            <td>
+            ${dinheiro(v.total || 0)}
+            </td>
+
+            <td>
+
+            <button
+            class="excluir"
+            onclick="excluirVenda(${index})">
+
+            🗑️ Excluir
+
+            </button>
+
+            </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
+
+
+    if(!vendas.length){
+
+        tabela.innerHTML=`
+
         <tr>
-        <td>${v.data}</td>
-        <td>${v.produto}</td>
-        <td>${v.quantidade}</td>
-        <td>${v.pagamento}</td>
-        <td>${dinheiro(v.total)}</td>
-        <td class="acao">
-            <button onclick="excluirVenda(${index})">🗑️ Excluir</button>
+
+        <td
+        colspan="6"
+        style="text-align:center">
+
+        Nenhuma venda registrada.
+
         </td>
-        </tr>`;
-    });
+
+        </tr>
+
+        `;
+
+    }
+
 }
+
+
+/* =========================
+   ESTOQUE
+========================= */
+
 
 function preencherEstoque(){
 
-    let tabela=document.getElementById("tabelaEstoque");
+    let tabela=
+    document
+    .getElementById(
+        "tabelaEstoque"
+    );
+
+
     tabela.innerHTML="";
 
-    produtos.forEach(p=>{
 
-        let baixo=p.estoque<=p.minimo;
+    produtos.forEach(
+        function(p){
 
-        tabela.innerHTML+=`
-        <tr>
-        <td>${p.nome}</td>
-        <td>${p.estoque}</td>
-        <td>${p.minimo}</td>
-        <td class="${baixo?'alerta':'ok'}">
-        ${baixo?'ESTOQUE BAIXO':'OK'}
-        </td>
-        </tr>`;
-    });
+            let baixo=
+            Number(p.estoque)
+            <=
+            Number(p.minimo);
+
+
+            tabela.innerHTML+=`
+
+            <tr>
+
+            <td>
+            ${p.nome}
+            </td>
+
+            <td>
+            ${p.estoque}
+            </td>
+
+            <td>
+            ${p.minimo}
+            </td>
+
+            <td
+            class="${baixo?'alerta':'ok'}">
+
+            ${
+                baixo
+                ?
+                "ESTOQUE BAIXO"
+                :
+                "OK"
+            }
+
+            </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
+
 }
+
+
+/* =========================
+   ALERTAS
+========================= */
+
 
 function alertas(){
 
-    let div=document.getElementById("alertas");
+    let div=
+    document
+    .getElementById(
+        "alertas"
+    );
 
-    let baixos=produtos.filter(p=>p.estoque<=p.minimo);
+
+    let baixos=
+    produtos.filter(
+        function(p){
+
+            return Number(p.estoque)
+            <=
+            Number(p.minimo);
+
+        }
+    );
+
 
     if(!baixos.length){
-        div.innerHTML="<span class='ok'>Nenhum produto com estoque baixo.</span>";
+
+        div.innerHTML=
+        "<span class='ok'>Nenhum produto com estoque baixo.</span>";
+
         return;
+
     }
 
-    div.innerHTML=baixos.map(p=>
-        `<p class="alerta">${p.nome}: ${p.estoque} unidade(s)</p>`
-    ).join("");
+
+    div.innerHTML=
+    baixos
+    .map(
+        function(p){
+
+            return `
+            <p class="alerta">
+            ${p.nome}: ${p.estoque} unidade(s)
+            </p>
+            `;
+
+        }
+    )
+    .join("");
+
 }
+
+
+/* =========================
+   EXCLUIR VENDA
+========================= */
+
+
+function excluirVenda(index){
+
+    if(
+        !confirm(
+            "Deseja realmente excluir esta venda?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    let venda=
+    vendas[index];
+
+
+    if(!venda){
+
+        return;
+
+    }
+
+
+    /*
+       VENDA NOVA COM VÁRIOS ITENS.
+    */
+
+    if(
+        Array.isArray(venda.itens)
+    ){
+
+        venda.itens.forEach(
+            function(item){
+
+                let produto=
+                produtos.find(
+                    function(p){
+
+                        return (
+                            p.id===
+                            item.produtoId
+                        );
+
+                    }
+                );
+
+
+                /*
+                   Se não encontrar pelo ID,
+                   tenta pelo nome.
+                */
+
+                if(!produto){
+
+                    produto=
+                    produtos.find(
+                        function(p){
+
+                            return (
+                                p.nome===
+                                item.produto
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                if(produto){
+
+                    produto.estoque+=
+                    Number(
+                        item.quantidade || 0
+                    );
+
+                }
+
+            }
+        );
+
+    }else{
+
+        /*
+           COMPATIBILIDADE COM
+           VENDA ANTIGA.
+        */
+
+        let produto=
+        produtos.find(
+            function(p){
+
+                return (
+                    p.nome===
+                    venda.produto
+                );
+
+            }
+        );
+
+
+        if(produto){
+
+            produto.estoque+=
+            Number(
+                venda.quantidade || 0
+            );
+
+        }
+
+    }
+
+
+    vendas.splice(
+        index,
+        1
+    );
+
+
+    salvar();
+
+    atualizar();
+
+
+    alert(
+        "Venda excluída e estoque restaurado."
+    );
+
+}
+
+
+/* =========================
+   IMPRESSÃO
+========================= */
+
+
+function imprimirVendas(){
+
+    let janela=
+    window.open(
+        "",
+        "_blank"
+    );
+
+
+    if(!janela){
+
+        alert(
+            "O navegador bloqueou a janela de impressão. Permita janelas pop-up para este site."
+        );
+
+        return;
+
+    }
+
+
+    let totalGeral=
+    vendas.reduce(
+        function(soma,venda){
+
+            return soma+
+            Number(venda.total || 0);
+
+        },
+        0
+    );
+
+
+    let linhas="";
+
+
+    if(!vendas.length){
+
+        linhas=`
+
+        <tr>
+
+        <td
+        colspan="5"
+        style="text-align:center">
+
+        Nenhuma venda registrada.
+
+        </td>
+
+        </tr>
+
+        `;
+
+    }else{
+
+        linhas=
+        vendas
+        .map(
+            function(venda){
+
+                let produto=
+                descricaoVenda(
+                    venda
+                );
+
+
+                return `
+
+                <tr>
+
+                <td>
+                ${venda.data || ""}
+                </td>
+
+                <td>
+                ${produto}
+                </td>
+
+                <td>
+                ${quantidadeTotalVenda(venda)}
+                </td>
+
+                <td>
+                ${venda.pagamento || ""}
+                </td>
+
+                <td
+                class="numero">
+
+                ${dinheiro(venda.total || 0)}
+
+                </td>
+
+                </tr>
+
+                `;
+
+            }
+        )
+        .join("");
+
+    }
+
+
+    let html=`
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Relatório de Vendas</title>
+
+<style>
+
+body{
+
+font-family:Arial,sans-serif;
+
+margin:30px;
+
+color:#222;
+
+}
+
+h1{
+
+text-align:center;
+
+margin-bottom:5px;
+
+}
+
+.data{
+
+text-align:center;
+
+margin-bottom:25px;
+
+color:#555;
+
+}
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+}
+
+th,td{
+
+border:1px solid #999;
+
+padding:8px;
+
+text-align:left;
+
+}
+
+th{
+
+background:#eee;
+
+}
+
+.numero{
+
+text-align:right;
+
+}
+
+.total{
+
+margin-top:20px;
+
+text-align:right;
+
+font-size:20px;
+
+font-weight:bold;
+
+}
+
+button{
+
+padding:10px 14px;
+
+border:0;
+
+border-radius:6px;
+
+cursor:pointer;
+
+}
+
+@media print{
+
+button{
+
+display:none;
+
+}
+
+body{
+
+margin:15px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>RELATÓRIO DE VENDAS</h1>
+
+<div class="data">
+
+Sistema de Vendas
+
+<br>
+
+Emitido em:
+${new Date().toLocaleString("pt-BR")}
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Data</th>
+
+<th>Produto</th>
+
+<th>Quantidade</th>
+
+<th>Pagamento</th>
+
+<th>Total</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+${linhas}
+
+</tbody>
+
+</table>
+
+<div class="total">
+
+TOTAL GERAL:
+
+${dinheiro(totalGeral)}
+
+</div>
+
+<br>
+
+<button
+onclick="window.print()">
+
+🖨️ Imprimir
+
+</button>
+
+</body>
+
+</html>
+
+`;
+
+
+    janela.document.write(
+        html
+    );
+
+    janela.document.close();
+
+}
+
+
+/* =========================
+   BACKUP
+========================= */
+
 
 function backup(){
 
     let dados={
+
         produtos:produtos,
+
         vendas:vendas,
-        data:new Date().toISOString()
+
+        carrinhoVenda:carrinhoVenda,
+
+        data:
+        new Date().toISOString()
+
     };
 
-    let arquivo=new Blob(
-        [JSON.stringify(dados,null,2)],
-        {type:"application/json"}
+
+    let arquivo=
+    new Blob(
+        [
+            JSON.stringify(
+                dados,
+                null,
+                2
+            )
+        ],
+        {
+            type:
+            "application/json"
+        }
     );
 
-    let url=URL.createObjectURL(arquivo);
 
-    let a=document.createElement("a");
+    let url=
+    URL.createObjectURL(
+        arquivo
+    );
+
+
+    let a=
+    document.createElement(
+        "a"
+    );
+
+
     a.href=url;
-    a.download="backup_sistema_vendas.json";
+
+    a.download=
+    "backup_sistema_vendas.json";
+
     a.click();
 
-    URL.revokeObjectURL(url);
+
+    URL.revokeObjectURL(
+        url
+    );
+
 }
+
+
+/* =========================
+   APAGAR DADOS
+========================= */
+
 
 function limparDados(){
 
-    if(confirm("ATENCAO: apagar todos os produtos e vendas?")){
+    if(
+        confirm(
+            "ATENÇÃO: apagar todos os produtos e vendas?"
+        )
+    ){
 
-        if(confirm("Tem certeza? Esta operacao nao pode ser desfeita.")){
+        if(
+            confirm(
+                "Tem certeza? Esta operação não pode ser desfeita."
+            )
+        ){
 
             produtos=[];
+
             vendas=[];
 
+            carrinhoVenda=[];
+
             salvar();
+
             atualizar();
+
         }
+
     }
+
 }
 
-function excluirVenda(index){
 
-    if(!confirm("Deseja realmente excluir esta venda?")){
-        return;
-    }
+/* =========================
+   INICIALIZAÇÃO
+========================= */
 
-    let venda=vendas[index];
-
-    if(!venda){
-        return;
-    }
-
-    let produto=produtos.find(function(p){
-        return p.nome===venda.produto;
-    });
-
-    if(produto){
-        produto.estoque += Number(venda.quantidade || 0);
-    }
-
-    vendas.splice(index,1);
-
-    salvar();
-    atualizar();
-}
-
-function imprimirVendas(){
-
-    let janela = window.open("", "_blank");
-
-    if(!janela){
-        alert("Não foi possível abrir a impressão. Verifique se o navegador bloqueou a janela.");
-        return;
-    }
-
-    let totalGeral = vendas.reduce(function(soma, venda){
-        return soma + Number(venda.total || 0);
-    }, 0);
-
-    let html = `
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <title>Relatório de Vendas</title>
-
-        <style>
-            body{
-                font-family: Arial, sans-serif;
-                margin: 30px;
-                color: #222;
-            }
-
-            h1{
-                text-align: center;
-                margin-bottom: 5px;
-            }
-
-            .data{
-                text-align: center;
-                margin-bottom: 25px;
-                color: #555;
-            }
-
-            table{
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-            th, td{
-                border: 1px solid #999;
-                padding: 8px;
-                text-align: left;
-            }
-
-            th{
-                background: #eee;
-            }
-
-            .numero{
-                text-align: right;
-            }
-
-            .total{
-                margin-top: 20px;
-                text-align: right;
-                font-size: 20px;
-                font-weight: bold;
-            }
-
-            .acao{
-                white-space: nowrap;
-            }
-
-            @media print{
-                button{
-                    display: none;
-                }
-
-                .acao{
-                    display: none;
-                }
-
-                body{
-                    margin: 15px;
-                }
-            }
-        </style>
-    </head>
-
-    <body>
-
-        <h1>RELATÓRIO DE VENDAS</h1>
-
-        <div class="data">
-            Sistema de Vendas<br>
-            Emitido em: ${new Date().toLocaleString("pt-BR")}
-        </div>
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Pagamento</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                ${
-                    vendas.length === 0
-                    ?
-                    `<tr>
-                        <td colspan="5" style="text-align:center;">
-                            Nenhuma venda registrada.
-                        </td>
-                    </tr>`
-                    :
-                   vendas.map(function(venda, index){
-
-                        return `
-                        <tr>
-                            <td>${venda.data || ""}</td>
-                            <td>${venda.produto || ""}</td>
-                            <td class="numero">${venda.quantidade || 0}</td>
-                            <td>${venda.pagamento || ""}</td>
-                            <td class="numero">
-                                R$ ${Number(venda.total || 0).toLocaleString("pt-BR", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                })}
-                            </td>
-                        </tr>
-                        `;
-
-                    }).join("")
-                }
-
-            </tbody>
-
-        </table>
-
-        <div class="total">
-            TOTAL GERAL:
-            R$ ${totalGeral.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            })}
-        </div>
-
-        <br>
-
-        <button onclick="window.print()">🖨️ Imprimir</button>
-
-    </body>
-    </html>
-    `;
-
-    janela.document.write(html);
-    janela.document.close();
-
-}atualizar();
+atualizar();
 
 </script>
 
