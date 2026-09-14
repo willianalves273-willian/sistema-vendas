@@ -91,6 +91,7 @@ th{background:#e5e7eb}
 <button onclick="mostrar('produtos')">Produtos</button>
 <button onclick="mostrar('venda')">Nova Venda</button>
 <button onclick="mostrar('vendas')">Vendas</button>
+    <button onclick="imprimirVendas()">🖨️ Imprimir Vendas</button>
 <button onclick="mostrar('estoque')">Estoque</button>
 <button onclick="mostrar('relatorios')">Relatorios</button>
 </nav>
@@ -542,7 +543,158 @@ function limparDados(){
     }
 }
 
-atualizar();
+function imprimirVendas(){
+
+    let janela = window.open("", "_blank");
+
+    if(!janela){
+        alert("Não foi possível abrir a impressão. Verifique se o navegador bloqueou a janela.");
+        return;
+    }
+
+    let totalGeral = vendas.reduce(function(soma, venda){
+        return soma + Number(venda.total || 0);
+    }, 0);
+
+    let html = `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Relatório de Vendas</title>
+
+        <style>
+            body{
+                font-family: Arial, sans-serif;
+                margin: 30px;
+                color: #222;
+            }
+
+            h1{
+                text-align: center;
+                margin-bottom: 5px;
+            }
+
+            .data{
+                text-align: center;
+                margin-bottom: 25px;
+                color: #555;
+            }
+
+            table{
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th, td{
+                border: 1px solid #999;
+                padding: 8px;
+                text-align: left;
+            }
+
+            th{
+                background: #eee;
+            }
+
+            .numero{
+                text-align: right;
+            }
+
+            .total{
+                margin-top: 20px;
+                text-align: right;
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            @media print{
+                button{
+                    display: none;
+                }
+
+                body{
+                    margin: 15px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <h1>RELATÓRIO DE VENDAS</h1>
+
+        <div class="data">
+            Sistema de Vendas<br>
+            Emitido em: ${new Date().toLocaleString("pt-BR")}
+        </div>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Pagamento</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                ${
+                    vendas.length === 0
+                    ?
+                    `<tr>
+                        <td colspan="5" style="text-align:center;">
+                            Nenhuma venda registrada.
+                        </td>
+                    </tr>`
+                    :
+                    vendas.map(function(venda){
+
+                        return `
+                        <tr>
+                            <td>${venda.data || ""}</td>
+                            <td>${venda.produto || ""}</td>
+                            <td class="numero">${venda.quantidade || 0}</td>
+                            <td>${venda.pagamento || ""}</td>
+                            <td class="numero">
+                                R$ ${Number(venda.total || 0).toLocaleString("pt-BR", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                })}
+                            </td>
+                        </tr>
+                        `;
+
+                    }).join("")
+                }
+
+            </tbody>
+
+        </table>
+
+        <div class="total">
+            TOTAL GERAL:
+            R$ ${totalGeral.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}
+        </div>
+
+        <br>
+
+        <button onclick="window.print()">🖨️ Imprimir</button>
+
+    </body>
+    </html>
+    `;
+
+    janela.document.write(html);
+    janela.document.close();
+
+}atualizar();
 
 </script>
 
