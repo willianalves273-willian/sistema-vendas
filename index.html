@@ -543,6 +543,31 @@ function limparDados(){
     }
 }
 
+function imprimirVendas(){function excluirVenda(index){
+
+    if(!confirm("Deseja realmente excluir esta venda?")){
+        return;
+    }
+
+    let venda = vendas[index];
+
+    if(venda){
+
+        let produto = produtos.find(function(p){
+            return p.nome === venda.produto;
+        });
+
+        if(produto){
+            produto.estoque += Number(venda.quantidade || 0);
+        }
+
+        vendas.splice(index, 1);
+
+        salvar();
+        atualizar();
+    }
+}
+
 function imprimirVendas(){
 
     let janela = window.open("", "_blank");
@@ -636,8 +661,9 @@ function imprimirVendas(){
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Pagamento</th>
-                    <th>Total</th>
-                </tr>
+                  <th>Total</th>
+<th>Ações</th>
+</tr>
             </thead>
 
             <tbody>
@@ -646,12 +672,12 @@ function imprimirVendas(){
                     vendas.length === 0
                     ?
                     `<tr>
-                        <td colspan="5" style="text-align:center;">
+                        <td colspan="6" style="text-align:center;">
                             Nenhuma venda registrada.
                         </td>
                     </tr>`
                     :
-                    vendas.map(function(venda){
+                   vendas.map(function(venda, index){
 
                         return `
                         <tr>
@@ -664,7 +690,9 @@ function imprimirVendas(){
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}
-                            </td>
+                            <td>
+    <button onclick="excluirVenda(${index})">🗑️ Excluir</button>
+</td>
                         </tr>
                         `;
 
