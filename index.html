@@ -200,6 +200,7 @@ th{background:#e5e7eb}
 <th>Quantidade</th>
 <th>Pagamento</th>
 <th>Total</th>
+<th class="acao">Ações</th>
 </tr>
 </thead>
 <tbody id="tabelaVendas"></tbody>
@@ -455,7 +456,7 @@ function preencherVendas(){
     let tabela=document.getElementById("tabelaVendas");
     tabela.innerHTML="";
 
-    [...vendas].reverse().forEach(v=>{
+    vendas.forEach(function(v,index){
 
         tabela.innerHTML+=`
         <tr>
@@ -464,6 +465,9 @@ function preencherVendas(){
         <td>${v.quantidade}</td>
         <td>${v.pagamento}</td>
         <td>${dinheiro(v.total)}</td>
+        <td class="acao">
+            <button onclick="excluirVenda(${index})">🗑️ Excluir</button>
+        </td>
         </tr>`;
     });
 }
@@ -543,29 +547,30 @@ function limparDados(){
     }
 }
 
-function imprimirVendas(){function excluirVenda(index){
+function excluirVenda(index){
 
     if(!confirm("Deseja realmente excluir esta venda?")){
         return;
     }
 
-    let venda = vendas[index];
+    let venda=vendas[index];
 
-    if(venda){
-
-        let produto = produtos.find(function(p){
-            return p.nome === venda.produto;
-        });
-
-        if(produto){
-            produto.estoque += Number(venda.quantidade || 0);
-        }
-
-        vendas.splice(index, 1);
-
-        salvar();
-        atualizar();
+    if(!venda){
+        return;
     }
+
+    let produto=produtos.find(function(p){
+        return p.nome===venda.produto;
+    });
+
+    if(produto){
+        produto.estoque += Number(venda.quantidade || 0);
+    }
+
+    vendas.splice(index,1);
+
+    salvar();
+    atualizar();
 }
 
 function imprimirVendas(){
@@ -632,8 +637,16 @@ function imprimirVendas(){
                 font-weight: bold;
             }
 
+            .acao{
+                white-space: nowrap;
+            }
+
             @media print{
                 button{
+                    display: none;
+                }
+
+                .acao{
                     display: none;
                 }
 
@@ -661,9 +674,8 @@ function imprimirVendas(){
                     <th>Produto</th>
                     <th>Quantidade</th>
                     <th>Pagamento</th>
-                  <th>Total</th>
-<th>Ações</th>
-</tr>
+                    <th>Total</th>
+                </tr>
             </thead>
 
             <tbody>
@@ -672,7 +684,7 @@ function imprimirVendas(){
                     vendas.length === 0
                     ?
                     `<tr>
-                        <td colspan="6" style="text-align:center;">
+                        <td colspan="5" style="text-align:center;">
                             Nenhuma venda registrada.
                         </td>
                     </tr>`
@@ -690,9 +702,7 @@ function imprimirVendas(){
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}
-                            <td>
-    <button onclick="excluirVenda(${index})">🗑️ Excluir</button>
-</td>
+                            </td>
                         </tr>
                         `;
 
