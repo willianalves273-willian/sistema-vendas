@@ -38,11 +38,62 @@ input,select{padding:10px;margin:5px;border:1px solid #bbb;border-radius:5px;fon
 <div class="acoes-venda"><button onclick="finalizarVenda()">✅ Finalizar e Registrar Compra</button><button class="secundario" onclick="limparCarrinho()">Limpar compra</button></div></section>
 <section id="vendas" class="card oculto"><h2>Histórico de Vendas</h2><div class="tabela-responsiva"><table><thead><tr><th>Data</th><th>Produto</th><th>Quantidade</th><th>Pagamento</th><th>Total</th><th>Ações</th></tr></thead><tbody id="tabelaVendas"></tbody></table></div></section>
 <section id="estoque" class="card oculto"><h2>Controle de Estoque</h2><div class="tabela-responsiva"><table><thead><tr><th>Produto</th><th>Estoque atual</th><th>Estoque mínimo</th><th>Status</th></tr></thead><tbody id="tabelaEstoque"></tbody></table></div></section>
-<section id="relatorios" class="card oculto"><h2>Relatórios</h2><div class="grid"><div class="card"><h3>Total vendido</h3><div class="valor" id="relTotal">R$ 0,00</div></div><div class="card"><h3>Quantidade de vendas</h3><div class="valor" id="relQtd">0</div></div><div class="card"><h3>Estoque</h3><div class="valor" id="relEstoque">0</div></div></div><button onclick="backup()">Fazer Backup</button> <button onclick="limparDados()" class="excluir">Apagar todos os dados</button></section>
+<section id="relatorios" class="card oculto"><h2>Relatórios</h2>
+<div class="grid"><div class="card"><h3>Total vendido</h3><div class="valor" id="relTotal">R$ 0,00</div></div><div class="card"><h3>Quantidade de vendas</h3><div class="valor" id="relQtd">0</div></div><div class="card"><h3>Estoque</h3><div class="valor" id="relEstoque">0</div></div></div>
+<h3>Histórico permanente de compras finalizadas</h3>
+<div class="aviso"><b>Cada compra é gravada quando é finalizada.</b> Excluir uma venda da tela Vendas não apaga o registro deste relatório.</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label for="mesRelatorio">Mês:</label><select id="mesRelatorio" onchange="renderRelatorioHistorico()" style="max-width:220px"></select><button onclick="imprimirRelatorioHistorico()">🖨️ Imprimir relatório do mês</button></div>
+<div id="resumoRelatorio" class="card" style="margin-top:15px"></div>
+<div class="tabela-responsiva"><table><thead><tr><th>Compra</th><th>Data</th><th>Itens (quantidade x preço)</th><th>Pagamento</th><th>Total</th></tr></thead><tbody id="tabelaHistoricoCompras"></tbody></table></div>
+<br><button onclick="backup()">Fazer Backup</button> <button onclick="limparDados()" class="excluir">Apagar todos os dados</button>
+</section>
 </div>
 <script>
-let produtos=JSON.parse(localStorage.getItem("produtos_vendas")||"[]"),vendas=JSON.parse(localStorage.getItem("vendas_vendas")||"[]"),carrinhoVenda=JSON.parse(localStorage.getItem("carrinho_venda")||"[]");
-function salvar(){localStorage.setItem("produtos_vendas",JSON.stringify(produtos));localStorage.setItem("vendas_vendas",JSON.stringify(vendas));localStorage.setItem("carrinho_venda",JSON.stringify(carrinhoVenda))}
+let produtos=JSON.parse(localStorage.getItem("produtos_vendas")||"[]"),
+vendas=JSON.parse(localStorage.getItem("vendas_vendas")||"[]"),
+carrinhoVenda=JSON.parse(localStorage.getItem("carrinho_venda")||"[]"),
+historicoCompras=JSON.parse(localStorage.getItem("historico_compras")||"[]");
+
+if(!Array.isArray(produtos))produtos=[];
+if(!Array.isArray(vendas))vendas=[];
+if(!Array.isArray(carrinhoVenda))carrinhoVenda=[];
+if(!Array.isArray(historicoCompras))historicoCompras=[];
+
+function assinaturaCompra(v){
+  if(v && v.timestamp) return "ts:"+v.timestamp;
+  return JSON.stringify([v?.data||"",Number(v?.total||0),v?.pagamento||"",v?.itens||v?.produto||"",v?.quantidade||""]);
+}
+
+/* Toda venda existente na aba Vendas que ainda nao estiver no historico
+   e acrescentada ao historico. Excluir em Vendas nao apaga o historico. */
+function sincronizarHistorico(){
+  const assinaturas=new Set(historicoCompras.map(assinaturaCompra));
+  vendas.forEach(v=>{
+    const assinatura=assinaturaCompra(v);
+    if(!assinaturas.has(assinatura)){
+      const maiorNumero=historicoCompras.reduce((m,h)=>Math.max(m,Number(h.numero)||0),0);
+      const copia={...v,numero:maiorNumero+1,timestamp:v.timestamp||Date.now()};
+      historicoCompras.push(copia);
+      assinaturas.add(assinaturaCompra(copia));
+    }
+  });
+  historicoCompras.sort((a,b)=>(Number(a.timestamp)||0)-(Number(b.timestamp)||0));
+  historicoCompras.forEach((h,i)=>{if(!h.numero)h.numero=i+1;});
+  localStorage.setItem("historico_compras",JSON.stringify(historicoCompras));
+}
+sincronizarHistorico();
+
+// ============================================================
+// SALVAMENTO LOCAL — SEM SUPABASE
+// Mantém produtos, vendas, carrinho e histórico permanente.
+// ============================================================
+function salvar(){
+  localStorage.setItem("produtos_vendas",JSON.stringify(produtos));
+  localStorage.setItem("vendas_vendas",JSON.stringify(vendas));
+  localStorage.setItem("carrinho_venda",JSON.stringify(carrinhoVenda));
+  localStorage.setItem("historico_compras",JSON.stringify(historicoCompras));
+}
+
 function dinheiro(valor){return Number(valor||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 function mostrar(id){document.querySelectorAll("section").forEach(x=>x.classList.add("oculto"));let secao=document.getElementById(id);if(secao)secao.classList.remove("oculto");atualizar()}
 function cadastrarProduto(){let nome=document.getElementById("nomeProduto").value.trim(),preco=Number(document.getElementById("precoProduto").value),custo=Number(document.getElementById("custoProduto").value),estoque=Number(document.getElementById("estoqueProduto").value),minimo=Number(document.getElementById("estoqueMinimo").value);if(!nome||preco<=0){alert("Informe o nome e o preço do produto.");return}produtos.push({id:Date.now(),nome,preco,custo,estoque,minimo});salvar();["nomeProduto","precoProduto","custoProduto","estoqueProduto","estoqueMinimo"].forEach(id=>document.getElementById(id).value="");atualizar();alert("Produto cadastrado.")}
@@ -53,7 +104,16 @@ function adicionarItemVenda(){let id=Number(document.getElementById("produtoVend
 function removerItemCarrinho(indice){if(indice<0||indice>=carrinhoVenda.length)return;carrinhoVenda.splice(indice,1);salvar();preencherCarrinhoVenda()}
 function limparCarrinho(){if(!carrinhoVenda.length)return;if(confirm("Limpar toda a compra que ainda não foi lançada?")){carrinhoVenda=[];salvar();preencherCarrinhoVenda()}}
 function preencherCarrinhoVenda(){let tabela=document.getElementById("tabelaCarrinhoVenda"),total=document.getElementById("totalCarrinhoVenda");if(!tabela||!total)return;tabela.innerHTML="";let totalCompra=0;carrinhoVenda.forEach((item,indice)=>{let subtotal=Number(item.preco)*Number(item.quantidade);totalCompra+=subtotal;tabela.innerHTML+=`<tr><td>${item.produto}</td><td>${item.quantidade}</td><td>${dinheiro(item.preco)}</td><td>${dinheiro(subtotal)}</td><td><button class="excluir" onclick="removerItemCarrinho(${indice})">Remover</button></td></tr>`});if(!carrinhoVenda.length)tabela.innerHTML='<tr><td colspan="5" style="text-align:center">Nenhum item adicionado à compra.</td></tr>';total.textContent=dinheiro(totalCompra)}
-function finalizarVenda(){if(!carrinhoVenda.length){alert("Adicione pelo menos um item à compra.");return}let pagamento=document.getElementById("pagamento").value;for(let item of carrinhoVenda){let p=produtos.find(x=>x.id===item.produtoId);if(!p){alert("O produto "+item.produto+" não existe mais no cadastro.");return}if(Number(item.quantidade)>Number(p.estoque)){alert("Estoque insuficiente para "+p.nome+". Disponível: "+p.estoque+".");return}}let total=carrinhoVenda.reduce((soma,item)=>soma+Number(item.preco)*Number(item.quantidade),0),resumo=carrinhoVenda.map(item=>item.produto+" - "+item.quantidade+" x "+dinheiro(item.preco)).join("\n");if(!confirm("CONFIRMAR COMPRA?\n\n"+resumo+"\n\nPagamento: "+pagamento+"\nTotal: "+dinheiro(total)))return;carrinhoVenda.forEach(item=>{let p=produtos.find(x=>x.id===item.produtoId);p.estoque-=Number(item.quantidade)});vendas.push({data:new Date().toLocaleString("pt-BR"),itens:carrinhoVenda.map(item=>({produtoId:item.produtoId,produto:item.produto,quantidade:Number(item.quantidade),preco:Number(item.preco)})),pagamento,total});carrinhoVenda=[];salvar();atualizar();alert("Compra registrada com sucesso!\nTotal: "+dinheiro(total));document.getElementById("quantidadeVenda").value=1;document.getElementById("produtoVenda").value="";document.getElementById("precoVenda").innerHTML=""}
+function finalizarVenda(){if(!carrinhoVenda.length){alert("Adicione pelo menos um item à compra.");return}let pagamento=document.getElementById("pagamento").value;for(let item of carrinhoVenda){let p=produtos.find(x=>x.id===item.produtoId);if(!p){alert("O produto "+item.produto+" não existe mais no cadastro.");return}if(Number(item.quantidade)>Number(p.estoque)){alert("Estoque insuficiente para "+p.nome+". Disponível: "+p.estoque+".");return}}let total=carrinhoVenda.reduce((soma,item)=>soma+Number(item.preco)*Number(item.quantidade),0),resumo=carrinhoVenda.map(item=>item.produto+" - "+item.quantidade+" x "+dinheiro(item.preco)).join("\n");if(!confirm("CONFIRMAR COMPRA?\n\n"+resumo+"\n\nPagamento: "+pagamento+"\nTotal: "+dinheiro(total)))return;carrinhoVenda.forEach(item=>{let p=produtos.find(x=>x.id===item.produtoId);p.estoque-=Number(item.quantidade)});const compraFinalizada={
+  numero:historicoCompras.length+1,
+  data:new Date().toLocaleString("pt-BR"),
+  timestamp:Date.now(),
+  itens:carrinhoVenda.map(item=>({produtoId:item.produtoId,produto:item.produto,quantidade:Number(item.quantidade),preco:Number(item.preco)})),
+  pagamento,total
+};
+vendas.push({...compraFinalizada});
+historicoCompras.push({...compraFinalizada});
+carrinhoVenda=[];salvar();atualizar();alert("Compra registrada com sucesso!\nTotal: "+dinheiro(total));document.getElementById("quantidadeVenda").value=1;document.getElementById("produtoVenda").value="";document.getElementById("precoVenda").innerHTML=""}
 function atualizar(){document.getElementById("totalProdutos").textContent=produtos.length;let estoque=produtos.reduce((s,p)=>s+Number(p.estoque),0);document.getElementById("totalEstoque").textContent=estoque;document.getElementById("totalVendas").textContent=vendas.length;let faturamento=vendas.reduce((s,v)=>s+Number(v.total||0),0);document.getElementById("faturamento").textContent=dinheiro(faturamento);document.getElementById("relTotal").textContent=dinheiro(faturamento);document.getElementById("relQtd").textContent=vendas.length;document.getElementById("relEstoque").textContent=estoque;preencherProdutos();preencherVenda();preencherCarrinhoVenda();preencherVendas();preencherEstoque();alertas()}
 function preencherProdutos(){let tabela=document.getElementById("tabelaProdutos");tabela.innerHTML="";produtos.forEach(p=>{tabela.innerHTML+=`<tr><td>${p.nome}</td><td>${dinheiro(p.preco)}</td><td>${dinheiro(p.custo)}</td><td>${p.estoque}</td><td>${p.minimo}</td><td><button onclick="alterarPreco(${p.id})">Alterar preço</button> <button class="excluir" onclick="excluirProduto(${p.id})">Excluir</button></td></tr>`})}
 function preencherVenda(){let select=document.getElementById("produtoVenda"),valor=select.value;select.innerHTML='<option value="">Selecione o produto</option>';produtos.forEach(p=>{if(Number(p.estoque)>0)select.innerHTML+=`<option value="${p.id}">${p.nome}</option>`});if(valor)select.value=valor}
@@ -62,11 +122,88 @@ function quantidadeTotalVenda(v){if(Array.isArray(v.itens))return v.itens.reduce
 function preencherVendas(){let tabela=document.getElementById("tabelaVendas");tabela.innerHTML="";vendas.forEach((v,index)=>{tabela.innerHTML+=`<tr><td>${v.data||""}</td><td>${descricaoVenda(v)}</td><td>${quantidadeTotalVenda(v)}</td><td>${v.pagamento||""}</td><td>${dinheiro(v.total||0)}</td><td><button class="excluir" onclick="excluirVenda(${index})">🗑️ Excluir</button></td></tr>`});if(!vendas.length)tabela.innerHTML='<tr><td colspan="6" style="text-align:center">Nenhuma venda registrada.</td></tr>'}
 function preencherEstoque(){let tabela=document.getElementById("tabelaEstoque");tabela.innerHTML="";produtos.forEach(p=>{let baixo=Number(p.estoque)<=Number(p.minimo);tabela.innerHTML+=`<tr><td>${p.nome}</td><td>${p.estoque}</td><td>${p.minimo}</td><td class="${baixo?'alerta':'ok'}">${baixo?'ESTOQUE BAIXO':'OK'}</td></tr>`})}
 function alertas(){let div=document.getElementById("alertas"),baixos=produtos.filter(p=>Number(p.estoque)<=Number(p.minimo));if(!baixos.length){div.innerHTML="<span class='ok'>Nenhum produto com estoque baixo.</span>";return}div.innerHTML=baixos.map(p=>`<p class="alerta">${p.nome}: ${p.estoque} unidade(s)</p>`).join("")}
-function excluirVenda(index){if(!confirm("Deseja realmente excluir esta venda?"))return;let venda=vendas[index];if(!venda)return;if(Array.isArray(venda.itens))venda.itens.forEach(item=>{let produto=produtos.find(p=>p.id===item.produtoId)||produtos.find(p=>p.nome===item.produto);if(produto)produto.estoque+=Number(item.quantidade||0)});else{let produto=produtos.find(p=>p.nome===venda.produto);if(produto)produto.estoque+=Number(venda.quantidade||0)}vendas.splice(index,1);salvar();atualizar();alert("Venda excluída e estoque restaurado.")}
-function imprimirVendas(){let janela=window.open("","_blank");if(!janela){alert("O navegador bloqueou a janela de impressão. Permita janelas pop-up para este site.");return}let totalGeral=vendas.reduce((soma,venda)=>soma+Number(venda.total||0),0),linhas=!vendas.length?'<tr><td colspan="5" style="text-align:center">Nenhuma venda registrada.</td></tr>':vendas.map(venda=>`<tr><td>${venda.data||""}</td><td>${descricaoVenda(venda)}</td><td>${quantidadeTotalVenda(venda)}</td><td>${venda.pagamento||""}</td><td>${dinheiro(venda.total||0)}</td></tr>`).join("");janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#222}h1{text-align:center}.data{text-align:center;margin-bottom:25px;color:#555}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:8px;text-align:left}th{background:#eee}.total{margin-top:20px;text-align:right;font-size:20px;font-weight:bold}@media print{button{display:none}body{margin:15px}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Sistema de Vendas<br>Emitido em: ${new Date().toLocaleString("pt-BR")}</div><table><thead><tr><th>Data</th><th>Produto</th><th>Quantidade</th><th>Pagamento</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table><div class="total">TOTAL GERAL: ${dinheiro(totalGeral)}</div><br><button onclick="window.print()">🖨️ Imprimir</button></body></html>`);janela.document.close()}
-function backup(){let dados={produtos,vendas,carrinhoVenda,data:new Date().toISOString()},arquivo=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"}),url=URL.createObjectURL(arquivo),a=document.createElement("a");a.href=url;a.download="backup_sistema_vendas.json";a.click();URL.revokeObjectURL(url)}
-function limparDados(){if(confirm("ATENÇÃO: apagar todos os produtos e vendas?"))if(confirm("Tem certeza? Esta operação não pode ser desfeita.")){produtos=[];vendas=[];carrinhoVenda=[];salvar();atualizar()}}
+function excluirVenda(index){if(!confirm("Deseja realmente excluir esta venda?"))return;let venda=vendas[index];if(!venda)return;if(Array.isArray(venda.itens))venda.itens.forEach(item=>{let produto=produtos.find(p=>p.id===item.produtoId)||produtos.find(p=>p.nome===item.produto);if(produto)produto.estoque+=Number(item.quantidade||0)});else{let produto=produtos.find(p=>p.nome===venda.produto);if(produto)produto.estoque+=Number(venda.quantidade||0)}vendas.splice(index,1);
+// IMPORTANTE: a exclusão afeta somente a aba Vendas.
+// O registro em historicoCompras permanece intocado.
+salvar();
 atualizar();
+renderRelatorioHistorico();
+alert("Venda excluída e estoque restaurado. O registro permanece no relatório histórico.")}
+function imprimirVendas(){let janela=window.open("","_blank");if(!janela){alert("O navegador bloqueou a janela de impressão. Permita janelas pop-up para este site.");return}let totalGeral=vendas.reduce((soma,venda)=>soma+Number(venda.total||0),0),linhas=!vendas.length?'<tr><td colspan="5" style="text-align:center">Nenhuma venda registrada.</td></tr>':vendas.map(venda=>`<tr><td>${venda.data||""}</td><td>${itensComPreco(venda)}</td><td>${quantidadeTotalVenda(venda)}</td><td>${venda.pagamento||""}</td><td>${dinheiro(venda.total||0)}</td></tr>`).join("");janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#222}h1{text-align:center}.data{text-align:center;margin-bottom:25px;color:#555}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:8px;text-align:left;vertical-align:top}th{background:#eee}.total{margin-top:20px;text-align:right;font-size:20px;font-weight:bold}@media print{button{display:none}body{margin:15px}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Sistema de Vendas<br>Emitido em: ${new Date().toLocaleString("pt-BR")}</div><table><thead><tr><th>Data</th><th>Produto — quantidade x preço = subtotal</th><th>Quantidade</th><th>Pagamento</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table><div class="total">TOTAL GERAL: ${dinheiro(totalGeral)}</div><br><button onclick="window.print()">🖨️ Imprimir</button></body></html>`);janela.document.close()}
+
+function chaveMes(dataTexto){
+  const m=String(dataTexto||"").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}`;
+  const iso=String(dataTexto||"").match(/^(\d{4})-(\d{2})/);
+  return iso?`${iso[1]}-${iso[2]}`:"sem-data";
+}
+function nomeMes(chave){
+  if(chave==="sem-data")return "Sem data";
+  const [ano,mes]=chave.split("-");
+  return `${["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][Number(mes)-1]} / ${ano}`;
+}
+function mesesDisponiveis(){
+  const encontrados=new Set();
+  historicoCompras.forEach(v=>encontrados.add(chaveMes(v.data)));
+  vendas.forEach(v=>encontrados.add(chaveMes(v.data)));
+  const agora=new Date();
+  encontrados.add(`${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,"0")}`);
+  const anos=[...encontrados].filter(x=>x!=="sem-data").map(x=>Number(x.slice(0,4)));
+  const anoMin=anos.length?Math.min(...anos):agora.getFullYear();
+  const anoMax=Math.max(agora.getFullYear(),...anos);
+  for(let ano=anoMin;ano<=anoMax;ano++)for(let mes=1;mes<=12;mes++)encontrados.add(`${ano}-${String(mes).padStart(2,"0")}`);
+  encontrados.delete("sem-data");
+  return [...encontrados].sort().reverse();
+}
+function itensComPreco(v){
+  if(Array.isArray(v.itens)){
+    return v.itens.map(item=>{
+      const qtd=Number(item.quantidade||0),preco=Number(item.preco||0);
+      return `${item.produto} — ${qtd} x ${dinheiro(preco)} = ${dinheiro(qtd*preco)}`;
+    }).join("<br>");
+  }
+  const qtd=Number(v.quantidade||0),preco=Number(v.preco||v.valorUnitario||0);
+  return `${v.produto||""}${qtd?" — "+qtd+" x "+dinheiro(preco):""}`;
+}
+function renderRelatorioHistorico(){
+  sincronizarHistorico();
+  const select=document.getElementById("mesRelatorio");
+  if(!select)return;
+  const meses=mesesDisponiveis(),atual=select.value;
+  select.innerHTML=meses.map(m=>`<option value="${m}">${nomeMes(m)}</option>`).join("");
+  if(meses.includes(atual))select.value=atual;
+  else{
+    const agora=new Date(),mesAtual=`${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,"0")}`;
+    select.value=meses.includes(mesAtual)?mesAtual:meses[0];
+  }
+  const mes=select.value,compras=historicoCompras.filter(v=>chaveMes(v.data)===mes);
+  const total=compras.reduce((s,v)=>s+Number(v.total||0),0);
+  const itens=compras.reduce((s,v)=>s+quantidadeTotalVenda(v),0);
+  const resumo=document.getElementById("resumoRelatorio"),tabela=document.getElementById("tabelaHistoricoCompras");
+  if(resumo)resumo.innerHTML=`<b>${nomeMes(mes)}</b><br>Compras finalizadas: <b>${compras.length}</b> &nbsp; | &nbsp; Itens: <b>${itens}</b> &nbsp; | &nbsp; Faturamento: <b>${dinheiro(total)}</b>`;
+  if(tabela)tabela.innerHTML=compras.length?compras.map((v,i)=>`<tr><td>Compra #${v.numero||i+1}</td><td>${v.data||""}</td><td>${itensComPreco(v)}</td><td>${v.pagamento||""}</td><td>${dinheiro(v.total||0)}</td></tr>`).join(""):'<tr><td colspan="5" style="text-align:center">Nenhuma compra finalizada neste mês.</td></tr>';
+}
+function imprimirRelatorioHistorico(){
+  sincronizarHistorico();
+  const select=document.getElementById("mesRelatorio"),mes=select?select.value:"";
+  const compras=historicoCompras.filter(v=>chaveMes(v.data)===mes);
+  const total=compras.reduce((s,v)=>s+Number(v.total||0),0);
+  const itens=compras.reduce((s,v)=>s+quantidadeTotalVenda(v),0);
+  const janela=window.open("","_blank");
+  if(!janela){alert("O navegador bloqueou a janela de impressão. Permita pop-ups para este site.");return}
+  const linhas=compras.length?compras.map((v,i)=>`<tr><td>Compra #${v.numero||i+1}</td><td>${v.data||""}</td><td>${itensComPreco(v)}</td><td>${quantidadeTotalVenda(v)}</td><td>${v.pagamento||""}</td><td>${dinheiro(v.total||0)}</td></tr>`).join(""):'<tr><td colspan="6" style="text-align:center">Nenhuma compra finalizada neste mês.</td></tr>';
+  janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Compras - ${nomeMes(mes)}</title><style>
+  body{font-family:Arial,sans-serif;color:#222;margin:25px}h1{text-align:center;margin-bottom:5px;font-size:28px}.sub{text-align:center;color:#555;margin-bottom:22px}.resumo{display:flex;gap:25px;flex-wrap:wrap;border:1px solid #999;padding:12px;margin-bottom:18px}.resumo b{font-size:18px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #999;padding:8px;text-align:left;vertical-align:top;word-wrap:break-word}th{background:#eee}th:nth-child(1){width:12%}th:nth-child(2){width:16%}th:nth-child(3){width:34%}th:nth-child(4){width:8%}th:nth-child(5){width:14%}th:nth-child(6){width:16%}.total{text-align:right;font-size:20px;font-weight:bold;margin-top:18px}.rodape{margin-top:35px;font-size:12px;color:#666;text-align:center}@media print{button{display:none!important}body{margin:10mm}@page{size:A4 portrait;margin:10mm}}
+  </style></head><body><h1>RELATÓRIO DE COMPRAS</h1><div class="sub">Sistema de Vendas — ${nomeMes(mes)}<br>Emitido em ${new Date().toLocaleString("pt-BR")}</div>
+  <div class="resumo"><span>Compras finalizadas: <b>${compras.length}</b></span><span>Itens vendidos: <b>${itens}</b></span><span>Faturamento: <b>${dinheiro(total)}</b></span></div>
+  <table><thead><tr><th>Compra</th><th>Data</th><th>Produto — quantidade x preço = subtotal</th><th>Qtd.</th><th>Pagamento</th><th>Total da compra</th></tr></thead><tbody>${linhas}</tbody></table>
+  <div class="total">TOTAL DO MÊS: ${dinheiro(total)}</div><div class="rodape">Registro histórico de compras finalizadas.</div><br><button onclick="window.print()">🖨️ Imprimir</button></body></html>`);
+  janela.document.close();
+}
+
+function backup(){let dados={produtos,vendas,carrinhoVenda,data:new Date().toISOString()},arquivo=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"}),url=URL.createObjectURL(arquivo),a=document.createElement("a");a.href=url;a.download="backup_sistema_vendas.json";a.click();URL.revokeObjectURL(url)}
+function limparDados(){if(confirm("ATENÇÃO: apagar todos os produtos, vendas e histórico permanente?"))if(confirm("Tem certeza? Esta operação não pode ser desfeita.")){produtos=[];vendas=[];carrinhoVenda=[];historicoCompras=[];salvar();atualizar();renderRelatorioHistorico()}}
+atualizar();renderRelatorioHistorico();
 </script>
 </body>
 </html>
