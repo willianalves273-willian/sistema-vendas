@@ -1,253 +1,489 @@
-const SUPABASE_URL = 'https://eokxblclwhirrucmuuid.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_HcD3qYMT7zJGl-_VIkJsnw_Nm69nCfc';
+// ============================================================
+// CONFIGURAÇÃO DO SUPABASE
+// ============================================================
+
+const SUPABASE_URL = 'https://eokxblclwhirrumuuid.supabase.co';
+
+const SUPABASE_ANON_KEY =
+'sb_publishable_HcD3qYMT7zJGl-_VTKJsNW_Nm69nCfc';
+
+
+// ============================================================
+// DADOS DO SISTEMA
+// ============================================================
 
 let produtos = [];
 let vendas = [];
 let carrinhoVenda = [];
 
-/* ================================
-   CARREGAR DADOS DO SUPABASE
-================================ */
+
+// ============================================================
+// CARREGAR DADOS DO SUPABASE
+// ============================================================
 
 async function carregarDados() {
+
     try {
+
+        // --------------------------------------------------------
+        // PRODUTOS
+        // --------------------------------------------------------
+
         const respostaProdutos = await fetch(
             `${SUPABASE_URL}/rest/v1/produtos?select=*`,
             {
+                method: 'GET',
+
                 headers: {
-                    apikey: SUPABASE_ANON_KEY,
-                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                 }
             }
         );
 
         if (!respostaProdutos.ok) {
-            throw new Error(`Erro ao carregar produtos: ${respostaProdutos.status}`);
+            throw new Error(
+                `Erro ao carregar produtos: ${respostaProdutos.status}`
+            );
         }
 
         produtos = await respostaProdutos.json();
 
+
+        // --------------------------------------------------------
+        // VENDAS
+        // --------------------------------------------------------
+
         const respostaVendas = await fetch(
-            `${SUPABASE_URL}/rest/v1/vendas?select=*&order=timestamptz.desc`,
+            `${SUPABASE_URL}/rest/v1/vendas?select=*`,
             {
+                method: 'GET',
+
                 headers: {
-                    apikey: SUPABASE_ANON_KEY,
-                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                 }
             }
         );
 
         if (!respostaVendas.ok) {
-            throw new Error(`Erro ao carregar vendas: ${respostaVendas.status}`);
+            throw new Error(
+                `Erro ao carregar vendas: ${respostaVendas.status}`
+            );
         }
 
         vendas = await respostaVendas.json();
 
-        localStorage.setItem(
-            "produtos_vendas",
-            JSON.stringify(produtos)
-        );
 
-        localStorage.setItem(
-            "vendas_vendas",
-            JSON.stringify(vendas)
-        );
+        // --------------------------------------------------------
+        // CARRINHO
+        // --------------------------------------------------------
+
+        const carrinhoSalvo =
+            localStorage.getItem('carrinho_venda');
+
+        if (carrinhoSalvo) {
+            try {
+                carrinhoVenda = JSON.parse(carrinhoSalvo);
+            } catch (erro) {
+                carrinhoVenda = [];
+            }
+        }
+
+
+        // --------------------------------------------------------
+        // SALVAR CÓPIA LOCAL
+        // --------------------------------------------------------
+
+        salvar();
+
+
+        console.log('Dados carregados com sucesso.');
+        console.log('Produtos:', produtos);
+        console.log('Vendas:', vendas);
+        console.log('Carrinho:', carrinhoVenda);
+
 
         return true;
 
     } catch (erro) {
 
-        console.error("Erro ao carregar dados do Supabase:", erro);
+        console.error('Erro ao carregar dados:', erro);
 
-        produtos = JSON.parse(
-            localStorage.getItem("produtos_vendas") || "[]"
-        );
+        // --------------------------------------------------------
+        // TENTAR RECUPERAR DO LOCALSTORAGE
+        // --------------------------------------------------------
 
-        vendas = JSON.parse(
-            localStorage.getItem("vendas_vendas") || "[]"
-        );
+        try {
+
+            const produtosSalvos =
+                localStorage.getItem('produtos_vendas');
+
+            if (produtosSalvos) {
+                produtos = JSON.parse(produtosSalvos);
+            }
+
+
+            const vendasSalvas =
+                localStorage.getItem('vendas_vendas');
+
+            if (vendasSalvas) {
+                vendas = JSON.parse(vendasSalvas);
+            }
+
+
+            const carrinhoSalvo =
+                localStorage.getItem('carrinho_venda');
+
+            if (carrinhoSalvo) {
+                carrinhoVenda = JSON.parse(carrinhoSalvo);
+            }
+
+        } catch (erroLocal) {
+
+            console.error(
+                'Erro ao recuperar dados locais:',
+                erroLocal
+            );
+
+        }
 
         return false;
     }
 }
 
 
-/* ================================
-   CARRINHO
-================================ */
+// ============================================================
+// SALVAR DADOS LOCALMENTE
+// ============================================================
 
-carrinhoVenda = JSON.parse(
-    localStorage.getItem("carrinho_venda") || "[]"
-);
+function salvar() {
+
+    localStorage.setItem(
+        'produtos_vendas',
+        JSON.stringify(produtos)
+    );
 
 
-/* ================================
-   SALVAR DADOS
-================================ */
+    localStorage.setItem(
+        'vendas_vendas',
+        JSON.stringify(vendas)
+    );
 
-async function salvar() {
+
+    localStorage.setItem(
+        'carrinho_venda',
+        JSON.stringify(carrinhoVenda)
+    );
+
+}
+
+
+// ============================================================
+// CRIAR PRODUTO NO SUPABASE
+// ============================================================
+
+async function criarProduto(produto) {
 
     try {
 
-        /* ---------- PRODUTOS ---------- */
+        const resposta = await fetch(
+            `${SUPABASE_URL}/rest/v1/produtos`,
+            {
+                method: 'POST',
 
-        for (const produto of produtos) {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
 
-            const dadosProduto = {
-                nome: produto.nome || "",
-                preco: Number(produto.preco) || 0,
-                personalizado: Number(produto.personalizado) || 0,
-                estoque_inteiro: Number(produto.estoque_inteiro) || 0,
-                mínimo: Number(produto.mínimo) || 0
-            };
-
-            if (produto.id) {
-
-                const resposta = await fetch(
-                    `${SUPABASE_URL}/rest/v1/produtos?id=eq.${produto.id}`,
-                    {
-                        method: "PATCH",
-                        headers: {
-                            apikey: SUPABASE_ANON_KEY,
-                            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-                            "Content-Type": "application/json",
-                            Prefer: "return=minimal"
-                        },
-                        body: JSON.stringify(dadosProduto)
-                    }
-                );
-
-                if (!resposta.ok) {
-                    throw new Error(
-                        `Erro ao atualizar produto: ${resposta.status}`
-                    );
-                }
-
-            } else {
-
-                const resposta = await fetch(
-                    `${SUPABASE_URL}/rest/v1/produtos`,
-                    {
-                        method: "POST",
-                        headers: {
-                            apikey: SUPABASE_ANON_KEY,
-                            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-                            "Content-Type": "application/json",
-                            Prefer: "return=representation"
-                        },
-                        body: JSON.stringify(dadosProduto)
-                    }
-                );
-
-                if (!resposta.ok) {
-                    throw new Error(
-                        `Erro ao inserir produto: ${resposta.status}`
-                    );
-                }
-
-                const novoProduto = await resposta.json();
-
-                if (novoProduto && novoProduto[0]) {
-                    produto.id = novoProduto[0].id;
-                }
+                body: JSON.stringify({
+                    nome: produto.nome,
+                    preco: Number(produto.preco) || 0,
+                    personalizado: Number(produto.personalizado) || 0,
+                    estoque_inteiro: Number(produto.estoque_inteiro) || 0,
+                    "mínimo": Number(produto["mínimo"]) || 0
+                })
             }
+        );
+
+
+        if (!resposta.ok) {
+
+            const erro = await resposta.text();
+
+            throw new Error(
+                `Erro ao criar produto: ${resposta.status} ${erro}`
+            );
         }
 
 
-        /* ---------- VENDAS ---------- */
+        const novoProduto = await resposta.json();
 
-        for (const venda of vendas) {
+        console.log(
+            'Produto criado:',
+            novoProduto
+        );
 
-            if (venda.id) {
-                continue;
+
+        await carregarDados();
+
+        return novoProduto;
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        return null;
+    }
+}
+
+
+// ============================================================
+// ATUALIZAR PRODUTO
+// ============================================================
+
+async function atualizarProduto(id, dados) {
+
+    try {
+
+        const resposta = await fetch(
+            `${SUPABASE_URL}/rest/v1/produtos?id=eq.${id}`,
+            {
+                method: 'PATCH',
+
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+
+                body: JSON.stringify(dados)
             }
+        );
 
-            const dadosVenda = {
-                total: Number(venda.total) || 0,
-                items: venda.items || venda.itens || [],
-                texto_pagamento:
-                    venda.texto_pagamento ||
-                    venda.pagamento ||
-                    ""
-            };
 
-            const resposta = await fetch(
-                `${SUPABASE_URL}/rest/v1/vendas`,
-                {
-                    method: "POST",
-                    headers: {
-                        apikey: SUPABASE_ANON_KEY,
-                        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-                        "Content-Type": "application/json",
-                        Prefer: "return=representation"
-                    },
-                    body: JSON.stringify(dadosVenda)
+        if (!resposta.ok) {
+
+            const erro = await resposta.text();
+
+            throw new Error(
+                `Erro ao atualizar produto: ${resposta.status} ${erro}`
+            );
+        }
+
+
+        const produtoAtualizado =
+            await resposta.json();
+
+
+        await carregarDados();
+
+        return produtoAtualizado;
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        return null;
+    }
+}
+
+
+// ============================================================
+// EXCLUIR PRODUTO
+// ============================================================
+
+async function excluirProduto(id) {
+
+    try {
+
+        const resposta = await fetch(
+            `${SUPABASE_URL}/rest/v1/produtos?id=eq.${id}`,
+            {
+                method: 'DELETE',
+
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                 }
+            }
+        );
+
+
+        if (!resposta.ok) {
+
+            const erro = await resposta.text();
+
+            throw new Error(
+                `Erro ao excluir produto: ${resposta.status} ${erro}`
+            );
+        }
+
+
+        produtos =
+            produtos.filter(
+                produto => produto.id !== id
             );
 
-            if (!resposta.ok) {
-                throw new Error(
-                    `Erro ao inserir venda: ${resposta.status}`
-                );
-            }
 
-            const novaVenda = await resposta.json();
+        salvar();
 
-            if (novaVenda && novaVenda[0]) {
-                venda.id = novaVenda[0].id;
-            }
-        }
-
-
-        /* ---------- CARRINHO ---------- */
-
-        localStorage.setItem(
-            "produtos_vendas",
-            JSON.stringify(produtos)
-        );
-
-        localStorage.setItem(
-            "vendas_vendas",
-            JSON.stringify(vendas)
-        );
-
-        localStorage.setItem(
-            "carrinho_venda",
-            JSON.stringify(carrinhoVenda)
-        );
-
-        console.log("Dados salvos no Supabase com sucesso.");
 
         return true;
 
     } catch (erro) {
 
-        console.error("Erro ao salvar no Supabase:", erro);
-
-        /* Mantém uma cópia local como segurança */
-
-        localStorage.setItem(
-            "produtos_vendas",
-            JSON.stringify(produtos)
-        );
-
-        localStorage.setItem(
-            "vendas_vendas",
-            JSON.stringify(vendas)
-        );
-
-        localStorage.setItem(
-            "carrinho_venda",
-            JSON.stringify(carrinhoVenda)
-        );
+        console.error(erro);
 
         return false;
     }
 }
 
 
-/* ================================
-   INICIALIZAÇÃO
-================================ */
+// ============================================================
+// REGISTRAR VENDA NO SUPABASE
+// ============================================================
+
+async function registrarVenda(venda) {
+
+    try {
+
+        const resposta = await fetch(
+            `${SUPABASE_URL}/rest/v1/vendas`,
+            {
+                method: 'POST',
+
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation'
+                },
+
+                body: JSON.stringify({
+
+                    total: Number(venda.total) || 0,
+
+                    itens: venda.itens || [],
+
+                    texto_pagamento:
+                        venda.texto_pagamento || ''
+
+                })
+            }
+        );
+
+
+        if (!resposta.ok) {
+
+            const erro = await resposta.text();
+
+            throw new Error(
+                `Erro ao registrar venda: ${resposta.status} ${erro}`
+            );
+        }
+
+
+        const novaVenda =
+            await resposta.json();
+
+
+        console.log(
+            'Venda registrada:',
+            novaVenda
+        );
+
+
+        await carregarDados();
+
+
+        return novaVenda;
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        return null;
+    }
+}
+
+
+// ============================================================
+// ADICIONAR PRODUTO AO CARRINHO
+// ============================================================
+
+function adicionarAoCarrinho(produto) {
+
+    carrinhoVenda.push(produto);
+
+    salvar();
+
+    console.log(
+        'Produto adicionado ao carrinho:',
+        produto
+    );
+}
+
+
+// ============================================================
+// REMOVER PRODUTO DO CARRINHO
+// ============================================================
+
+function removerDoCarrinho(indice) {
+
+    if (
+        indice >= 0 &&
+        indice < carrinhoVenda.length
+    ) {
+
+        carrinhoVenda.splice(indice, 1);
+
+        salvar();
+    }
+}
+
+
+// ============================================================
+// LIMPAR CARRINHO
+// ============================================================
+
+function limparCarrinho() {
+
+    carrinhoVenda = [];
+
+    salvar();
+}
+
+
+// ============================================================
+// CALCULAR TOTAL DO CARRINHO
+// ============================================================
+
+function calcularTotalCarrinho() {
+
+    return carrinhoVenda.reduce(
+        (total, item) => {
+
+            const quantidade =
+                Number(item.quantidade) || 1;
+
+            const preco =
+                Number(item.preco) || 0;
+
+            return total + (preco * quantidade);
+
+        },
+        0
+    );
+}
+
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
 
 carregarDados();
