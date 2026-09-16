@@ -642,6 +642,108 @@ function cadastrarProduto(){
 }
 
 
+/* =========================
+   ALTERAR PREÇO
+========================= */
+
+function alterarPreco(id){
+
+    let produto =
+    produtos.find(
+        function(p){
+            return p.id === id;
+        }
+    );
+
+
+    if(!produto){
+
+        alert(
+            "Produto não encontrado."
+        );
+
+        return;
+
+    }
+
+
+    let novoPreco =
+    prompt(
+
+        "ALTERAR PREÇO DE VENDA\n\n" +
+
+        "Produto: " +
+        produto.nome +
+
+        "\nPreço atual: " +
+        dinheiro(produto.preco) +
+
+        "\n\nDigite o novo preço:",
+
+        Number(produto.preco).toFixed(2)
+
+    );
+
+
+    if(novoPreco === null){
+
+        return;
+
+    }
+
+
+    novoPreco =
+    Number(
+        String(novoPreco)
+        .replace(",", ".")
+    );
+
+
+    if(
+        !Number.isFinite(novoPreco) ||
+        novoPreco <= 0
+    ){
+
+        alert(
+            "Informe um preço válido."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       ALTERA SOMENTE O PREÇO.
+       PRODUTO, CUSTO, ESTOQUE
+       E ESTOQUE MÍNIMO PERMANECEM
+       INALTERADOS.
+    */
+
+    produto.preco =
+    novoPreco;
+
+
+    salvar();
+
+    atualizar();
+
+
+    alert(
+
+        "Preço alterado com sucesso!\n\n" +
+
+        produto.nome +
+
+        "\nNovo preço: " +
+
+        dinheiro(novoPreco)
+
+    );
+
+}
+
+
 function excluirProduto(id){
 
     if(
@@ -1333,6 +1435,13 @@ function preencherProdutos(){
             <td>
 
             <button
+            onclick="alterarPreco(${p.id})">
+
+            Alterar preço
+
+            </button>
+
+            <button
             class="excluir"
             onclick="excluirProduto(${p.id})">
 
@@ -1414,11 +1523,6 @@ function preencherVenda(){
 
 function descricaoVenda(v){
 
-    /*
-       VENDA NOVA:
-       possui vários itens.
-    */
-
     if(
         Array.isArray(v.itens)
     ){
@@ -1439,11 +1543,6 @@ function descricaoVenda(v){
 
     }
 
-
-    /*
-       COMPATIBILIDADE COM
-       VENDAS ANTIGAS.
-    */
 
     return (
         v.produto || ""
@@ -1708,10 +1807,6 @@ function excluirVenda(index){
     }
 
 
-    /*
-       VENDA NOVA COM VÁRIOS ITENS.
-    */
-
     if(
         Array.isArray(venda.itens)
     ){
@@ -1731,11 +1826,6 @@ function excluirVenda(index){
                     }
                 );
 
-
-                /*
-                   Se não encontrar pelo ID,
-                   tenta pelo nome.
-                */
 
                 if(!produto){
 
@@ -1767,11 +1857,6 @@ function excluirVenda(index){
         );
 
     }else{
-
-        /*
-           COMPATIBILIDADE COM
-           VENDA ANTIGA.
-        */
 
         let produto=
         produtos.find(
