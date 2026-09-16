@@ -1,2314 +1,253 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sistema de Vendas</title>
-
-<style>
-*{
-    box-sizing:border-box;
-}
-
-body{
-    font-family:Arial,sans-serif;
-    margin:0;
-    background:#f3f4f6;
-    color:#222;
-}
-
-header{
-    background:#1f2937;
-    color:white;
-    padding:18px;
-}
-
-header h1{
-    margin:0 0 5px;
-}
-
-nav{
-    background:white;
-    padding:10px;
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    box-shadow:0 2px 5px #ccc;
-}
-
-button{
-    padding:10px 14px;
-    border:0;
-    border-radius:6px;
-    cursor:pointer;
-    background:#2563eb;
-    color:white;
-    font-size:14px;
-}
-
-button:hover{
-    opacity:.9;
-}
-
-button.excluir{
-    background:#dc2626;
-}
-
-button.secundario{
-    background:#6b7280;
-}
-
-.container{
-    max-width:1100px;
-    margin:20px auto;
-    padding:0 15px;
-}
-
-.card{
-    background:white;
-    padding:20px;
-    margin-bottom:20px;
-    border-radius:10px;
-    box-shadow:0 2px 8px #ddd;
-}
-
-input,select{
-    padding:10px;
-    margin:5px;
-    border:1px solid #bbb;
-    border-radius:5px;
-    font-size:16px;
-    max-width:100%;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:9px;
-    text-align:left;
-}
-
-th{
-    background:#e5e7eb;
-}
-
-.valor{
-    font-size:24px;
-    font-weight:bold;
-}
-
-.oculto{
-    display:none;
-}
-
-.alerta{
-    color:#b91c1c;
-    font-weight:bold;
-}
-
-.ok{
-    color:#15803d;
-    font-weight:bold;
-}
-
-.aviso{
-    background:#fff7ed;
-    border:1px solid #fed7aa;
-    padding:12px;
-    border-radius:7px;
-    margin:10px 0;
-}
-
-.sucesso{
-    background:#ecfdf5;
-    border:1px solid #a7f3d0;
-    padding:12px;
-    border-radius:7px;
-    margin:10px 0;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:15px;
-}
-
-.carrinho-total{
-    font-size:26px;
-    font-weight:bold;
-    margin:18px 0;
-    padding:12px;
-    background:#f3f4f6;
-    border-radius:7px;
-}
-
-.acoes-venda{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-top:15px;
-}
-
-@media(max-width:700px){
-
-    header{
-        padding:14px;
-    }
-
-    header h1{
-        font-size:23px;
-    }
-
-    nav{
-        padding:8px;
-    }
-
-    nav button{
-        flex:1 1 45%;
-        min-height:45px;
-    }
-
-    .container{
-        margin:10px auto;
-        padding:0 8px;
-    }
-
-    .card{
-        padding:14px;
-        margin-bottom:12px;
-    }
-
-    input,select{
-        width:100%;
-        margin:5px 0;
-    }
-
-    table{
-        font-size:13px;
-    }
-
-    th,td{
-        padding:7px 5px;
-    }
-
-    .tabela-responsiva{
-        overflow-x:auto;
-        width:100%;
-    }
-
-    button{
-        min-height:42px;
-    }
-
-    .acoes-venda button{
-        width:100%;
-    }
-}
-
-@media print{
-    nav{
-        display:none;
-    }
-
-    header{
-        background:white;
-        color:black;
-        border-bottom:1px solid #999;
-    }
-
-    .card{
-        box-shadow:none;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<header>
-<h1>Sistema de Vendas</h1>
-<div>Controle de produtos, estoque e vendas</div>
-</header>
-
-<nav>
-<button onclick="mostrar('inicio')">Início</button>
-<button onclick="mostrar('produtos')">Produtos</button>
-<button onclick="mostrar('venda')">Nova Venda</button>
-<button onclick="mostrar('vendas')">Vendas</button>
-<button onclick="imprimirVendas()">🖨️ Imprimir Vendas</button>
-<button onclick="mostrar('estoque')">Estoque</button>
-<button onclick="mostrar('relatorios')">Relatórios</button>
-</nav>
-
-<div class="container">
-
-<section id="inicio" class="card">
-
-<h2>Painel</h2>
-
-<div class="grid">
-
-<div class="card">
-<div>Produtos cadastrados</div>
-<div class="valor" id="totalProdutos">0</div>
-</div>
-
-<div class="card">
-<div>Itens em estoque</div>
-<div class="valor" id="totalEstoque">0</div>
-</div>
-
-<div class="card">
-<div>Vendas realizadas</div>
-<div class="valor" id="totalVendas">0</div>
-</div>
-
-<div class="card">
-<div>Faturamento</div>
-<div class="valor" id="faturamento">R$ 0,00</div>
-</div>
-
-</div>
-
-<h3>Estoque baixo</h3>
-<div id="alertas"></div>
-
-</section>
-
-
-<section id="produtos" class="card oculto">
-
-<h2>Cadastro de Produtos</h2>
-
-<input id="nomeProduto" placeholder="Nome do produto">
-<input id="precoProduto" type="number" step="0.01" placeholder="Preço de venda">
-<input id="custoProduto" type="number" step="0.01" placeholder="Custo">
-<input id="estoqueProduto" type="number" placeholder="Quantidade">
-<input id="estoqueMinimo" type="number" placeholder="Estoque mínimo">
-
-<button onclick="cadastrarProduto()">Cadastrar</button>
-
-<div class="tabela-responsiva">
-
-<table>
-<thead>
-<tr>
-<th>Produto</th>
-<th>Preço</th>
-<th>Custo</th>
-<th>Estoque</th>
-<th>Mínimo</th>
-<th>Ação</th>
-</tr>
-</thead>
-
-<tbody id="tabelaProdutos"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-
-<!-- NOVA VENDA -->
-
-<section id="venda" class="card oculto">
-
-<h2>Nova Venda</h2>
-
-<div class="aviso">
-<b>IMPORTANTE:</b> primeiro monte toda a compra.
-<br>
-O estoque e o histórico só serão alterados quando você clicar em
-<b>Finalizar e Registrar Compra</b>.
-</div>
-
-<h3>Adicionar produto</h3>
-
-<select id="produtoVenda" onchange="mostrarPreco()">
-<option value="">Selecione o produto</option>
-</select>
-
-<input
-id="quantidadeVenda"
-type="number"
-min="1"
-value="1"
-placeholder="Quantidade">
-
-<div id="precoVenda"></div>
-
-<button onclick="adicionarItemVenda()">
-Adicionar item à compra
-</button>
-
-
-<h3>Itens da compra</h3>
-
-<div class="tabela-responsiva">
-
-<table>
-<thead>
-<tr>
-<th>Produto</th>
-<th>Quantidade</th>
-<th>Preço</th>
-<th>Total</th>
-<th>Ação</th>
-</tr>
-</thead>
-
-<tbody id="tabelaCarrinhoVenda"></tbody>
-
-</table>
-
-</div>
-
-<div class="carrinho-total">
-TOTAL DA COMPRA:
-<span id="totalCarrinhoVenda">R$ 0,00</span>
-</div>
-
-
-<h3>Pagamento</h3>
-
-<select id="pagamento">
-<option>Dinheiro</option>
-<option>Pix</option>
-<option>Cartão de débito</option>
-<option>Cartão de crédito</option>
-<option>Outro</option>
-</select>
-
-
-<div class="acoes-venda">
-
-<button onclick="finalizarVenda()">
-✅ Finalizar e Registrar Compra
-</button>
-
-<button class="secundario" onclick="limparCarrinho()">
-Limpar compra
-</button>
-
-</div>
-
-</section>
-
-
-<!-- VENDAS -->
-
-<section id="vendas" class="card oculto">
-
-<h2>Histórico de Vendas</h2>
-
-<div class="tabela-responsiva">
-
-<table>
-<thead>
-<tr>
-<th>Data</th>
-<th>Produto</th>
-<th>Quantidade</th>
-<th>Pagamento</th>
-<th>Total</th>
-<th>Ações</th>
-</tr>
-</thead>
-
-<tbody id="tabelaVendas"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-
-<!-- ESTOQUE -->
-
-<section id="estoque" class="card oculto">
-
-<h2>Controle de Estoque</h2>
-
-<div class="tabela-responsiva">
-
-<table>
-<thead>
-<tr>
-<th>Produto</th>
-<th>Estoque atual</th>
-<th>Estoque mínimo</th>
-<th>Status</th>
-</tr>
-</thead>
-
-<tbody id="tabelaEstoque"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-
-<!-- RELATÓRIOS -->
-
-<section id="relatorios" class="card oculto">
-
-<h2>Relatórios</h2>
-
-<div class="grid">
-
-<div class="card">
-<h3>Total vendido</h3>
-<div class="valor" id="relTotal">R$ 0,00</div>
-</div>
-
-<div class="card">
-<h3>Quantidade de vendas</h3>
-<div class="valor" id="relQtd">0</div>
-</div>
-
-<div class="card">
-<h3>Estoque</h3>
-<div class="valor" id="relEstoque">0</div>
-</div>
-
-</div>
-
-<button onclick="backup()">Fazer Backup</button>
-
-<button onclick="limparDados()" class="excluir">
-Apagar todos os dados
-</button>
-
-</section>
-
-</div>
-
-
-<script>
-
-let produtos =
-JSON.parse(localStorage.getItem("produtos_vendas") || "[]");
-
-let vendas =
-JSON.parse(localStorage.getItem("vendas_vendas") || "[]");
-
-let carrinhoVenda =
-JSON.parse(localStorage.getItem("carrinho_venda") || "[]");
-
-
-function salvar(){
-
-    localStorage.setItem(
-        "produtos_vendas",
-        JSON.stringify(produtos)
-    );
-
-    localStorage.setItem(
-        "vendas_vendas",
-        JSON.stringify(vendas)
-    );
-
-    localStorage.setItem(
-        "carrinho_venda",
-        JSON.stringify(carrinhoVenda)
-    );
-}
-
-
-function dinheiro(valor){
-
-    return Number(valor || 0).toLocaleString(
-        "pt-BR",
-        {
-            style:"currency",
-            currency:"BRL"
-        }
-    );
-
-}
-
-
-function mostrar(id){
-
-    document
-    .querySelectorAll("section")
-    .forEach(function(x){
-
-        x.classList.add("oculto");
-
-    });
-
-    let secao=document.getElementById(id);
-
-    if(secao){
-
-        secao.classList.remove("oculto");
-
-    }
-
-    atualizar();
-
-}
-
-
-function cadastrarProduto(){
-
-    let nome=
-    document
-    .getElementById("nomeProduto")
-    .value
-    .trim();
-
-    let preco=
-    Number(
-        document
-        .getElementById("precoProduto")
-        .value
-    );
-
-    let custo=
-    Number(
-        document
-        .getElementById("custoProduto")
-        .value
-    );
-
-    let estoque=
-    Number(
-        document
-        .getElementById("estoqueProduto")
-        .value
-    );
-
-    let minimo=
-    Number(
-        document
-        .getElementById("estoqueMinimo")
-        .value
-    );
-
-
-    if(!nome || preco<=0){
-
-        alert(
-            "Informe o nome e o preço do produto."
-        );
-
-        return;
-
-    }
-
-
-    produtos.push({
-
-        id:Date.now(),
-
-        nome:nome,
-
-        preco:preco,
-
-        custo:custo,
-
-        estoque:estoque,
-
-        minimo:minimo
-
-    });
-
-
-    salvar();
-
-    document.getElementById("nomeProduto").value="";
-    document.getElementById("precoProduto").value="";
-    document.getElementById("custoProduto").value="";
-    document.getElementById("estoqueProduto").value="";
-    document.getElementById("estoqueMinimo").value="";
-
-
-    atualizar();
-
-    alert("Produto cadastrado.");
-
-}
-
-
-/* =========================
-   ALTERAR PREÇO
-========================= */
-
-function alterarPreco(id){
-
-    let produto =
-    produtos.find(
-        function(p){
-            return p.id === id;
-        }
-    );
-
-
-    if(!produto){
-
-        alert(
-            "Produto não encontrado."
-        );
-
-        return;
-
-    }
-
-
-    let novoPreco =
-    prompt(
-
-        "ALTERAR PREÇO DE VENDA\n\n" +
-
-        "Produto: " +
-        produto.nome +
-
-        "\nPreço atual: " +
-        dinheiro(produto.preco) +
-
-        "\n\nDigite o novo preço:",
-
-        Number(produto.preco).toFixed(2)
-
-    );
-
-
-    if(novoPreco === null){
-
-        return;
-
-    }
-
-
-    novoPreco =
-    Number(
-        String(novoPreco)
-        .replace(",", ".")
-    );
-
-
-    if(
-        !Number.isFinite(novoPreco) ||
-        novoPreco <= 0
-    ){
-
-        alert(
-            "Informe um preço válido."
-        );
-
-        return;
-
-    }
-
-
-    /*
-       ALTERA SOMENTE O PREÇO.
-       PRODUTO, CUSTO, ESTOQUE
-       E ESTOQUE MÍNIMO PERMANECEM
-       INALTERADOS.
-    */
-
-    produto.preco =
-    novoPreco;
-
-
-    salvar();
-
-    atualizar();
-
-
-    alert(
-
-        "Preço alterado com sucesso!\n\n" +
-
-        produto.nome +
-
-        "\nNovo preço: " +
-
-        dinheiro(novoPreco)
-
-    );
-
-}
-
-
-function excluirProduto(id){
-
-    if(
-        confirm(
-            "Excluir este produto?"
-        )
-    ){
-
-        produtos=
-        produtos.filter(
-            function(p){
-                return p.id!==id;
-            }
-        );
-
-        salvar();
-
-        atualizar();
-
-    }
-
-}
-
-
-function mostrarPreco(){
-
-    let id=
-    Number(
-        document
-        .getElementById("produtoVenda")
-        .value
-    );
-
-    let p=
-    produtos.find(
-        function(x){
-            return x.id===id;
-        }
-    );
-
-
-    if(p){
-
-        document
-        .getElementById("precoVenda")
-        .innerHTML=
-        "Preço: <b>"
-        +dinheiro(p.preco)
-        +"</b> | Estoque disponível: <b>"
-        +p.estoque
-        +"</b>";
-
-    }else{
-
-        document
-        .getElementById("precoVenda")
-        .innerHTML="";
-
-    }
-
-}
-
-
-/* =========================
-   NOVA VENDA / CARRINHO
-========================= */
-
-
-function adicionarItemVenda(){
-
-    let id=
-    Number(
-        document
-        .getElementById("produtoVenda")
-        .value
-    );
-
-    let qtd=
-    Number(
-        document
-        .getElementById("quantidadeVenda")
-        .value
-    );
-
-
-    let p=
-    produtos.find(
-        function(x){
-            return x.id===id;
-        }
-    );
-
-
-    if(!p){
-
-        alert(
-            "Selecione um produto."
-        );
-
-        return;
-
-    }
-
-
-    if(qtd<=0){
-
-        alert(
-            "Informe uma quantidade válida."
-        );
-
-        return;
-
-    }
-
-
-    let existente=
-    carrinhoVenda.find(
-        function(item){
-            return item.produtoId===id;
-        }
-    );
-
-
-    let quantidadeAnterior=
-    existente
-    ? Number(existente.quantidade)
-    : 0;
-
-
-    let novaQuantidade=
-    quantidadeAnterior+qtd;
-
-
-    if(novaQuantidade>Number(p.estoque)){
-
-        alert(
-            "A quantidade informada é maior que o estoque disponível."
-        );
-
-        return;
-
-    }
-
-
-    if(existente){
-
-        existente.quantidade=
-        novaQuantidade;
-
-        existente.preco=
-        Number(p.preco);
-
-    }else{
-
-        carrinhoVenda.push({
-
-            produtoId:p.id,
-
-            produto:p.nome,
-
-            quantidade:qtd,
-
-            preco:Number(p.preco)
-
-        });
-
-    }
-
-
-    salvar();
-
-    preencherCarrinhoVenda();
-
-    document
-    .getElementById("quantidadeVenda")
-    .value=1;
-
-    document
-    .getElementById("produtoVenda")
-    .value="";
-
-    document
-    .getElementById("precoVenda")
-    .innerHTML="";
-
-}
-
-
-function removerItemCarrinho(indice){
-
-    if(
-        indice<0 ||
-        indice>=carrinhoVenda.length
-    ){
-
-        return;
-
-    }
-
-
-    carrinhoVenda.splice(
-        indice,
-        1
-    );
-
-
-    salvar();
-
-    preencherCarrinhoVenda();
-
-}
-
-
-function limparCarrinho(){
-
-    if(!carrinhoVenda.length){
-
-        return;
-
-    }
-
-
-    if(
-        confirm(
-            "Limpar toda a compra que ainda não foi lançada?"
-        )
-    ){
-
-        carrinhoVenda=[];
-
-        salvar();
-
-        preencherCarrinhoVenda();
-
-    }
-
-}
-
-
-function preencherCarrinhoVenda(){
-
-    let tabela=
-    document
-    .getElementById(
-        "tabelaCarrinhoVenda"
-    );
-
-    let total=
-    document
-    .getElementById(
-        "totalCarrinhoVenda"
-    );
-
-
-    if(!tabela || !total){
-
-        return;
-
-    }
-
-
-    tabela.innerHTML="";
-
-    let totalCompra=0;
-
-
-    carrinhoVenda.forEach(
-        function(item,indice){
-
-            let subtotal=
-            Number(item.preco)*
-            Number(item.quantidade);
-
-
-            totalCompra+=subtotal;
-
-
-            tabela.innerHTML+=`
-
-            <tr>
-
-            <td>
-            ${item.produto}
-            </td>
-
-            <td>
-            ${item.quantidade}
-            </td>
-
-            <td>
-            ${dinheiro(item.preco)}
-            </td>
-
-            <td>
-            ${dinheiro(subtotal)}
-            </td>
-
-            <td>
-
-            <button
-            class="excluir"
-            onclick="removerItemCarrinho(${indice})">
-
-            Remover
-
-            </button>
-
-            </td>
-
-            </tr>
-
-            `;
-
-        }
-    );
-
-
-    if(!carrinhoVenda.length){
-
-        tabela.innerHTML=`
-
-        <tr>
-
-        <td
-        colspan="5"
-        style="text-align:center">
-
-        Nenhum item adicionado à compra.
-
-        </td>
-
-        </tr>
-
-        `;
-
-    }
-
-
-    total.textContent=
-    dinheiro(totalCompra);
-
-}
-
-
-function finalizarVenda(){
-
-    if(!carrinhoVenda.length){
-
-        alert(
-            "Adicione pelo menos um item à compra."
-        );
-
-        return;
-
-    }
-
-
-    let pagamento=
-    document
-    .getElementById("pagamento")
-    .value;
-
-
-    /*
-       PRIMEIRO CONFERIMOS TODO O CARRINHO.
-       NADA É ALTERADO AINDA.
-    */
-
-    for(
-        let item of carrinhoVenda
-    ){
-
-        let p=
-        produtos.find(
-            function(x){
-                return x.id===item.produtoId;
-            }
-        );
-
-
-        if(!p){
-
-            alert(
-                "O produto "
-                +item.produto
-                +" não existe mais no cadastro."
-            );
-
-            return;
-
-        }
-
-
-        if(
-            Number(item.quantidade)
-            >
-            Number(p.estoque)
-        ){
-
-            alert(
-                "Estoque insuficiente para "
-                +p.nome
-                +". Disponível: "
-                +p.estoque
-                +"."
-            );
-
-            return;
-
-        }
-
-    }
-
-
-    let total=
-    carrinhoVenda.reduce(
-        function(soma,item){
-
-            return soma+
-            Number(item.preco)*
-            Number(item.quantidade);
-
-        },
-        0
-    );
-
-
-    /*
-       CONFIRMAÇÃO FINAL
-    */
-
-    let resumo=
-    carrinhoVenda
-    .map(
-        function(item){
-
-            return (
-                item.produto+
-                " - "+
-                item.quantidade+
-                " x "+
-                dinheiro(item.preco)
-            );
-
-        }
-    )
-    .join("\n");
-
-
-    let confirmar=
-    confirm(
-        "CONFIRMAR COMPRA?\n\n"+
-        resumo+
-        "\n\nPagamento: "+
-        pagamento+
-        "\nTotal: "+
-        dinheiro(total)
-    );
-
-
-    if(!confirmar){
-
-        return;
-
-    }
-
-
-    /*
-       SOMENTE AGORA O ESTOQUE É BAIXADO.
-    */
-
-    carrinhoVenda.forEach(
-        function(item){
-
-            let p=
-            produtos.find(
-                function(x){
-                    return x.id===item.produtoId;
+const SUPABASE_URL = 'https://eokxblclwhirrucmuuid.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_HcD3qYMT7zJGl-_VIkJsnw_Nm69nCfc';
+
+let produtos = [];
+let vendas = [];
+let carrinhoVenda = [];
+
+/* ================================
+   CARREGAR DADOS DO SUPABASE
+================================ */
+
+async function carregarDados() {
+    try {
+        const respostaProdutos = await fetch(
+            `${SUPABASE_URL}/rest/v1/produtos?select=*`,
+            {
+                headers: {
+                    apikey: SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
                 }
-            );
-
-            p.estoque-=
-            Number(item.quantidade);
-
-        }
-    );
-
-
-    /*
-       REGISTRA UMA ÚNICA VENDA
-       COM TODOS OS ITENS.
-    */
-
-    vendas.push({
-
-        data:
-        new Date()
-        .toLocaleString("pt-BR"),
-
-        itens:
-        carrinhoVenda.map(
-            function(item){
-
-                return {
-
-                    produtoId:item.produtoId,
-
-                    produto:item.produto,
-
-                    quantidade:
-                    Number(item.quantidade),
-
-                    preco:
-                    Number(item.preco)
-
-                };
-
             }
-        ),
-
-        pagamento:pagamento,
-
-        total:total
-
-    });
-
-
-    carrinhoVenda=[];
-
-
-    salvar();
-
-    atualizar();
-
-
-    alert(
-        "Compra registrada com sucesso!\n"+
-        "Total: "+
-        dinheiro(total)
-    );
-
-
-    document
-    .getElementById("quantidadeVenda")
-    .value=1;
-
-    document
-    .getElementById("produtoVenda")
-    .value="";
-
-    document
-    .getElementById("precoVenda")
-    .innerHTML="";
-
-}
-
-
-/* =========================
-   ATUALIZAÇÃO
-========================= */
-
-
-function atualizar(){
-
-    document
-    .getElementById("totalProdutos")
-    .textContent=
-    produtos.length;
-
-
-    let estoque=
-    produtos.reduce(
-        function(s,p){
-
-            return s+
-            Number(p.estoque);
-
-        },
-        0
-    );
-
-
-    document
-    .getElementById("totalEstoque")
-    .textContent=
-    estoque;
-
-
-    document
-    .getElementById("totalVendas")
-    .textContent=
-    vendas.length;
-
-
-    let faturamento=
-    vendas.reduce(
-        function(s,v){
-
-            return s+
-            Number(v.total || 0);
-
-        },
-        0
-    );
-
-
-    document
-    .getElementById("faturamento")
-    .textContent=
-    dinheiro(faturamento);
-
-
-    document
-    .getElementById("relTotal")
-    .textContent=
-    dinheiro(faturamento);
-
-
-    document
-    .getElementById("relQtd")
-    .textContent=
-    vendas.length;
-
-
-    document
-    .getElementById("relEstoque")
-    .textContent=
-    estoque;
-
-
-    preencherProdutos();
-
-    preencherVenda();
-
-    preencherCarrinhoVenda();
-
-    preencherVendas();
-
-    preencherEstoque();
-
-    alertas();
-
-}
-
-
-/* =========================
-   PRODUTOS
-========================= */
-
-
-function preencherProdutos(){
-
-    let tabela=
-    document
-    .getElementById(
-        "tabelaProdutos"
-    );
-
-    tabela.innerHTML="";
-
-
-    produtos.forEach(
-        function(p){
-
-            tabela.innerHTML+=`
-
-            <tr>
-
-            <td>
-            ${p.nome}
-            </td>
-
-            <td>
-            ${dinheiro(p.preco)}
-            </td>
-
-            <td>
-            ${dinheiro(p.custo)}
-            </td>
-
-            <td>
-            ${p.estoque}
-            </td>
-
-            <td>
-            ${p.minimo}
-            </td>
-
-            <td>
-
-            <button
-            onclick="alterarPreco(${p.id})">
-
-            Alterar preço
-
-            </button>
-
-            <button
-            class="excluir"
-            onclick="excluirProduto(${p.id})">
-
-            Excluir
-
-            </button>
-
-            </td>
-
-            </tr>
-
-            `;
-
-        }
-    );
-
-}
-
-
-/* =========================
-   SELEÇÃO DE PRODUTO
-========================= */
-
-
-function preencherVenda(){
-
-    let select=
-    document
-    .getElementById(
-        "produtoVenda"
-    );
-
-
-    let valor=
-    select.value;
-
-
-    select.innerHTML=
-    '<option value="">Selecione o produto</option>';
-
-
-    produtos.forEach(
-        function(p){
-
-            if(
-                Number(p.estoque)>0
-            ){
-
-                select.innerHTML+=`
-
-                <option
-                value="${p.id}">
-
-                ${p.nome}
-
-                </option>
-
-                `;
-
-            }
-
-        }
-    );
-
-
-    if(valor){
-
-        select.value=valor;
-
-    }
-
-}
-
-
-/* =========================
-   HISTÓRICO DE VENDAS
-========================= */
-
-
-function descricaoVenda(v){
-
-    if(
-        Array.isArray(v.itens)
-    ){
-
-        return v.itens
-        .map(
-            function(item){
-
-                return (
-                    item.produto+
-                    " x "+
-                    item.quantidade
-                );
-
-            }
-        )
-        .join("<br>");
-
-    }
-
-
-    return (
-        v.produto || ""
-    );
-
-}
-
-
-function quantidadeTotalVenda(v){
-
-    if(
-        Array.isArray(v.itens)
-    ){
-
-        return v.itens.reduce(
-            function(soma,item){
-
-                return soma+
-                Number(item.quantidade || 0);
-
-            },
-            0
         );
 
-    }
-
-
-    return Number(
-        v.quantidade || 0
-    );
-
-}
-
-
-function preencherVendas(){
-
-    let tabela=
-    document
-    .getElementById(
-        "tabelaVendas"
-    );
-
-
-    tabela.innerHTML="";
-
-
-    vendas.forEach(
-        function(v,index){
-
-            tabela.innerHTML+=`
-
-            <tr>
-
-            <td>
-            ${v.data || ""}
-            </td>
-
-            <td>
-            ${descricaoVenda(v)}
-            </td>
-
-            <td>
-            ${quantidadeTotalVenda(v)}
-            </td>
-
-            <td>
-            ${v.pagamento || ""}
-            </td>
-
-            <td>
-            ${dinheiro(v.total || 0)}
-            </td>
-
-            <td>
-
-            <button
-            class="excluir"
-            onclick="excluirVenda(${index})">
-
-            🗑️ Excluir
-
-            </button>
-
-            </td>
-
-            </tr>
-
-            `;
-
+        if (!respostaProdutos.ok) {
+            throw new Error(`Erro ao carregar produtos: ${respostaProdutos.status}`);
         }
-    );
 
+        produtos = await respostaProdutos.json();
 
-    if(!vendas.length){
-
-        tabela.innerHTML=`
-
-        <tr>
-
-        <td
-        colspan="6"
-        style="text-align:center">
-
-        Nenhuma venda registrada.
-
-        </td>
-
-        </tr>
-
-        `;
-
-    }
-
-}
-
-
-/* =========================
-   ESTOQUE
-========================= */
-
-
-function preencherEstoque(){
-
-    let tabela=
-    document
-    .getElementById(
-        "tabelaEstoque"
-    );
-
-
-    tabela.innerHTML="";
-
-
-    produtos.forEach(
-        function(p){
-
-            let baixo=
-            Number(p.estoque)
-            <=
-            Number(p.minimo);
-
-
-            tabela.innerHTML+=`
-
-            <tr>
-
-            <td>
-            ${p.nome}
-            </td>
-
-            <td>
-            ${p.estoque}
-            </td>
-
-            <td>
-            ${p.minimo}
-            </td>
-
-            <td
-            class="${baixo?'alerta':'ok'}">
-
-            ${
-                baixo
-                ?
-                "ESTOQUE BAIXO"
-                :
-                "OK"
+        const respostaVendas = await fetch(
+            `${SUPABASE_URL}/rest/v1/vendas?select=*&order=timestamptz.desc`,
+            {
+                headers: {
+                    apikey: SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+                }
             }
+        );
 
-            </td>
-
-            </tr>
-
-            `;
-
+        if (!respostaVendas.ok) {
+            throw new Error(`Erro ao carregar vendas: ${respostaVendas.status}`);
         }
-    );
 
+        vendas = await respostaVendas.json();
+
+        localStorage.setItem(
+            "produtos_vendas",
+            JSON.stringify(produtos)
+        );
+
+        localStorage.setItem(
+            "vendas_vendas",
+            JSON.stringify(vendas)
+        );
+
+        return true;
+
+    } catch (erro) {
+
+        console.error("Erro ao carregar dados do Supabase:", erro);
+
+        produtos = JSON.parse(
+            localStorage.getItem("produtos_vendas") || "[]"
+        );
+
+        vendas = JSON.parse(
+            localStorage.getItem("vendas_vendas") || "[]"
+        );
+
+        return false;
+    }
 }
 
 
-/* =========================
-   ALERTAS
-========================= */
+/* ================================
+   CARRINHO
+================================ */
+
+carrinhoVenda = JSON.parse(
+    localStorage.getItem("carrinho_venda") || "[]"
+);
 
 
-function alertas(){
+/* ================================
+   SALVAR DADOS
+================================ */
 
-    let div=
-    document
-    .getElementById(
-        "alertas"
-    );
+async function salvar() {
 
+    try {
 
-    let baixos=
-    produtos.filter(
-        function(p){
+        /* ---------- PRODUTOS ---------- */
 
-            return Number(p.estoque)
-            <=
-            Number(p.minimo);
+        for (const produto of produtos) {
 
-        }
-    );
+            const dadosProduto = {
+                nome: produto.nome || "",
+                preco: Number(produto.preco) || 0,
+                personalizado: Number(produto.personalizado) || 0,
+                estoque_inteiro: Number(produto.estoque_inteiro) || 0,
+                mínimo: Number(produto.mínimo) || 0
+            };
 
+            if (produto.id) {
 
-    if(!baixos.length){
-
-        div.innerHTML=
-        "<span class='ok'>Nenhum produto com estoque baixo.</span>";
-
-        return;
-
-    }
-
-
-    div.innerHTML=
-    baixos
-    .map(
-        function(p){
-
-            return `
-            <p class="alerta">
-            ${p.nome}: ${p.estoque} unidade(s)
-            </p>
-            `;
-
-        }
-    )
-    .join("");
-
-}
-
-
-/* =========================
-   EXCLUIR VENDA
-========================= */
-
-
-function excluirVenda(index){
-
-    if(
-        !confirm(
-            "Deseja realmente excluir esta venda?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    let venda=
-    vendas[index];
-
-
-    if(!venda){
-
-        return;
-
-    }
-
-
-    if(
-        Array.isArray(venda.itens)
-    ){
-
-        venda.itens.forEach(
-            function(item){
-
-                let produto=
-                produtos.find(
-                    function(p){
-
-                        return (
-                            p.id===
-                            item.produtoId
-                        );
-
+                const resposta = await fetch(
+                    `${SUPABASE_URL}/rest/v1/produtos?id=eq.${produto.id}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            apikey: SUPABASE_ANON_KEY,
+                            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                            "Content-Type": "application/json",
+                            Prefer: "return=minimal"
+                        },
+                        body: JSON.stringify(dadosProduto)
                     }
                 );
 
-
-                if(!produto){
-
-                    produto=
-                    produtos.find(
-                        function(p){
-
-                            return (
-                                p.nome===
-                                item.produto
-                            );
-
-                        }
+                if (!resposta.ok) {
+                    throw new Error(
+                        `Erro ao atualizar produto: ${resposta.status}`
                     );
-
                 }
 
+            } else {
 
-                if(produto){
-
-                    produto.estoque+=
-                    Number(
-                        item.quantidade || 0
-                    );
-
-                }
-
-            }
-        );
-
-    }else{
-
-        let produto=
-        produtos.find(
-            function(p){
-
-                return (
-                    p.nome===
-                    venda.produto
+                const resposta = await fetch(
+                    `${SUPABASE_URL}/rest/v1/produtos`,
+                    {
+                        method: "POST",
+                        headers: {
+                            apikey: SUPABASE_ANON_KEY,
+                            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                            "Content-Type": "application/json",
+                            Prefer: "return=representation"
+                        },
+                        body: JSON.stringify(dadosProduto)
+                    }
                 );
 
+                if (!resposta.ok) {
+                    throw new Error(
+                        `Erro ao inserir produto: ${resposta.status}`
+                    );
+                }
+
+                const novoProduto = await resposta.json();
+
+                if (novoProduto && novoProduto[0]) {
+                    produto.id = novoProduto[0].id;
+                }
             }
-        );
+        }
 
 
-        if(produto){
+        /* ---------- VENDAS ---------- */
 
-            produto.estoque+=
-            Number(
-                venda.quantidade || 0
+        for (const venda of vendas) {
+
+            if (venda.id) {
+                continue;
+            }
+
+            const dadosVenda = {
+                total: Number(venda.total) || 0,
+                items: venda.items || venda.itens || [],
+                texto_pagamento:
+                    venda.texto_pagamento ||
+                    venda.pagamento ||
+                    ""
+            };
+
+            const resposta = await fetch(
+                `${SUPABASE_URL}/rest/v1/vendas`,
+                {
+                    method: "POST",
+                    headers: {
+                        apikey: SUPABASE_ANON_KEY,
+                        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                        "Content-Type": "application/json",
+                        Prefer: "return=representation"
+                    },
+                    body: JSON.stringify(dadosVenda)
+                }
             );
 
+            if (!resposta.ok) {
+                throw new Error(
+                    `Erro ao inserir venda: ${resposta.status}`
+                );
+            }
+
+            const novaVenda = await resposta.json();
+
+            if (novaVenda && novaVenda[0]) {
+                venda.id = novaVenda[0].id;
+            }
         }
 
-    }
 
+        /* ---------- CARRINHO ---------- */
 
-    vendas.splice(
-        index,
-        1
-    );
-
-
-    salvar();
-
-    atualizar();
-
-
-    alert(
-        "Venda excluída e estoque restaurado."
-    );
-
-}
-
-
-/* =========================
-   IMPRESSÃO
-========================= */
-
-
-function imprimirVendas(){
-
-    let janela=
-    window.open(
-        "",
-        "_blank"
-    );
-
-
-    if(!janela){
-
-        alert(
-            "O navegador bloqueou a janela de impressão. Permita janelas pop-up para este site."
+        localStorage.setItem(
+            "produtos_vendas",
+            JSON.stringify(produtos)
         );
 
-        return;
+        localStorage.setItem(
+            "vendas_vendas",
+            JSON.stringify(vendas)
+        );
 
+        localStorage.setItem(
+            "carrinho_venda",
+            JSON.stringify(carrinhoVenda)
+        );
+
+        console.log("Dados salvos no Supabase com sucesso.");
+
+        return true;
+
+    } catch (erro) {
+
+        console.error("Erro ao salvar no Supabase:", erro);
+
+        /* Mantém uma cópia local como segurança */
+
+        localStorage.setItem(
+            "produtos_vendas",
+            JSON.stringify(produtos)
+        );
+
+        localStorage.setItem(
+            "vendas_vendas",
+            JSON.stringify(vendas)
+        );
+
+        localStorage.setItem(
+            "carrinho_venda",
+            JSON.stringify(carrinhoVenda)
+        );
+
+        return false;
     }
-
-
-    let totalGeral=
-    vendas.reduce(
-        function(soma,venda){
-
-            return soma+
-            Number(venda.total || 0);
-
-        },
-        0
-    );
-
-
-    let linhas="";
-
-
-    if(!vendas.length){
-
-        linhas=`
-
-        <tr>
-
-        <td
-        colspan="5"
-        style="text-align:center">
-
-        Nenhuma venda registrada.
-
-        </td>
-
-        </tr>
-
-        `;
-
-    }else{
-
-        linhas=
-        vendas
-        .map(
-            function(venda){
-
-                let produto=
-                descricaoVenda(
-                    venda
-                );
-
-
-                return `
-
-                <tr>
-
-                <td>
-                ${venda.data || ""}
-                </td>
-
-                <td>
-                ${produto}
-                </td>
-
-                <td>
-                ${quantidadeTotalVenda(venda)}
-                </td>
-
-                <td>
-                ${venda.pagamento || ""}
-                </td>
-
-                <td
-                class="numero">
-
-                ${dinheiro(venda.total || 0)}
-
-                </td>
-
-                </tr>
-
-                `;
-
-            }
-        )
-        .join("");
-
-    }
-
-
-    let html=`
-
-<!DOCTYPE html>
-
-<html lang="pt-BR">
-
-<head>
-
-<meta charset="UTF-8">
-
-<title>Relatório de Vendas</title>
-
-<style>
-
-body{
-
-font-family:Arial,sans-serif;
-
-margin:30px;
-
-color:#222;
-
-}
-
-h1{
-
-text-align:center;
-
-margin-bottom:5px;
-
-}
-
-.data{
-
-text-align:center;
-
-margin-bottom:25px;
-
-color:#555;
-
-}
-
-table{
-
-width:100%;
-
-border-collapse:collapse;
-
-}
-
-th,td{
-
-border:1px solid #999;
-
-padding:8px;
-
-text-align:left;
-
-}
-
-th{
-
-background:#eee;
-
-}
-
-.numero{
-
-text-align:right;
-
-}
-
-.total{
-
-margin-top:20px;
-
-text-align:right;
-
-font-size:20px;
-
-font-weight:bold;
-
-}
-
-button{
-
-padding:10px 14px;
-
-border:0;
-
-border-radius:6px;
-
-cursor:pointer;
-
-}
-
-@media print{
-
-button{
-
-display:none;
-
-}
-
-body{
-
-margin:15px;
-
-}
-
-}
-
-</style>
-
-</head>
-
-<body>
-
-<h1>RELATÓRIO DE VENDAS</h1>
-
-<div class="data">
-
-Sistema de Vendas
-
-<br>
-
-Emitido em:
-${new Date().toLocaleString("pt-BR")}
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Data</th>
-
-<th>Produto</th>
-
-<th>Quantidade</th>
-
-<th>Pagamento</th>
-
-<th>Total</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-${linhas}
-
-</tbody>
-
-</table>
-
-<div class="total">
-
-TOTAL GERAL:
-
-${dinheiro(totalGeral)}
-
-</div>
-
-<br>
-
-<button
-onclick="window.print()">
-
-🖨️ Imprimir
-
-</button>
-
-</body>
-
-</html>
-
-`;
-
-
-    janela.document.write(
-        html
-    );
-
-    janela.document.close();
-
 }
 
 
-/* =========================
-   BACKUP
-========================= */
-
-
-function backup(){
-
-    let dados={
-
-        produtos:produtos,
-
-        vendas:vendas,
-
-        carrinhoVenda:carrinhoVenda,
-
-        data:
-        new Date().toISOString()
-
-    };
-
-
-    let arquivo=
-    new Blob(
-        [
-            JSON.stringify(
-                dados,
-                null,
-                2
-            )
-        ],
-        {
-            type:
-            "application/json"
-        }
-    );
-
-
-    let url=
-    URL.createObjectURL(
-        arquivo
-    );
-
-
-    let a=
-    document.createElement(
-        "a"
-    );
-
-
-    a.href=url;
-
-    a.download=
-    "backup_sistema_vendas.json";
-
-    a.click();
-
-
-    URL.revokeObjectURL(
-        url
-    );
-
-}
-
-
-/* =========================
-   APAGAR DADOS
-========================= */
-
-
-function limparDados(){
-
-    if(
-        confirm(
-            "ATENÇÃO: apagar todos os produtos e vendas?"
-        )
-    ){
-
-        if(
-            confirm(
-                "Tem certeza? Esta operação não pode ser desfeita."
-            )
-        ){
-
-            produtos=[];
-
-            vendas=[];
-
-            carrinhoVenda=[];
-
-            salvar();
-
-            atualizar();
-
-        }
-
-    }
-
-}
-
-
-/* =========================
+/* ================================
    INICIALIZAÇÃO
-========================= */
+================================ */
 
-atualizar();
-
-</script>
-
-</body>
-</html>
+carregarDados();
