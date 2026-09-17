@@ -49,15 +49,22 @@ input,select{padding:10px;margin:5px;border:1px solid #bbb;border-radius:5px;fon
 </section>
 </div>
 <script>
-let produtos=JSON.parse(localStorage.getItem("produtos_vendas")||"[]"),
-vendas=JSON.parse(localStorage.getItem("vendas_vendas")||"[]"),
-carrinhoVenda=JSON.parse(localStorage.getItem("carrinho_venda")||"[]"),
-historicoCompras=JSON.parse(localStorage.getItem("historico_compras")||"[]");
+function lerListaLocalStorage(chave){
+  try{
+    const bruto=localStorage.getItem(chave);
+    if(!bruto)return [];
+    const dados=JSON.parse(bruto);
+    return Array.isArray(dados)?dados:[];
+  }catch(erro){
+    console.error("Erro ao ler "+chave,erro);
+    return [];
+  }
+}
 
-if(!Array.isArray(produtos))produtos=[];
-if(!Array.isArray(vendas))vendas=[];
-if(!Array.isArray(carrinhoVenda))carrinhoVenda=[];
-if(!Array.isArray(historicoCompras))historicoCompras=[];
+let produtos=lerListaLocalStorage("produtos_vendas"),
+vendas=lerListaLocalStorage("vendas_vendas"),
+carrinhoVenda=lerListaLocalStorage("carrinho_venda"),
+historicoCompras=lerListaLocalStorage("historico_compras");
 
 function assinaturaCompra(v){
   if(v && v.timestamp) return "ts:"+v.timestamp;
@@ -88,15 +95,75 @@ sincronizarHistorico();
 // Mantém produtos, vendas, carrinho e histórico permanente.
 // ============================================================
 function salvar(){
-  localStorage.setItem("produtos_vendas",JSON.stringify(produtos));
-  localStorage.setItem("vendas_vendas",JSON.stringify(vendas));
-  localStorage.setItem("carrinho_venda",JSON.stringify(carrinhoVenda));
-  localStorage.setItem("historico_compras",JSON.stringify(historicoCompras));
+  try{
+    localStorage.setItem("produtos_vendas",JSON.stringify(produtos));
+    localStorage.setItem("vendas_vendas",JSON.stringify(vendas));
+    localStorage.setItem("carrinho_venda",JSON.stringify(carrinhoVenda));
+    localStorage.setItem("historico_compras",JSON.stringify(historicoCompras));
+    return true;
+  }catch(erro){
+    console.error("Erro ao salvar dados:",erro);
+    alert("O navegador não conseguiu salvar os dados localmente. Verifique o armazenamento do site.");
+    return false;
+  }
 }
 
 function dinheiro(valor){return Number(valor||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 function mostrar(id){document.querySelectorAll("section").forEach(x=>x.classList.add("oculto"));let secao=document.getElementById(id);if(secao)secao.classList.remove("oculto");atualizar()}
-function cadastrarProduto(){let nome=document.getElementById("nomeProduto").value.trim(),preco=Number(document.getElementById("precoProduto").value),custo=Number(document.getElementById("custoProduto").value),estoque=Number(document.getElementById("estoqueProduto").value),minimo=Number(document.getElementById("estoqueMinimo").value);if(!nome||preco<=0){alert("Informe o nome e o preço do produto.");return}produtos.push({id:Date.now(),nome,preco,custo,estoque,minimo});salvar();["nomeProduto","precoProduto","custoProduto","estoqueProduto","estoqueMinimo"].forEach(id=>document.getElementById(id).value="");atualizar();alert("Produto cadastrado.")}
+function cadastrarProduto(){
+  try{
+    const campoNome=document.getElementById("nomeProduto");
+    const campoPreco=document.getElementById("precoProduto");
+    const campoCusto=document.getElementById("custoProduto");
+    const campoEstoque=document.getElementById("estoqueProduto");
+    const campoMinimo=document.getElementById("estoqueMinimo");
+
+    if(!campoNome||!campoPreco||!campoCusto||!campoEstoque||!campoMinimo){
+      alert("Erro: campos do cadastro não foram encontrados.");
+      return;
+    }
+
+    const nome=campoNome.value.trim();
+    const preco=Number(String(campoPreco.value||"").replace(",","."));
+    const custo=Number(String(campoCusto.value||0).replace(",","."));
+    const estoque=Number(String(campoEstoque.value||0).replace(",","."));
+    const minimo=Number(String(campoMinimo.value||0).replace(",","."));
+
+    if(!nome){ alert("Informe o nome do produto."); campoNome.focus(); return; }
+    if(!Number.isFinite(preco)||preco<=0){ alert("Informe um preço de venda válido."); campoPreco.focus(); return; }
+    if(!Number.isFinite(custo)||custo<0){ alert("Informe um custo válido."); campoCusto.focus(); return; }
+    if(!Number.isFinite(estoque)||estoque<0){ alert("Informe uma quantidade de estoque válida."); campoEstoque.focus(); return; }
+    if(!Number.isFinite(minimo)||minimo<0){ alert("Informe um estoque mínimo válido."); campoMinimo.focus(); return; }
+
+    const novoProduto={
+      id:Date.now(),
+      nome:nome,
+      preco:preco,
+      custo:custo,
+      estoque:estoque,
+      minimo:minimo
+    };
+
+    produtos.push(novoProduto);
+
+    if(!salvar()) {
+      produtos.pop();
+      return;
+    }
+
+    campoNome.value="";
+    campoPreco.value="";
+    campoCusto.value="";
+    campoEstoque.value="";
+    campoMinimo.value="";
+
+    atualizar();
+    alert("Produto cadastrado com sucesso!\n\nProduto: "+nome+"\nPreço: "+dinheiro(preco)+"\nEstoque: "+estoque);
+  }catch(erro){
+    console.error("Erro no cadastro do produto:",erro);
+    alert("Não foi possível cadastrar o produto. Verifique o armazenamento do navegador e tente novamente.");
+  }
+}
 function alterarPreco(id){let produto=produtos.find(p=>p.id===id);if(!produto){alert("Produto não encontrado.");return}let novoPreco=prompt("ALTERAR PREÇO DE VENDA\n\nProduto: "+produto.nome+"\nPreço atual: "+dinheiro(produto.preco)+"\n\nDigite o novo preço:",Number(produto.preco).toFixed(2));if(novoPreco===null)return;novoPreco=Number(String(novoPreco).replace(",","."));if(!Number.isFinite(novoPreco)||novoPreco<=0){alert("Informe um preço válido.");return}produto.preco=novoPreco;salvar();atualizar();alert("Preço alterado com sucesso!\n\n"+produto.nome+"\nNovo preço: "+dinheiro(novoPreco))}
 function excluirProduto(id){if(confirm("Excluir este produto?")){produtos=produtos.filter(p=>p.id!==id);salvar();atualizar()}}
 function mostrarPreco(){let id=Number(document.getElementById("produtoVenda").value),p=produtos.find(x=>x.id===id);document.getElementById("precoVenda").innerHTML=p?"Preço: <b>"+dinheiro(p.preco)+"</b> | Estoque disponível: <b>"+p.estoque+"</b>":""}
