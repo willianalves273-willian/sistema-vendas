@@ -2,275 +2,827 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2937">
 <title>Sistema de Vendas</title>
 <style>
-*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#222}
-header{background:#1f2937;color:white;padding:18px}header h1{margin:0 0 5px}
-nav{background:white;padding:10px;display:flex;gap:8px;flex-wrap:wrap;box-shadow:0 2px 5px #ccc}
-button{padding:10px 14px;border:0;border-radius:6px;cursor:pointer;background:#2563eb;color:white;font-size:14px}button:hover{opacity:.9}button.excluir{background:#dc2626}button.secundario{background:#6b7280}
-.container{max-width:1100px;margin:20px auto;padding:0 15px}.card{background:white;padding:20px;margin-bottom:20px;border-radius:10px;box-shadow:0 2px 8px #ddd}
-input,select{padding:10px;margin:5px;border:1px solid #bbb;border-radius:5px;font-size:16px;max-width:100%}table{width:100%;border-collapse:collapse;margin-top:15px}th,td{border:1px solid #ddd;padding:9px;text-align:left}th{background:#e5e7eb}.valor{font-size:24px;font-weight:bold}.oculto{display:none}.alerta{color:#b91c1c;font-weight:bold}.ok{color:#15803d;font-weight:bold}.aviso{background:#fff7ed;border:1px solid #fed7aa;padding:12px;border-radius:7px;margin:10px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}.carrinho-total{font-size:26px;font-weight:bold;margin:18px 0;padding:12px;background:#f3f4f6;border-radius:7px}.acoes-venda{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-@media(max-width:700px){header{padding:14px}header h1{font-size:23px}nav{padding:8px}nav button{flex:1 1 45%;min-height:45px}.container{margin:10px auto;padding:0 8px}.card{padding:14px;margin-bottom:12px}input,select{width:100%;margin:5px 0}table{font-size:13px}th,td{padding:7px 5px}.tabela-responsiva{overflow-x:auto;width:100%}button{min-height:42px}.acoes-venda button{width:100%}}
-@media print{nav{display:none}header{background:white;color:black;border-bottom:1px solid #999}.card{box-shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;color:#222}
+header{background:#1f2937;color:#fff;padding:18px}
+header h1{margin:0 0 5px;font-size:25px}
+header small{opacity:.9}
+nav{background:#fff;padding:10px;display:flex;gap:8px;flex-wrap:wrap;box-shadow:0 2px 5px #ccc;position:sticky;top:0;z-index:10}
+button{padding:10px 14px;border:0;border-radius:6px;cursor:pointer;background:#2563eb;color:#fff;font-size:14px}
+button:disabled{opacity:.55;cursor:not-allowed}
+button.excluir{background:#dc2626}
+button.editar{background:#15803d}
+button.secundario{background:#6b7280}
+.container{max-width:1150px;margin:20px auto;padding:0 15px}
+.card,.kpi{background:#fff;padding:20px;margin-bottom:20px;border-radius:10px;box-shadow:0 2px 8px #ddd}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+input,select{width:100%;padding:10px;margin:5px 0;border:1px solid #bbb;border-radius:5px;font-size:16px;background:#fff}
+label{font-weight:600;font-size:14px;display:block;margin-top:5px}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border:1px solid #ddd;padding:9px;text-align:left}
+th{background:#e5e7eb}
+.tabela-scroll{overflow-x:auto}
+.acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{margin:0}
+.kpi strong{font-size:24px;display:block;margin-top:6px}
+.linha-carrinho{display:grid;grid-template-columns:2fr 90px 110px 50px;gap:8px;align-items:center;border-bottom:1px solid #ddd;padding:8px 0}
+.oculto{display:none!important}
+.aviso,.sucesso,.erro{padding:12px;border-radius:7px;margin:10px 0}
+.aviso{background:#fff7ed;border:1px solid #fed7aa}
+.sucesso{background:#ecfdf5;border:1px solid #a7f3d0}
+.erro{background:#fef2f2;border:1px solid #fecaca}
+.mensagem{position:fixed;right:18px;bottom:18px;z-index:50;max-width:420px}
+.vazio{text-align:center;padding:25px;color:#666}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:15px;z-index:20}
+.caixa{background:#fff;border-radius:10px;padding:20px;width:min(620px,100%);max-height:92vh;overflow:auto}
+.caixa h2{margin-top:0}
+.status-online{color:#86efac}
+.status-offline{color:#fca5a5}
+.pequeno{font-size:13px;color:#666}
+.relatorio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0}
+.relatorio-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+.relatorio-box b{display:block;font-size:20px;margin-top:5px}
+@media(max-width:800px){.relatorio-grid{grid-template-columns:repeat(2,1fr)}}
+@media print{.relatorio-grid{grid-template-columns:repeat(4,1fr)}.relatorio-box{border:1px solid #aaa}}
+@media(max-width:800px){
+ .grid{grid-template-columns:repeat(2,1fr)}
+ .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+ header{padding:14px} header h1{font-size:22px}
+ nav{padding:8px} nav button{flex:1 1 45%;min-height:45px}
+ .container{margin:10px auto;padding:0 8px}.card{padding:14px}
+ .grid,.grid2{grid-template-columns:1fr}
+ .kpis{grid-template-columns:1fr 1fr}
+ table{font-size:13px;min-width:680px}
+ button{min-height:42px}
+ .linha-carrinho{grid-template-columns:1fr 70px 85px 45px;font-size:13px}
+}
+@media print{
+ nav,.nao-imprimir,button{display:none!important}
+ body{background:#fff}
+ .card,.kpi{box-shadow:none;border:1px solid #ddd}
+}
 </style>
 </head>
 <body>
-<header><h1>Sistema de Vendas</h1><div>Controle de produtos, estoque e vendas</div></header>
+
+<header>
+  <h1>Sistema de Vendas</h1>
+  <small id="statusConexao" class="status-online">● Modo local • dados salvos neste aparelho</small>
+</header>
+
 <nav>
-<button onclick="mostrar('inicio')">Início</button><button onclick="mostrar('produtos')">Produtos</button><button onclick="mostrar('venda')">Nova Venda</button><button onclick="mostrar('vendas')">Vendas</button><button onclick="imprimirVendas()">🖨️ Imprimir Vendas</button><button onclick="mostrar('estoque')">Estoque</button><button onclick="mostrar('relatorios')">Relatórios</button>
+  <button onclick="mostrar('inicio')">Início</button>
+  <button onclick="mostrar('produtos')">Produtos</button>
+  <button onclick="mostrar('venda')">Nova Venda</button>
+  <button onclick="mostrar('vendas')">Vendas</button>
+  <button onclick="mostrar('estoque')">Estoque</button>
+  <button onclick="mostrar('relatorios')">Relatórios</button>
+  <button onclick="imprimirVendas()">🖨️ Imprimir</button>
 </nav>
-<div class="container">
-<section id="inicio" class="card"><h2>Painel</h2><div class="grid">
-<div class="card"><div>Produtos cadastrados</div><div class="valor" id="totalProdutos">0</div></div>
-<div class="card"><div>Itens em estoque</div><div class="valor" id="totalEstoque">0</div></div>
-<div class="card"><div>Vendas realizadas</div><div class="valor" id="totalVendas">0</div></div>
-<div class="card"><div>Faturamento</div><div class="valor" id="faturamento">R$ 0,00</div></div>
-</div><h3>Estoque baixo</h3><div id="alertas"></div></section>
-<section id="produtos" class="card oculto"><h2>Cadastro de Produtos</h2>
-<input id="nomeProduto" placeholder="Nome do produto"><input id="precoProduto" type="number" step="0.01" placeholder="Preço de venda"><input id="custoProduto" type="number" step="0.01" placeholder="Custo"><input id="estoqueProduto" type="number" placeholder="Quantidade"><input id="estoqueMinimo" type="number" placeholder="Estoque mínimo"><button onclick="cadastrarProduto()">Cadastrar</button>
-<div class="tabela-responsiva"><table><thead><tr><th>Produto</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Mínimo</th><th>Ação</th></tr></thead><tbody id="tabelaProdutos"></tbody></table></div></section>
-<section id="venda" class="card oculto"><h2>Nova Venda</h2><div class="aviso"><b>IMPORTANTE:</b> primeiro monte toda a compra.<br>O estoque e o histórico só serão alterados quando você clicar em <b>Finalizar e Registrar Compra</b>.</div>
-<h3>Adicionar produto</h3><select id="produtoVenda" onchange="mostrarPreco()"><option value="">Selecione o produto</option></select><input id="quantidadeVenda" type="number" min="1" value="1" placeholder="Quantidade"><div id="precoVenda"></div><button onclick="adicionarItemVenda()">Adicionar item à compra</button>
-<h3>Itens da compra</h3><div class="tabela-responsiva"><table><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço</th><th>Total</th><th>Ação</th></tr></thead><tbody id="tabelaCarrinhoVenda"></tbody></table></div>
-<div class="carrinho-total">TOTAL DA COMPRA: <span id="totalCarrinhoVenda">R$ 0,00</span></div>
-<h3>Pagamento</h3><select id="pagamento"><option>Dinheiro</option><option>Pix</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Outro</option></select>
-<div class="acoes-venda"><button onclick="finalizarVenda()">✅ Finalizar e Registrar Compra</button><button class="secundario" onclick="limparCarrinho()">Limpar compra</button></div></section>
-<section id="vendas" class="card oculto"><h2>Histórico de Vendas</h2><div class="tabela-responsiva"><table><thead><tr><th>Data</th><th>Produto</th><th>Quantidade</th><th>Pagamento</th><th>Total</th><th>Ações</th></tr></thead><tbody id="tabelaVendas"></tbody></table></div></section>
-<section id="estoque" class="card oculto"><h2>Controle de Estoque</h2><div class="tabela-responsiva"><table><thead><tr><th>Produto</th><th>Estoque atual</th><th>Estoque mínimo</th><th>Status</th></tr></thead><tbody id="tabelaEstoque"></tbody></table></div></section>
-<section id="relatorios" class="card oculto"><h2>Relatórios</h2>
-<div class="grid"><div class="card"><h3>Total vendido</h3><div class="valor" id="relTotal">R$ 0,00</div></div><div class="card"><h3>Quantidade de vendas</h3><div class="valor" id="relQtd">0</div></div><div class="card"><h3>Estoque</h3><div class="valor" id="relEstoque">0</div></div></div>
-<h3>Histórico permanente de compras finalizadas</h3>
-<div class="aviso"><b>Cada compra é gravada quando é finalizada.</b> Excluir uma venda da tela Vendas não apaga o registro deste relatório.</div>
-<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><label for="mesRelatorio">Mês:</label><select id="mesRelatorio" onchange="renderRelatorioHistorico()" style="max-width:220px"></select><button onclick="imprimirRelatorioHistorico()">🖨️ Imprimir relatório do mês</button></div>
-<div id="resumoRelatorio" class="card" style="margin-top:15px"></div>
-<div class="tabela-responsiva"><table><thead><tr><th>Compra</th><th>Data</th><th>Itens (quantidade x preço)</th><th>Pagamento</th><th>Total</th></tr></thead><tbody id="tabelaHistoricoCompras"></tbody></table></div>
-<br><button onclick="backup()">Fazer Backup</button> <button onclick="limparDados()" class="excluir">Apagar todos os dados</button>
+
+<div id="mensagem" class="mensagem"></div>
+
+<main class="container">
+
+<section id="inicio" class="pagina">
+  <div class="kpis">
+    <div class="kpi">Produtos<strong id="kpiProdutos">0</strong></div>
+    <div class="kpi">Itens em estoque<strong id="kpiEstoque">0</strong></div>
+    <div class="kpi">Vendas registradas<strong id="kpiVendas">0</strong></div>
+    <div class="kpi">Total vendido<strong id="kpiTotal">R$ 0,00</strong></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h2>Sistema local</h2>
+    <p>Este sistema funciona somente com HTML, JavaScript e o armazenamento do próprio navegador.</p>
+    <div class="aviso"><b>Importante:</b> os produtos, estoque e vendas ficam salvos neste aparelho/navegador. Nenhum banco de dados externo é utilizado.</div>
+    <p class="pequeno">Faça backups periódicos se os dados forem importantes.</p>
+  </div>
 </section>
+
+<section id="produtos" class="pagina oculto">
+  <div class="card">
+    <h2>Cadastro de Produtos</h2>
+    <div class="grid">
+      <div><label>Nome</label><input id="novoNome" placeholder="Nome do produto"></div>
+      <div><label>Preço de venda</label><input id="novoPreco" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div><label>Custo / personalizado</label><input id="novoCusto" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div><label>Estoque</label><input id="novoEstoque" type="number" step="1" min="0" value="0"></div>
+      <div><label>Estoque mínimo</label><input id="novoMinimo" type="number" step="1" min="0" value="0"></div>
+    </div>
+    <div class="acoes">
+      <button onclick="cadastrarProduto()">Cadastrar produto</button>
+      <button class="secundario" onclick="limparFormularioProduto()">Limpar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Produtos cadastrados</h2>
+    <div class="tabela-scroll">
+      <table>
+        <thead>
+          <tr><th>Produto</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Mínimo</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="tabelaProdutos"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="venda" class="pagina oculto">
+  <div class="card">
+    <h2>Nova Venda</h2>
+    <div class="grid2">
+      <div>
+        <label>Produto</label>
+        <select id="produtoVenda"></select>
+      </div>
+      <div>
+        <label>Quantidade</label>
+        <input id="quantidadeVenda" type="number" min="1" step="1" value="1">
+      </div>
+    </div>
+    <div class="acoes">
+      <button onclick="adicionarAoCarrinho()">Adicionar ao carrinho</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Carrinho</h3>
+    <div id="carrinho"></div>
+    <hr>
+    <h2>Subtotal: <span id="subtotalCarrinho">R$ 0,00</span></h2>
+    <div class="grid2">
+      <div>
+        <label>Forma de pagamento</label>
+        <select id="formaPagamento" onchange="atualizarPagamento()">
+          <option value="Pix">PIX</option>
+          <option value="Dinheiro">Dinheiro</option>
+          <option value="Cartão de débito">Cartão de débito</option>
+          <option value="Cartão Caixa">Cartão Caixa</option>
+          <option value="Cartão Inter">Cartão Inter</option>
+          <option value="Outros cartões de crédito">Outros cartões de crédito</option>
+        </select>
+      </div>
+      <div>
+        <label>Vai parcelar?</label>
+        <select id="parcelado" onchange="atualizarPagamento()">
+          <option value="nao">Não</option>
+          <option value="sim">Sim</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div id="campoParcelas" class="oculto">
+        <label>Quantidade de parcelas</label>
+        <input id="parcelas" type="number" min="2" max="24" step="1" value="2" oninput="atualizarTotaisVenda()">
+      </div>
+      <div>
+        <label>Desconto (R$)</label>
+        <input id="descontoVenda" type="number" min="0" step="0.01" value="0" oninput="atualizarTotaisVenda()" placeholder="0,00">
+      </div>
+    </div>
+    <div class="aviso" id="resumoPagamento">Total: <b id="totalCarrinho">R$ 0,00</b></div>
+    <div class="acoes">
+      <button onclick="registrarVenda()">💾 Registrar venda</button>
+      <button class="secundario" onclick="limparCarrinho()">Limpar carrinho</button>
+    </div>
+  </div>
+</section>
+
+<section id="vendas" class="pagina oculto">
+  <div class="card">
+    <h2>Vendas registradas</h2>
+    <div class="tabela-scroll">
+      <table>
+        <thead><tr><th>Data</th><th>Total</th><th>Itens</th><th>Pagamento</th></tr></thead>
+        <tbody id="tabelaVendas"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="estoque" class="pagina oculto">
+  <div class="card">
+    <h2>Estoque</h2>
+    <div class="tabela-scroll">
+      <table>
+        <thead><tr><th>Produto</th><th>Estoque</th><th>Mínimo</th><th>Situação</th></tr></thead>
+        <tbody id="tabelaEstoque"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="relatorios" class="pagina oculto">
+  <div class="card">
+    <h2>Relatório de Vendas</h2>
+    <div id="relatorioTexto"></div>
+    <div class="acoes nao-imprimir">
+      <button onclick="imprimirRelatorio()">🖨️ Imprimir relatório</button>
+      <button class="excluir" onclick="excluirVenda()">🗑️ Excluir venda</button>
+      <button class="excluir" onclick="apagarTodosOsDados()">🗑️ Apagar todos os dados</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="modalEditar" class="modal oculto">
+  <div class="caixa">
+    <h2>✏️ Editar produto</h2>
+    <div class="aviso">A alteração é feita pelo ID do produto. O cadastro existente é atualizado.</div>
+    <input type="hidden" id="editId">
+    <label>Produto</label><input id="editNome">
+    <label>Preço de venda</label><input id="editPreco" type="number" step="0.01" min="0">
+    <label>Custo / personalizado</label><input id="editCusto" type="number" step="0.01" min="0">
+    <label>Estoque atual</label><input id="editEstoque" type="number" step="1" min="0">
+    <label>Estoque mínimo</label><input id="editMinimo" type="number" step="1" min="0">
+    <div class="acoes">
+      <button onclick="salvarEdicao()">💾 Salvar alteração</button>
+      <button class="secundario" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
 </div>
+
 <script>
-function lerListaLocalStorage(chave){
+/* =========================================================
+   ARMAZENAMENTO LOCAL
+   ========================================================= */
+const CHAVE_DADOS='sistema_vendas_local_v1';
+
+/* DADOS IMPORTADOS DO SISTEMA ANTERIOR
+   São carregados somente se este aparelho ainda não tiver dados locais.
+   Não há conexão com Supabase.
+*/
+const DADOS_INICIAIS_IMPORTADOS = {"produtos":[{"id":"1789590494039","nome":"BATATINHA IGLESA KILO","preco":9.2,"personalizado":6.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590522198","nome":"ISQUEIRO BIC GRANDE","preco":6.0,"personalizado":5.5,"estoque_inteiro":998,"mínimo":10},{"id":"1789590545636","nome":"OVOS DE GRANJA","preco":1.2,"personalizado":0.5,"estoque_inteiro":972,"mínimo":10},{"id":"1789590583268","nome":"SARDINHA ENLATADAS","preco":7.5,"personalizado":5.99,"estoque_inteiro":996,"mínimo":10},{"id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","preco":5.5,"personalizado":4.5,"estoque_inteiro":997,"mínimo":10},{"id":"1789590640778","nome":"TODINHO IBITURUNA","preco":1.5,"personalizado":1.0,"estoque_inteiro":991,"mínimo":10},{"id":"1789590673868","nome":"AÇUCAR CRISTAL 5KG","preco":17.0,"personalizado":15.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","preco":4.0,"personalizado":2.99,"estoque_inteiro":996,"mínimo":10},{"id":"1789590736537","nome":"CREME DENTAL 180","preco":9.0,"personalizado":7.45,"estoque_inteiro":999,"mínimo":10},{"id":"1789590766449","nome":"GILLETE PRESTORBARBA","preco":4.0,"personalizado":2.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590792606","nome":"FUBÁ MIMOSO 1KG","preco":4.0,"personalizado":2.0,"estoque_inteiro":998,"mínimo":10},{"id":"1789590824849","nome":"AGUA SANTARIA 2L","preco":7.0,"personalizado":5.5,"estoque_inteiro":998,"mínimo":10},{"id":"1789590868236","nome":"SUCOS SABORES DIV","preco":1.5,"personalizado":0.5,"estoque_inteiro":992,"mínimo":10},{"id":"1789590893756","nome":"RAÇÃO PARA GATO","preco":10.0,"personalizado":8.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590924276","nome":"CARNE DE PORCO","preco":85.0,"personalizado":33.0,"estoque_inteiro":997,"mínimo":10},{"id":"1789590958630","nome":"DOCE DE AMENDOIM","preco":1.5,"personalizado":0.95,"estoque_inteiro":997,"mínimo":110},{"id":"1789590987488","nome":"FUMO JURITI ESPECIAL","preco":4.5,"personalizado":3.5,"estoque_inteiro":988,"mínimo":10},{"id":"1789678550585","nome":"LEITE IBITURUNA 1 L","preco":7.5,"personalizado":6.2,"estoque_inteiro":998,"mínimo":10},{"id":"1789678776877","nome":"ESCOVA DE DENTE","preco":5.0,"personalizado":2.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789678819735","nome":"TOMATE LONGA V KG","preco":4.2,"personalizado":2.99,"estoque_inteiro":998,"mínimo":10},{"id":"1789678864801","nome":"MORTADELA PEDAÇO","preco":13.5,"personalizado":4.99,"estoque_inteiro":998,"mínimo":10},{"id":"1789678910429","nome":"SHAMPOO SEDA","preco":15.0,"personalizado":13.25,"estoque_inteiro":999,"mínimo":10},{"id":"1789678944813","nome":"CARNE DE BOI","preco":42.0,"personalizado":32.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1789688099227","nome":"FEIJÃO SUPANG 1K","preco":8.99,"personalizado":6.59,"estoque_inteiro":975,"mínimo":10},{"id":"1789688122346","nome":"OLEO DE SOJA C","preco":7.99,"personalizado":6.5,"estoque_inteiro":997,"mínimo":10},{"id":"1789688148979","nome":"DETERGENTE YPÊ 500","preco":3.49,"personalizado":2.5,"estoque_inteiro":997,"mínimo":10},{"id":"1789688193264","nome":"ESPONJA DE AÇO BB","preco":2.49,"personalizado":0.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789688229716","nome":"LEITE QUATÁ INTEGRAL 1L","preco":5.79,"personalizado":4.1,"estoque_inteiro":996,"mínimo":10},{"id":"1789689832852","nome":"MARGARINA DELÍCIA 250","preco":7.0,"personalizado":5.8,"estoque_inteiro":999,"mínimo":10},{"id":"1789689865118","nome":"LEITE LITRO DESCARTÁVEL","preco":10.0,"personalizado":5.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690056338","nome":"FUMO JURITI ESPECIAL","preco":4.5,"personalizado":3.1,"estoque_inteiro":1000,"mínimo":10},{"id":"1789690148324","nome":"LINGUIÇA DEFUMADA KG","preco":28.0,"personalizado":22.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690195930","nome":"PÃO DE DOCE SACOLA","preco":10.0,"personalizado":6.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789690419991","nome":"UNIEPAZ","preco":45.0,"personalizado":40.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690546689","nome":"CEMIG DISTRIBUIÇÃO SA","preco":34.84,"personalizado":29.9,"estoque_inteiro":999,"mínimo":10},{"id":"1789690593666","nome":"SAAE RAUL SOARES","preco":51.86,"personalizado":16.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690620658","nome":"FIBROM INTERNET","preco":90.0,"personalizado":80.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690832151","nome":"PÓ DE CAFÉ 500","preco":24.0,"personalizado":20.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690877384","nome":"BUCHA DE LAVAR LOUÇA","preco":2.5,"personalizado":1.2,"estoque_inteiro":999,"mínimo":10},{"id":"1789690919426","nome":"SABONETE GRANDE","preco":5.0,"personalizado":2.0,"estoque_inteiro":998,"mínimo":10},{"id":"1789690957042","nome":"BISCOITO WAFFER","preco":4.0,"personalizado":2.0,"estoque_inteiro":998,"mínimo":10},{"id":"1789749627992","nome":"TORNEIRA DUAS BOCAS","preco":28.0,"personalizado":21.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789749660657","nome":"TEMPERO SALE ALHO POTE 1KG","preco":13.0,"personalizado":9.5,"estoque_inteiro":999,"mínimo":10},{"id":"1789856232378","nome":"ARREDODAMENTO DOCE AMENDOIM","preco":0.5,"personalizado":0.5,"estoque_inteiro":9,"mínimo":2},{"id":"1790088454896","nome":"AMACIANTE DE ROUPAS","preco":11.0,"personalizado":10.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088490917","nome":"PAR DE CORREIA CHINELO 42","preco":5.0,"personalizado":5.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088534731","nome":"TABLET DE SABÃO YPÊ","preco":16.0,"personalizado":10.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088570271","nome":"PILHAS AA","preco":2.0,"personalizado":1.2,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088600959","nome":"CAIXA DE SABÃO EM PÓ","preco":22.0,"personalizado":15.2,"estoque_inteiro":1000,"mínimo":10},{"id":"1790171537188","nome":"BALAS MACIA DE FRUTAS","preco":0.1428571428571429,"personalizado":0.02,"estoque_inteiro":1000,"mínimo":10},{"id":"1790171669694","nome":"DESCONTO","preco":0.36,"personalizado":0.36,"estoque_inteiro":1000,"mínimo":10}],"vendas":[{"id":"importado-1","numero":1,"timestampz":"2026-09-16T20:40:23.457000+00:00","subtotal":151.2,"desconto":0,"total":151.2,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":151.2,"itens":[{"produto_id":"1789590494039","nome":"BATATINHA IGLESA KILO","quantidade":1,"preco":9.2,"subtotal":9.2},{"produto_id":"1789590522198","nome":"ISQUEIRO BIC GRANDE","quantidade":2,"preco":6.0,"subtotal":12.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":7,"preco":1.0,"subtotal":7.0},{"produto_id":"1789590583268","nome":"SARDINHA ENLATADAS","quantidade":2,"preco":7.0,"subtotal":14.0},{"produto_id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5,"subtotal":5.5},{"produto_id":"1789590640778","nome":"TODINHO IBITURUNA","quantidade":3,"preco":2.0,"subtotal":6.0},{"produto_id":"1789590673868","nome":"AÇUCAR CRISTAL 5KG","quantidade":1,"preco":17.0,"subtotal":17.0},{"produto_id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590736537","nome":"CREME DENTAL 180","quantidade":1,"preco":9.0,"subtotal":9.0},{"produto_id":"1789590766449","nome":"GILLETE PRESTORBARBA","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590792606","nome":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590824849","nome":"AGUA SANTARIA 2L","quantidade":1,"preco":7.0,"subtotal":7.0},{"produto_id":"1789590868236","nome":"SUCOS SABORES DIV","quantidade":2,"preco":1.0,"subtotal":2.0},{"produto_id":"1789590893756","nome":"RAÇÃO PARA GATO","quantidade":1,"preco":10.0,"subtotal":10.0},{"produto_id":"1789590924276","nome":"CARNE DE PORCO","quantidade":1,"preco":39.0,"subtotal":39.0},{"produto_id":"1789590958630","nome":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5,"subtotal":1.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-2","numero":2,"timestampz":"2026-09-18T16:43:09.957000+00:00","subtotal":42.5,"desconto":0,"total":42.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":42.5,"itens":[{"produto_id":"1789590958630","nome":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5,"subtotal":1.5},{"produto_id":"1789749627992","nome":"TORNEIRA DUAS BOCAS","quantidade":1,"preco":28.0,"subtotal":28.0},{"produto_id":"1789749660657","nome":"TEMPERO SALE ALHO POTE 1KG","quantidade":1,"preco":13.0,"subtotal":13.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-3","numero":3,"timestampz":"2026-09-19T21:49:50.468000+00:00","subtotal":115.9,"desconto":0,"total":115.9,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":115.9,"itens":[{"produto_id":"1789678550585","nome":"LEITE IBITURUNA 1 L","quantidade":2,"preco":7.5,"subtotal":15.0},{"produto_id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5,"subtotal":5.5},{"produto_id":"1789678776877","nome":"ESCOVA DE DENTE","quantidade":1,"preco":5.0,"subtotal":5.0},{"produto_id":"1789590868236","nome":"SUCOS SABORES DIV","quantidade":3,"preco":1.0,"subtotal":3.0},{"produto_id":"1789678819735","nome":"TOMATE LONGA V KG","quantidade":1,"preco":3.4,"subtotal":3.4},{"produto_id":"1789590640778","nome":"TODINHO IBITURUNA","quantidade":3,"preco":2.0,"subtotal":6.0},{"produto_id":"1789678864801","nome":"MORTADELA PEDAÇO","quantidade":1,"preco":6.0,"subtotal":6.0},{"produto_id":"1789678910429","nome":"SHAMPOO SEDA","quantidade":1,"preco":15.0,"subtotal":15.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":7,"preco":1.0,"subtotal":7.0},{"produto_id":"1789590792606","nome":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590924276","nome":"CARNE DE PORCO","quantidade":1,"preco":42.0,"subtotal":42.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-4","numero":4,"timestampz":"2026-09-19T21:52:23.750000+00:00","subtotal":284.84000000000003,"desconto":0,"total":284.84000000000003,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":284.84000000000003,"itens":[{"produto_id":"1789688099227","nome":"FEIJÃO SUPANG 1K","quantidade":25,"preco":8.99,"subtotal":224.75},{"produto_id":"1789688122346","nome":"OLEO DE SOJA C","quantidade":3,"preco":7.99,"subtotal":23.97},{"produto_id":"1789688148979","nome":"DETERGENTE YPÊ 500","quantidade":3,"preco":3.49,"subtotal":10.47},{"produto_id":"1789688193264","nome":"ESPONJA DE AÇO BB","quantidade":1,"preco":2.49,"subtotal":2.49},{"produto_id":"1789688229716","nome":"LEITE QUATÁ INTEGRAL 1L","quantidade":4,"preco":5.79,"subtotal":23.16}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-5","numero":5,"timestampz":"2026-09-19T21:53:59.436000+00:00","subtotal":20.0,"desconto":0,"total":20.0,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":20.0,"itens":[{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":3,"preco":1.0,"subtotal":3.0},{"produto_id":"1789689832852","nome":"MARGARINA DELÍCIA 250","quantidade":1,"preco":7.0,"subtotal":7.0},{"produto_id":"1789689865118","nome":"LEITE LITRO DESCARTÁVEL","quantidade":1,"preco":10.0,"subtotal":10.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-6","numero":6,"timestampz":"2026-09-19T21:55:25.662000+00:00","subtotal":101.0,"desconto":0,"total":101.0,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":101.0,"itens":[{"produto_id":"1789690148324","nome":"LINGUIÇA DEFUMADA KG","quantidade":1,"preco":28.0,"subtotal":28.0},{"produto_id":"1789690195930","nome":"PÃO DE DOCE SACOLA","quantidade":1,"preco":10.0,"subtotal":10.0},{"produto_id":"1789690419991","nome":"UNIEPAZ","quantidade":1,"preco":45.0,"subtotal":45.0},{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5,"subtotal":18.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-7","numero":7,"timestampz":"2026-09-19T22:02:38.566000+00:00","subtotal":107.2,"desconto":0,"total":107.2,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":107.2,"itens":[{"produto_id":"1789690832151","nome":"PÓ DE CAFÉ 500","quantidade":1,"preco":24.0,"subtotal":24.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":7,"preco":1.0,"subtotal":7.0},{"produto_id":"1789590640778","nome":"TODINHO IBITURUNA","quantidade":3,"preco":2.0,"subtotal":6.0},{"produto_id":"1789690877384","nome":"BUCHA DE LAVAR LOUÇA","quantidade":1,"preco":2.5,"subtotal":2.5},{"produto_id":"1789678819735","nome":"TOMATE LONGA V KG","quantidade":1,"preco":4.2,"subtotal":4.2},{"produto_id":"1789590583268","nome":"SARDINHA ENLATADAS","quantidade":2,"preco":7.0,"subtotal":14.0},{"produto_id":"1789690919426","nome":"SABONETE GRANDE","quantidade":2,"preco":5.0,"subtotal":10.0},{"produto_id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","quantidade":2,"preco":4.0,"subtotal":8.0},{"produto_id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5,"subtotal":5.5},{"produto_id":"1789678864801","nome":"MORTADELA PEDAÇO","quantidade":1,"preco":13.5,"subtotal":13.5},{"produto_id":"1789690957042","nome":"BISCOITO WAFFER","quantidade":2,"preco":4.0,"subtotal":8.0},{"produto_id":"1789590868236","nome":"SUCOS SABORES DIV","quantidade":3,"preco":1.5,"subtotal":4.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-8","numero":8,"timestampz":"2026-09-19T22:04:34.262000+00:00","subtotal":115.5,"desconto":0,"total":115.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":115.5,"itens":[{"produto_id":"1789590924276","nome":"CARNE DE PORCO","quantidade":1,"preco":85.0,"subtotal":85.0},{"produto_id":"1789590824849","nome":"AGUA SANTARIA 2L","quantidade":1,"preco":7.0,"subtotal":7.0},{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5,"subtotal":18.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":4,"preco":1.0,"subtotal":4.0},{"produto_id":"1789590958630","nome":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5,"subtotal":1.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-9","numero":9,"timestampz":"2026-09-19T22:15:56.598000+00:00","subtotal":176.70000000000002,"desconto":0,"total":176.70000000000002,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":176.70000000000002,"itens":[{"produto_id":"1789690593666","nome":"SAAE RAUL SOARES","quantidade":1,"preco":51.86,"subtotal":51.86},{"produto_id":"1789690620658","nome":"FIBROM INTERNET","quantidade":1,"preco":90.0,"subtotal":90.0},{"produto_id":"1789690546689","nome":"CEMIG DISTRIBUIÇÃO SA","quantidade":1,"preco":34.84,"subtotal":34.84}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-10","numero":10,"timestampz":"2026-09-19T22:17:25.983000+00:00","subtotal":0.5,"desconto":0,"total":0.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":0.5,"itens":[{"produto_id":"1789856232378","nome":"ARREDODAMENTO DOCE AMENDOIM","quantidade":1,"preco":0.5,"subtotal":0.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-11","numero":11,"timestampz":"2026-09-20T15:46:34.272000+00:00","subtotal":4.5,"desconto":0,"total":4.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":4.5,"itens":[{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":1,"preco":4.5,"subtotal":4.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-12","numero":12,"timestampz":"2026-09-20T15:47:35.163000+00:00","subtotal":13.5,"desconto":0,"total":13.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":13.5,"itens":[{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":3,"preco":4.5,"subtotal":13.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-13","numero":13,"timestampz":"2026-09-20T19:13:43.884000+00:00","subtotal":2459.9,"desconto":0,"total":2459.9,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":2459.9,"itens":[{"produto_id":"1789929318838","nome":"MAQUINA DE LAVAR ROUPA CONSUL 16KG","quantidade":1,"preco":2459.9,"subtotal":2459.9}],"texto_pagamento":"Cartão de crédito"}]};
+
+
+let produtos=[];
+let vendas=[];
+let carrinhoVenda=[];
+let carregando=false;
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+function numero(valor){
+  const n=Number(valor);
+  return Number.isFinite(n)?n:0;
+}
+function moeda(valor){
+  return numero(valor).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function esc(valor){
+  return String(valor ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function novoId(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+}
+function mostrarMensagem(texto,tipo='sucesso'){
+  const box=document.getElementById('mensagem');
+  box.className='mensagem '+tipo;
+  box.textContent=texto;
+  clearTimeout(window._timerMensagem);
+  window._timerMensagem=setTimeout(()=>{box.className='mensagem';box.textContent='';},6000);
+}
+function salvarDados(){
+  const pacote=JSON.stringify({produtos,vendas});
+  localStorage.setItem(CHAVE_DADOS,pacote);
+  _assinaturaDados=pacote;
+}
+function carregarDados(silencioso=false){
   try{
-    const bruto=localStorage.getItem(chave);
-    if(!bruto)return [];
-    const dados=JSON.parse(bruto);
-    return Array.isArray(dados)?dados:[];
-  }catch(erro){
-    console.error("Erro ao ler "+chave,erro);
-    return [];
-  }
-}
-
-let produtos=lerListaLocalStorage("produtos_vendas"),
-vendas=lerListaLocalStorage("vendas_vendas"),
-carrinhoVenda=lerListaLocalStorage("carrinho_venda"),
-historicoCompras=lerListaLocalStorage("historico_compras");
-
-function assinaturaCompra(v){
-  if(v && v.timestamp) return "ts:"+v.timestamp;
-  return JSON.stringify([v?.data||"",Number(v?.total||0),v?.pagamento||"",v?.itens||v?.produto||"",v?.quantidade||""]);
-}
-
-/* Toda venda existente na aba Vendas que ainda nao estiver no historico
-   e acrescentada ao historico. Excluir em Vendas nao apaga o historico. */
-function sincronizarHistorico(){
-  const assinaturas=new Set(historicoCompras.map(assinaturaCompra));
-  vendas.forEach(v=>{
-    const assinatura=assinaturaCompra(v);
-    if(!assinaturas.has(assinatura)){
-      const maiorNumero=historicoCompras.reduce((m,h)=>Math.max(m,Number(h.numero)||0),0);
-      const copia={...v,numero:maiorNumero+1,timestamp:v.timestamp||Date.now()};
-      historicoCompras.push(copia);
-      assinaturas.add(assinaturaCompra(copia));
+    const bruto=localStorage.getItem(CHAVE_DADOS);
+    if(bruto){
+      const dados=JSON.parse(bruto);
+      produtos=Array.isArray(dados.produtos)?dados.produtos:[];
+      vendas=Array.isArray(dados.vendas)?dados.vendas:[];
+    }else{
+      produtos=Array.isArray(DADOS_INICIAIS_IMPORTADOS.produtos)
+        ? JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.produtos)) : [];
+      vendas=Array.isArray(DADOS_INICIAIS_IMPORTADOS.vendas)
+        ? JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.vendas)) : [];
+      salvarDados();
     }
-  });
-  historicoCompras.sort((a,b)=>(Number(a.timestamp)||0)-(Number(b.timestamp)||0));
-  historicoCompras.forEach((h,i)=>{if(!h.numero)h.numero=i+1;});
-  localStorage.setItem("historico_compras",JSON.stringify(historicoCompras));
-}
-sincronizarHistorico();
-
-// ============================================================
-// SALVAMENTO LOCAL — SEM SUPABASE
-// Mantém produtos, vendas, carrinho e histórico permanente.
-// ============================================================
-function salvar(){
-  try{
-    localStorage.setItem("produtos_vendas",JSON.stringify(produtos));
-    localStorage.setItem("vendas_vendas",JSON.stringify(vendas));
-    localStorage.setItem("carrinho_venda",JSON.stringify(carrinhoVenda));
-    localStorage.setItem("historico_compras",JSON.stringify(historicoCompras));
+    const status=document.getElementById('statusConexao');
+    status.className='status-online';
+    status.textContent='● Modo local • '+produtos.length+' produto(s) • dados salvos neste aparelho';
+    renderizarTudo();
     return true;
-  }catch(erro){
-    console.error("Erro ao salvar dados:",erro);
-    alert("O navegador não conseguiu salvar os dados localmente. Verifique o armazenamento do site.");
+  }catch(e){
+    console.error(e);
+    document.getElementById('statusConexao').textContent='● Erro ao ler dados locais';
+    if(!silencioso) mostrarMensagem('Erro ao carregar os dados locais: '+e.message,'erro');
     return false;
   }
 }
 
-function dinheiro(valor){return Number(valor||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
-function mostrar(id){document.querySelectorAll("section").forEach(x=>x.classList.add("oculto"));let secao=document.getElementById(id);if(secao)secao.classList.remove("oculto");atualizar()}
+/* =========================================================
+   PRODUTOS
+   ========================================================= */
+function limparFormularioProduto(){
+  document.getElementById('novoNome').value='';
+  document.getElementById('novoPreco').value='';
+  document.getElementById('novoCusto').value='';
+  document.getElementById('novoEstoque').value='0';
+  document.getElementById('novoMinimo').value='0';
+}
+
 function cadastrarProduto(){
+  const nome=document.getElementById('novoNome').value.trim();
+  if(!nome){mostrarMensagem('Informe o nome do produto.','erro');return;}
+  const dados={
+    id:novoId(),nome,
+    preco:Number(numero(document.getElementById('novoPreco').value).toFixed(2)),
+    personalizado:Number(numero(document.getElementById('novoCusto').value).toFixed(2)),
+    estoque_inteiro:Math.max(0,Math.trunc(numero(document.getElementById('novoEstoque').value))),
+    'mínimo':Math.max(0,Math.trunc(numero(document.getElementById('novoMinimo').value)))
+  };
+  produtos.push(dados);
+  salvarDados(); limparFormularioProduto(); renderizarTudo();
+  mostrarMensagem('Produto cadastrado neste aparelho.','sucesso');
+}
+
+function abrirEdicao(id){
+  const p=produtos.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  document.getElementById('editId').value=p.id;
+  document.getElementById('editNome').value=p.nome||'';
+  document.getElementById('editPreco').value=numero(p.preco).toFixed(2);
+  document.getElementById('editCusto').value=numero(p.personalizado).toFixed(2);
+  document.getElementById('editEstoque').value=numero(p.estoque_inteiro);
+  document.getElementById('editMinimo').value=numero(p['mínimo']);
+  document.getElementById('modalEditar').classList.remove('oculto');
+}
+function fecharModal(){document.getElementById('modalEditar').classList.add('oculto');}
+function salvarEdicao(){
+  const id=document.getElementById('editId').value;
+  const p=produtos.find(x=>String(x.id)===String(id));
+  const nome=document.getElementById('editNome').value.trim();
+  if(!p||!nome){mostrarMensagem('Dados do produto incompletos.','erro');return;}
+  p.nome=nome;
+  p.preco=Number(numero(document.getElementById('editPreco').value).toFixed(2));
+  p.personalizado=Number(numero(document.getElementById('editCusto').value).toFixed(2));
+  p.estoque_inteiro=Math.max(0,Math.trunc(numero(document.getElementById('editEstoque').value)));
+  p['mínimo']=Math.max(0,Math.trunc(numero(document.getElementById('editMinimo').value)));
+  salvarDados(); fecharModal(); renderizarTudo(); mostrarMensagem('Produto atualizado sem criar outro cadastro.','sucesso');
+}
+function excluirProduto(id){
+  const p=produtos.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  if(!confirm('Excluir "'+p.nome+'"?'))return;
+  const usado=vendas.some(v=>obterItensVenda(v).some(i=>String(i.produto_id??i.produtoId)===String(id)));
+  if(usado){mostrarMensagem('Este produto aparece em uma venda registrada. Exclua a venda primeiro.','erro');return;}
+  produtos=produtos.filter(x=>String(x.id)!==String(id));
+  salvarDados(); renderizarTudo(); mostrarMensagem('Produto excluído.','sucesso');
+}
+
+/* =========================================================
+   CARRINHO
+   ========================================================= */
+function atualizarSelectProdutos(){
+  const select=document.getElementById('produtoVenda');
+  const atual=select.value;
+
+  select.innerHTML='<option value="">Selecione um produto</option>';
+
+  produtos.forEach(p=>{
+    const estoque=numero(p.estoque_inteiro);
+    const option=document.createElement('option');
+    option.value=p.id;
+    option.disabled=estoque<=0;
+    option.textContent=p.nome+' — '+moeda(p.preco)+' — estoque: '+estoque;
+    select.appendChild(option);
+  });
+
+  if([...select.options].some(o=>o.value===atual)){
+    select.value=atual;
+  }
+}
+
+function adicionarAoCarrinho(){
+  const id=document.getElementById('produtoVenda').value;
+  const qtd=Math.max(1,Math.trunc(numero(document.getElementById('quantidadeVenda').value)));
+  const p=produtos.find(x=>String(x.id)===String(id));
+
+  if(!p){
+    mostrarMensagem('Selecione um produto.','erro');
+    return;
+  }
+
+  const estoque=numero(p.estoque_inteiro);
+  const existente=carrinhoVenda.find(x=>String(x.id)===String(id));
+  const novaQtd=(existente?existente.quantidade:0)+qtd;
+
+  if(novaQtd>estoque){
+    mostrarMensagem('Estoque insuficiente. Disponível: '+estoque+'.','erro');
+    return;
+  }
+
+  if(existente){
+    existente.quantidade=novaQtd;
+  }else{
+    carrinhoVenda.push({
+      id:p.id,
+      nome:p.nome,
+      preco:numero(p.preco),
+      quantidade:qtd
+    });
+  }
+
+  renderizarCarrinho();
+}
+
+function removerDoCarrinho(id){
+  carrinhoVenda=carrinhoVenda.filter(x=>String(x.id)!==String(id));
+  renderizarCarrinho();
+}
+
+function alterarQuantidadeCarrinho(id,qtd){
+  const item=carrinhoVenda.find(x=>String(x.id)===String(id));
+  const p=produtos.find(x=>String(x.id)===String(id));
+
+  if(!item || !p) return;
+
+  qtd=Math.max(1,Math.trunc(numero(qtd)));
+
+  if(qtd>numero(p.estoque_inteiro)){
+    mostrarMensagem('Estoque insuficiente. Disponível: '+p.estoque_inteiro+'.','erro');
+    renderizarCarrinho();
+    return;
+  }
+
+  item.quantidade=qtd;
+  renderizarCarrinho();
+}
+
+function totalCarrinho(){
+  return carrinhoVenda.reduce((s,x)=>s+(x.preco*x.quantidade),0);
+}
+
+function valorDesconto(){
+  const el=document.getElementById('descontoVenda');
+  return Math.max(0, Math.min(numero(el ? el.value : 0), totalCarrinho()));
+}
+
+function atualizarTotaisVenda(){
+  const subtotal=totalCarrinho();
+  const desconto=valorDesconto();
+  const total=Math.max(0, subtotal-desconto);
+  const parcelado=document.getElementById('parcelado')?.value==='sim';
+  const parcelas=Math.max(2, Math.min(24, Math.trunc(numero(document.getElementById('parcelas')?.value))||2));
+  document.getElementById('subtotalCarrinho').textContent=moeda(subtotal);
+  document.getElementById('totalCarrinho').textContent=moeda(total);
+  document.getElementById('resumoPagamento').innerHTML='Subtotal: <b>'+moeda(subtotal)+'</b> | Desconto: <b>'+moeda(desconto)+'</b> | Total: <b>'+moeda(total)+'</b>'+(parcelado?' | '+parcelas+'x de <b>'+moeda(total/parcelas)+'</b>':'');
+}
+
+function atualizarPagamento(){
+  const parcelado=document.getElementById('parcelado').value==='sim';
+  document.getElementById('campoParcelas').classList.toggle('oculto',!parcelado);
+  atualizarTotaisVenda();
+}
+
+function renderizarCarrinho(){
+  const el=document.getElementById('carrinho');
+
+  if(!carrinhoVenda.length){
+    el.innerHTML='<div class="vazio">Carrinho vazio.</div>';
+  }else{
+    el.innerHTML=carrinhoVenda.map(x=>`
+      <div class="linha-carrinho">
+        <div><b>${esc(x.nome)}</b><br>${moeda(x.preco)}</div>
+        <input type="number" min="1" value="${x.quantidade}"
+          onchange="alterarQuantidadeCarrinho('${esc(x.id)}',this.value)">
+        <div>${moeda(x.preco*x.quantidade)}</div>
+        <button class="excluir" onclick="removerDoCarrinho('${esc(x.id)}')">✕</button>
+      </div>
+    `).join('');
+  }
+
+  atualizarTotaisVenda();
+}
+
+/* =========================================================
+   REGISTRAR VENDA
+   ========================================================= */
+function registrarVenda(){
+  if(!carrinhoVenda.length){mostrarMensagem('Adicione produtos ao carrinho.','erro');return;}
+  for(const item of carrinhoVenda){
+    const p=produtos.find(x=>String(x.id)===String(item.id));
+    if(!p) {mostrarMensagem('Produto "'+item.nome+'" não foi encontrado.','erro');return;}
+    if(item.quantidade>numero(p.estoque_inteiro)){mostrarMensagem('Estoque insuficiente para "'+item.nome+'". Disponível: '+p.estoque_inteiro+'.','erro');return;}
+  }
+  const subtotal=totalCarrinho();
+  const desconto=valorDesconto();
+  const total=Math.max(0, subtotal-desconto);
+  const forma=document.getElementById('formaPagamento').value;
+  const parcelado=document.getElementById('parcelado').value==='sim';
+  const parcelas=parcelado?Math.max(2,Math.min(24,Math.trunc(numero(document.getElementById('parcelas').value))||2)):1;
+  const proximoNumero=vendas.reduce((m,v)=>Math.max(m,numero(v.numero)),0)+1;
+  const itensVenda=carrinhoVenda.map(x=>({produto_id:x.id,nome:x.nome,quantidade:x.quantidade,preco:Number(x.preco.toFixed(2)),subtotal:Number((x.preco*x.quantidade).toFixed(2))}));
+  const novaVenda={id:novoId(),numero:proximoNumero,timestampz:new Date().toISOString(),subtotal:Number(subtotal.toFixed(2)),desconto:Number(desconto.toFixed(2)),total:Number(total.toFixed(2)),forma_pagamento:forma,parcelado,parcelas,valor_parcela:Number((total/parcelas).toFixed(2)),itens:itensVenda,texto_pagamento:forma+(parcelado?' — '+parcelas+'x de '+moeda(total/parcelas):'')};
+  vendas.unshift(novaVenda);
+  for(const item of carrinhoVenda){
+    const p=produtos.find(x=>String(x.id)===String(item.id));
+    p.estoque_inteiro=numero(p.estoque_inteiro)-item.quantidade;
+  }
+  salvarDados();
+  carrinhoVenda=[]; document.getElementById('descontoVenda').value='0'; document.getElementById('parcelado').value='nao'; document.getElementById('parcelas').value='2'; atualizarPagamento(); renderizarTudo();
+  mostrarMensagem('Venda registrada e estoque atualizado.','sucesso');
+}
+
+function limparCarrinho(){
+  carrinhoVenda=[];
+  renderizarCarrinho();
+}
+
+/* =========================================================
+   EXCLUSÃO DE VENDAS / DADOS
+   ========================================================= */
+function excluirVenda(){
+  const senha=prompt('Digite a senha para excluir vendas:');
+  if(senha===null)return;
+  if(senha!=='8526'){alert('Senha incorreta.');return;}
+  if(!vendas.length){alert('Não existem vendas registradas.');return;}
+
+  let lista='VENDAS REGISTRADAS\n\n';
+  vendas.forEach((v,i)=>{
+    const num=v.numero??(i+1);
+    const data=v.timestampz?new Date(v.timestampz).toLocaleString('pt-BR'):'-';
+    const itens=obterItensVenda(v);
+    lista+='Venda nº '+num+' | '+data+' | '+moeda(v.total)+'\n';
+    itens.forEach(x=>lista+='  • '+x.nome+' — quantidade: '+numero(x.quantidade)+'\n');
+    lista+='\n';
+  });
+
+  const escolhido=prompt(lista+'Digite o NÚMERO da venda que deseja excluir:');
+  if(escolhido===null)return;
+  const numEscolhido=Math.trunc(numero(escolhido));
+  const indice=vendas.findIndex((v,i)=>numero(v.numero??(i+1))===numEscolhido);
+  if(indice<0){alert('Venda não encontrada.');return;}
+
+  const venda=vendas[indice];
+  const itens=obterItensVenda(venda);
+  let confirmacao='EXCLUIR VENDA Nº '+numEscolhido+'?\n\n';
+  itens.forEach(x=>confirmacao+='• '+x.nome+' — quantidade: '+numero(x.quantidade)+'\n');
+  confirmacao+='\nTotal: '+moeda(venda.total)+'\n\nOs produtos voltarão ao estoque.';
+  if(!confirm(confirmacao))return;
+
+  for(const item of itens){
+    const pid=item.produto_id??item.produtoId;
+    const produto=produtos.find(p=>String(p.id)===String(pid));
+    if(produto) produto.estoque_inteiro=numero(produto.estoque_inteiro)+numero(item.quantidade);
+  }
+  vendas.splice(indice,1);
+  salvarDados();
+  renderizarTudo();
+  mostrarMensagem('Venda nº '+numEscolhido+' excluída e estoque restaurado.','sucesso');
+}
+
+function apagarTodosOsDados(){
+  const senha=prompt('Digite a senha para apagar TODOS os dados:');
+  if(senha===null)return;
+  if(senha!=='8526'){alert('Senha incorreta.');return;}
+  if(!confirm('ATENÇÃO: apagar TODOS os produtos e TODAS as vendas?'))return;
+  if(!confirm('CONFIRMA NOVAMENTE? Esta operação não pode ser desfeita.'))return;
+  produtos=[];
+  vendas=[];
+  carrinhoVenda=[];
+  salvarDados();
+  renderizarTudo();
+  mostrarMensagem('Todos os dados foram apagados deste aparelho.','sucesso');
+}
+
+/* =========================================================
+   TELAS E RELATÓRIOS
+   ========================================================= */
+function mostrar(id){
+  document.querySelectorAll('.pagina').forEach(x=>x.classList.add('oculto'));
+  const pagina=document.getElementById(id);
+  if(pagina) pagina.classList.remove('oculto');
+
+  if(id==='vendas') renderizarVendas();
+  if(id==='estoque') renderizarEstoque();
+  if(id==='relatorios') renderizarRelatorio();
+}
+
+function renderizarProdutos(){
+  const tbody=document.getElementById('tabelaProdutos');
+
+  if(!produtos.length){
+    tbody.innerHTML='<tr><td colspan="6" class="vazio">Nenhum produto cadastrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=produtos.map(p=>`
+    <tr>
+      <td>${esc(p.nome)}</td>
+      <td>${moeda(p.preco)}</td>
+      <td>${moeda(p.personalizado)}</td>
+      <td>${numero(p.estoque_inteiro)}</td>
+      <td>${numero(p['mínimo'])}</td>
+      <td class="acoes">
+        <button class="editar" onclick="abrirEdicao('${esc(p.id)}')">✏️ Editar</button>
+        <button class="excluir" onclick="excluirProduto('${esc(p.id)}')">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function obterItensVenda(v){
+  /*
+    Compatibilidade: o banco correto usa "itens".
+    O teste de "items" é somente para não quebrar registros antigos
+    caso algum tenha sido criado antes da correção.
+  */
+  if(Array.isArray(v.itens)) return v.itens;
+  if(Array.isArray(v.items)) return v.items;
+  return [];
+}
+
+function renderizarVendas(){
+  const tbody=document.getElementById('tabelaVendas');
+
+  if(!vendas.length){
+    tbody.innerHTML='<tr><td colspan="4" class="vazio">Nenhuma venda registrada.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=vendas.map(v=>{
+    const itens=obterItensVenda(v);
+    const resumo=itens.map(i=>esc(i.nome)+' ('+numero(i.quantidade)+')').join(', ');
+    const data=v.timestampz?new Date(v.timestampz).toLocaleString('pt-BR'):'-';
+
+    return `
+      <tr>
+        <td>${esc(data)}</td>
+        <td>${moeda(v.total)}</td>
+        <td>${resumo||'-'}</td>
+        <td>${esc(v.texto_pagamento||'-')}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderizarEstoque(){
+  const tbody=document.getElementById('tabelaEstoque');
+
+  if(!produtos.length){
+    tbody.innerHTML='<tr><td colspan="4" class="vazio">Nenhum produto.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=produtos.map(p=>{
+    const e=numero(p.estoque_inteiro);
+    const m=numero(p['mínimo']);
+    const situacao=e<=0?'SEM ESTOQUE':(e<=m?'REPOR':'NORMAL');
+
+    return `
+      <tr>
+        <td>${esc(p.nome)}</td>
+        <td>${e}</td>
+        <td>${m}</td>
+        <td>${situacao}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function resumoPagamentos(){
+  const mapa={};
+  vendas.forEach(v=>{
+    const forma=v.forma_pagamento || v.pagamento || v.texto_pagamento || 'Não informado';
+    mapa[forma]=(mapa[forma]||0)+numero(v.total);
+  });
+  return Object.entries(mapa).sort((a,b)=>b[1]-a[1]);
+}
+
+function formatarDataVenda(v){
+  const valor=v.timestampz||v.timestamp;
+  if(!valor) return v.data||'-';
+  const d=new Date(valor);
+  return isNaN(d.getTime())?(v.data||'-'):d.toLocaleString('pt-BR');
+}
+
+function renderizarRelatorio(){
+  const quantidade=vendas.length;
+  const bruto=vendas.reduce((s,v)=>s+numero(v.subtotal??v.total),0);
+  const descontos=vendas.reduce((s,v)=>s+numero(v.desconto),0);
+  const total=vendas.reduce((s,v)=>s+numero(v.total),0);
+  const ticket=quantidade?total/quantidade:0;
+  const estoque=produtos.reduce((s,p)=>s+numero(p.estoque_inteiro),0);
+  const baixo=produtos.filter(p=>numero(p.estoque_inteiro)<=numero(p['mínimo']));
+  const pagamentos=resumoPagamentos();
+  const ultimas=vendas.slice(0,10);
+
+  document.getElementById('relatorioTexto').innerHTML=`
+    <div class="relatorio-grid">
+      <div class="relatorio-box">Vendas<strong>${quantidade}</strong></div>
+      <div class="relatorio-box">Valor bruto<strong>${moeda(bruto)}</strong></div>
+      <div class="relatorio-box">Descontos<strong>${moeda(descontos)}</strong></div>
+      <div class="relatorio-box">Total vendido<strong>${moeda(total)}</strong></div>
+      <div class="relatorio-box">Ticket médio<strong>${moeda(ticket)}</strong></div>
+      <div class="relatorio-box">Itens em estoque<strong>${numero(estoque)}</strong></div>
+      <div class="relatorio-box">Estoque baixo<strong>${baixo.length}</strong></div>
+      <div class="relatorio-box">Última venda<strong>${ultimas.length?esc(formatarDataVenda(ultimas[0])):'-'}</strong></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="margin:0">
+        <h3>Vendas por forma de pagamento</h3>
+        ${pagamentos.length?'<table><thead><tr><th>Forma</th><th>Valor</th></tr></thead><tbody>'+pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')+'</tbody></table>':'<div class="vazio">Nenhuma venda.</div>'}
+      </div>
+      <div class="card" style="margin:0">
+        <h3>Produtos com estoque baixo</h3>
+        ${baixo.length?'<table><thead><tr><th>Produto</th><th>Estoque</th><th>Mínimo</th></tr></thead><tbody>'+baixo.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+numero(p.estoque_inteiro)+'</td><td>'+numero(p['mínimo'])+'</td></tr>').join('')+'</tbody></table>':'<div class="sucesso">Nenhum produto está no mínimo ou abaixo.</div>'}
+      </div>
+    </div>
+
+    <div class="card" style="margin:20px 0 0">
+      <h3>Últimas vendas</h3>
+      ${ultimas.length?'<div class="tabela-scroll"><table><thead><tr><th>Nº</th><th>Data</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>'+ultimas.map((v,i)=>'<tr><td>'+esc(v.numero??(i+1))+'</td><td>'+esc(formatarDataVenda(v))+'</td><td>'+esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-')+'</td><td>'+moeda(v.desconto)+'</td><td><b>'+moeda(v.total)+'</b></td></tr>').join('')+'</tbody></table></div>':'<div class="vazio">Nenhuma venda registrada.</div>'}
+    </div>`;
+}
+
+function renderizarKpis(){
+  document.getElementById('kpiProdutos').textContent=produtos.length;
+  document.getElementById('kpiEstoque').textContent=produtos.reduce((s,p)=>s+numero(p.estoque_inteiro),0);
+  document.getElementById('kpiVendas').textContent=vendas.length;
+  document.getElementById('kpiTotal').textContent=moeda(vendas.reduce((s,v)=>s+numero(v.total),0));
+}
+
+function renderizarTudo(){
+  renderizarKpis();
+  renderizarProdutos();
+  atualizarSelectProdutos();
+  renderizarCarrinho();
+  renderizarVendas();
+  renderizarEstoque();
+  renderizarRelatorio();
+}
+
+function imprimirRelatorio(){
+  const win=window.open('','_blank');
+  if(!win){alert('O navegador bloqueou a impressão. Permita pop-ups para este sistema.');return;}
+  const quantidade=vendas.length;
+  const bruto=vendas.reduce((s,v)=>s+numero(v.subtotal??v.total),0);
+  const descontos=vendas.reduce((s,v)=>s+numero(v.desconto),0);
+  const total=vendas.reduce((s,v)=>s+numero(v.total),0);
+  const pagamentos=resumoPagamentos();
+  const linhas=vendas.map((v,i)=>{
+    const itens=obterItensVenda(v).map(x=>esc(x.nome)+' x'+numero(x.quantidade)).join(', ');
+    return '<tr><td>'+esc(v.numero??(i+1))+'</td><td>'+esc(formatarDataVenda(v))+'</td><td>'+itens+'</td><td>'+esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-')+'</td><td>'+moeda(v.desconto)+'</td><td>'+moeda(v.total)+'</td></tr>';
+  }).join('');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:25px;color:#222}h1{text-align:center;margin-bottom:5px}.data{text-align:center;color:#666;margin-bottom:20px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.box{border:1px solid #aaa;padding:10px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:12px}th,td{border:1px solid #aaa;padding:6px;text-align:left}th{background:#eee}.total{text-align:right;font-size:18px;font-weight:bold;margin-top:15px}@media print{button{display:none}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Emitido em ${esc(new Date().toLocaleString('pt-BR'))}</div><div class="kpis"><div class="box">Vendas<b>${quantidade}</b></div><div class="box">Valor bruto<b>${moeda(bruto)}</b></div><div class="box">Descontos<b>${moeda(descontos)}</b></div><div class="box">Total vendido<b>${moeda(total)}</b></div></div><h2>Vendas</h2><table><thead><tr><th>Nº</th><th>Data</th><th>Produtos</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhuma venda registrada.</td></tr>'}</tbody></table><div class="total">TOTAL VENDIDO: ${moeda(total)}</div><h2>Resumo por pagamento</h2><table><thead><tr><th>Forma de pagamento</th><th>Valor</th></tr></thead><tbody>${pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')||'<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table><button onclick="window.print()">Imprimir</button><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  win.document.close();
+}
+
+function imprimirVendas(){
+  imprimirRelatorio();
+}
+
+/* =========================================================
+   ATUALIZAÇÃO AUTOMÁTICA DO ARMAZENAMENTO LOCAL
+   ========================================================= */
+let _assinaturaDados='';
+function assinaturaAtual(){
+  try{return JSON.stringify({produtos,vendas});}catch(e){return '';}
+}
+function sincronizarAutomaticamente(){
   try{
-    const campoNome=document.getElementById("nomeProduto");
-    const campoPreco=document.getElementById("precoProduto");
-    const campoCusto=document.getElementById("custoProduto");
-    const campoEstoque=document.getElementById("estoqueProduto");
-    const campoMinimo=document.getElementById("estoqueMinimo");
-
-    if(!campoNome||!campoPreco||!campoCusto||!campoEstoque||!campoMinimo){
-      alert("Erro: campos do cadastro não foram encontrados.");
-      return;
+    const bruto=localStorage.getItem(CHAVE_DADOS);
+    if(!bruto)return;
+    const assinatura=bruto;
+    if(assinatura!==_assinaturaDados){
+      const dados=JSON.parse(bruto);
+      produtos=Array.isArray(dados.produtos)?dados.produtos:[];
+      vendas=Array.isArray(dados.vendas)?dados.vendas:[];
+      _assinaturaDados=assinatura;
+      renderizarTudo();
     }
-
-    const nome=campoNome.value.trim();
-    const preco=Number(String(campoPreco.value||"").replace(",","."));
-    const custo=Number(String(campoCusto.value||0).replace(",","."));
-    const estoque=Number(String(campoEstoque.value||0).replace(",","."));
-    const minimo=Number(String(campoMinimo.value||0).replace(",","."));
-
-    if(!nome){ alert("Informe o nome do produto."); campoNome.focus(); return; }
-    if(!Number.isFinite(preco)||preco<=0){ alert("Informe um preço de venda válido."); campoPreco.focus(); return; }
-    if(!Number.isFinite(custo)||custo<0){ alert("Informe um custo válido."); campoCusto.focus(); return; }
-    if(!Number.isFinite(estoque)||estoque<0){ alert("Informe uma quantidade de estoque válida."); campoEstoque.focus(); return; }
-    if(!Number.isFinite(minimo)||minimo<0){ alert("Informe um estoque mínimo válido."); campoMinimo.focus(); return; }
-
-    const novoProduto={
-      id:Date.now(),
-      nome:nome,
-      preco:preco,
-      custo:custo,
-      estoque:estoque,
-      minimo:minimo
-    };
-
-    produtos.push(novoProduto);
-
-    if(!salvar()) {
-      produtos.pop();
-      return;
-    }
-
-    campoNome.value="";
-    campoPreco.value="";
-    campoCusto.value="";
-    campoEstoque.value="";
-    campoMinimo.value="";
-
-    atualizar();
-    alert("Produto cadastrado com sucesso!\n\nProduto: "+nome+"\nPreço: "+dinheiro(preco)+"\nEstoque: "+estoque);
-  }catch(erro){
-    console.error("Erro no cadastro do produto:",erro);
-    alert("Não foi possível cadastrar o produto. Verifique o armazenamento do navegador e tente novamente.");
-  }
+  }catch(e){console.warn('Atualização automática:',e);}
 }
-function alterarPreco(id){let produto=produtos.find(p=>p.id===id);if(!produto){alert("Produto não encontrado.");return}let novoPreco=prompt("ALTERAR PREÇO DE VENDA\n\nProduto: "+produto.nome+"\nPreço atual: "+dinheiro(produto.preco)+"\n\nDigite o novo preço:",Number(produto.preco).toFixed(2));if(novoPreco===null)return;novoPreco=Number(String(novoPreco).replace(",","."));if(!Number.isFinite(novoPreco)||novoPreco<=0){alert("Informe um preço válido.");return}produto.preco=novoPreco;salvar();atualizar();alert("Preço alterado com sucesso!\n\n"+produto.nome+"\nNovo preço: "+dinheiro(novoPreco))}
-function excluirProduto(id){if(confirm("Excluir este produto?")){produtos=produtos.filter(p=>p.id!==id);salvar();atualizar()}}
-function mostrarPreco(){let id=Number(document.getElementById("produtoVenda").value),p=produtos.find(x=>x.id===id);document.getElementById("precoVenda").innerHTML=p?"Preço: <b>"+dinheiro(p.preco)+"</b> | Estoque disponível: <b>"+p.estoque+"</b>":""}
-function adicionarItemVenda(){let id=Number(document.getElementById("produtoVenda").value),qtd=Number(document.getElementById("quantidadeVenda").value),p=produtos.find(x=>x.id===id);if(!p){alert("Selecione um produto.");return}if(qtd<=0){alert("Informe uma quantidade válida.");return}let existente=carrinhoVenda.find(item=>item.produtoId===id),quantidadeAnterior=existente?Number(existente.quantidade):0,novaQuantidade=quantidadeAnterior+qtd;if(novaQuantidade>Number(p.estoque)){alert("A quantidade informada é maior que o estoque disponível.");return}if(existente){existente.quantidade=novaQuantidade;existente.preco=Number(p.preco)}else carrinhoVenda.push({produtoId:p.id,produto:p.nome,quantidade:qtd,preco:Number(p.preco)});salvar();preencherCarrinhoVenda();document.getElementById("quantidadeVenda").value=1;document.getElementById("produtoVenda").value="";document.getElementById("precoVenda").innerHTML=""}
-function removerItemCarrinho(indice){if(indice<0||indice>=carrinhoVenda.length)return;carrinhoVenda.splice(indice,1);salvar();preencherCarrinhoVenda()}
-function limparCarrinho(){if(!carrinhoVenda.length)return;if(confirm("Limpar toda a compra que ainda não foi lançada?")){carrinhoVenda=[];salvar();preencherCarrinhoVenda()}}
-function preencherCarrinhoVenda(){let tabela=document.getElementById("tabelaCarrinhoVenda"),total=document.getElementById("totalCarrinhoVenda");if(!tabela||!total)return;tabela.innerHTML="";let totalCompra=0;carrinhoVenda.forEach((item,indice)=>{let subtotal=Number(item.preco)*Number(item.quantidade);totalCompra+=subtotal;tabela.innerHTML+=`<tr><td>${item.produto}</td><td>${item.quantidade}</td><td>${dinheiro(item.preco)}</td><td>${dinheiro(subtotal)}</td><td><button class="excluir" onclick="removerItemCarrinho(${indice})">Remover</button></td></tr>`});if(!carrinhoVenda.length)tabela.innerHTML='<tr><td colspan="5" style="text-align:center">Nenhum item adicionado à compra.</td></tr>';total.textContent=dinheiro(totalCompra)}
-function finalizarVenda(){if(!carrinhoVenda.length){alert("Adicione pelo menos um item à compra.");return}let pagamento=document.getElementById("pagamento").value;for(let item of carrinhoVenda){let p=produtos.find(x=>x.id===item.produtoId);if(!p){alert("O produto "+item.produto+" não existe mais no cadastro.");return}if(Number(item.quantidade)>Number(p.estoque)){alert("Estoque insuficiente para "+p.nome+". Disponível: "+p.estoque+".");return}}let total=carrinhoVenda.reduce((soma,item)=>soma+Number(item.preco)*Number(item.quantidade),0),resumo=carrinhoVenda.map(item=>item.produto+" - "+item.quantidade+" x "+dinheiro(item.preco)).join("\n");if(!confirm("CONFIRMAR COMPRA?\n\n"+resumo+"\n\nPagamento: "+pagamento+"\nTotal: "+dinheiro(total)))return;carrinhoVenda.forEach(item=>{let p=produtos.find(x=>x.id===item.produtoId);p.estoque-=Number(item.quantidade)});const compraFinalizada={
-  numero:historicoCompras.length+1,
-  data:new Date().toLocaleString("pt-BR"),
-  timestamp:Date.now(),
-  itens:carrinhoVenda.map(item=>({produtoId:item.produtoId,produto:item.produto,quantidade:Number(item.quantidade),preco:Number(item.preco)})),
-  pagamento,total
-};
-vendas.push({...compraFinalizada});
-historicoCompras.push({...compraFinalizada});
-carrinhoVenda=[];salvar();atualizar();alert("Compra registrada com sucesso!\nTotal: "+dinheiro(total));document.getElementById("quantidadeVenda").value=1;document.getElementById("produtoVenda").value="";document.getElementById("precoVenda").innerHTML=""}
-function atualizar(){document.getElementById("totalProdutos").textContent=produtos.length;let estoque=produtos.reduce((s,p)=>s+Number(p.estoque),0);document.getElementById("totalEstoque").textContent=estoque;document.getElementById("totalVendas").textContent=vendas.length;let faturamento=vendas.reduce((s,v)=>s+Number(v.total||0),0);document.getElementById("faturamento").textContent=dinheiro(faturamento);document.getElementById("relTotal").textContent=dinheiro(faturamento);document.getElementById("relQtd").textContent=vendas.length;document.getElementById("relEstoque").textContent=estoque;preencherProdutos();preencherVenda();preencherCarrinhoVenda();preencherVendas();preencherEstoque();alertas()}
-function preencherProdutos(){let tabela=document.getElementById("tabelaProdutos");tabela.innerHTML="";produtos.forEach(p=>{tabela.innerHTML+=`<tr><td>${p.nome}</td><td>${dinheiro(p.preco)}</td><td>${dinheiro(p.custo)}</td><td>${p.estoque}</td><td>${p.minimo}</td><td><button onclick="alterarPreco(${p.id})">Alterar preço</button> <button class="excluir" onclick="excluirProduto(${p.id})">Excluir</button></td></tr>`})}
-function preencherVenda(){let select=document.getElementById("produtoVenda"),valor=select.value;select.innerHTML='<option value="">Selecione o produto</option>';produtos.forEach(p=>{if(Number(p.estoque)>0)select.innerHTML+=`<option value="${p.id}">${p.nome}</option>`});if(valor)select.value=valor}
-function descricaoVenda(v){if(Array.isArray(v.itens))return v.itens.map(item=>item.produto+" x "+item.quantidade).join("<br>");return v.produto||""}
-function quantidadeTotalVenda(v){if(Array.isArray(v.itens))return v.itens.reduce((soma,item)=>soma+Number(item.quantidade||0),0);return Number(v.quantidade||0)}
-function preencherVendas(){let tabela=document.getElementById("tabelaVendas");tabela.innerHTML="";vendas.forEach((v,index)=>{tabela.innerHTML+=`<tr><td>${v.data||""}</td><td>${descricaoVenda(v)}</td><td>${quantidadeTotalVenda(v)}</td><td>${v.pagamento||""}</td><td>${dinheiro(v.total||0)}</td><td><button class="excluir" onclick="excluirVenda(${index})">🗑️ Excluir</button></td></tr>`});if(!vendas.length)tabela.innerHTML='<tr><td colspan="6" style="text-align:center">Nenhuma venda registrada.</td></tr>'}
-function preencherEstoque(){let tabela=document.getElementById("tabelaEstoque");tabela.innerHTML="";produtos.forEach(p=>{let baixo=Number(p.estoque)<=Number(p.minimo);tabela.innerHTML+=`<tr><td>${p.nome}</td><td>${p.estoque}</td><td>${p.minimo}</td><td class="${baixo?'alerta':'ok'}">${baixo?'ESTOQUE BAIXO':'OK'}</td></tr>`})}
-function alertas(){let div=document.getElementById("alertas"),baixos=produtos.filter(p=>Number(p.estoque)<=Number(p.minimo));if(!baixos.length){div.innerHTML="<span class='ok'>Nenhum produto com estoque baixo.</span>";return}div.innerHTML=baixos.map(p=>`<p class="alerta">${p.nome}: ${p.estoque} unidade(s)</p>`).join("")}
-function excluirVenda(index){if(!confirm("Deseja realmente excluir esta venda?"))return;let venda=vendas[index];if(!venda)return;if(Array.isArray(venda.itens))venda.itens.forEach(item=>{let produto=produtos.find(p=>p.id===item.produtoId)||produtos.find(p=>p.nome===item.produto);if(produto)produto.estoque+=Number(item.quantidade||0)});else{let produto=produtos.find(p=>p.nome===venda.produto);if(produto)produto.estoque+=Number(venda.quantidade||0)}vendas.splice(index,1);
-// IMPORTANTE: a exclusão afeta somente a aba Vendas.
-// O registro em historicoCompras permanece intocado.
-salvar();
-atualizar();
-renderRelatorioHistorico();
-alert("Venda excluída e estoque restaurado. O registro permanece no relatório histórico.")}
-function imprimirVendas(){let janela=window.open("","_blank");if(!janela){alert("O navegador bloqueou a janela de impressão. Permita janelas pop-up para este site.");return}let totalGeral=vendas.reduce((soma,venda)=>soma+Number(venda.total||0),0),linhas=!vendas.length?'<tr><td colspan="5" style="text-align:center">Nenhuma venda registrada.</td></tr>':vendas.map(venda=>`<tr><td>${venda.data||""}</td><td>${itensComPreco(venda)}</td><td>${quantidadeTotalVenda(venda)}</td><td>${venda.pagamento||""}</td><td>${dinheiro(venda.total||0)}</td></tr>`).join("");janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#222}h1{text-align:center}.data{text-align:center;margin-bottom:25px;color:#555}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:8px;text-align:left;vertical-align:top}th{background:#eee}.total{margin-top:20px;text-align:right;font-size:20px;font-weight:bold}@media print{button{display:none}body{margin:15px}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Sistema de Vendas<br>Emitido em: ${new Date().toLocaleString("pt-BR")}</div><table><thead><tr><th>Data</th><th>Produto — quantidade x preço = subtotal</th><th>Quantidade</th><th>Pagamento</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table><div class="total">TOTAL GERAL: ${dinheiro(totalGeral)}</div><br><button onclick="window.print()">🖨️ Imprimir</button></body></html>`);janela.document.close()}
+window.addEventListener('storage',function(e){
+  if(e.key===CHAVE_DADOS) sincronizarAutomaticamente();
+});
+window.addEventListener('focus',sincronizarAutomaticamente);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)sincronizarAutomaticamente();});
+setInterval(sincronizarAutomaticamente,1000);
 
-function chaveMes(dataTexto){
-  const m=String(dataTexto||"").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}`;
-  const iso=String(dataTexto||"").match(/^(\d{4})-(\d{2})/);
-  return iso?`${iso[1]}-${iso[2]}`:"sem-data";
-}
-function nomeMes(chave){
-  if(chave==="sem-data")return "Sem data";
-  const [ano,mes]=chave.split("-");
-  return `${["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][Number(mes)-1]} / ${ano}`;
-}
-function mesesDisponiveis(){
-  const encontrados=new Set();
-  historicoCompras.forEach(v=>encontrados.add(chaveMes(v.data)));
-  vendas.forEach(v=>encontrados.add(chaveMes(v.data)));
-  const agora=new Date();
-  encontrados.add(`${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,"0")}`);
-  const anos=[...encontrados].filter(x=>x!=="sem-data").map(x=>Number(x.slice(0,4)));
-  const anoMin=anos.length?Math.min(...anos):agora.getFullYear();
-  const anoMax=Math.max(agora.getFullYear(),...anos);
-  for(let ano=anoMin;ano<=anoMax;ano++)for(let mes=1;mes<=12;mes++)encontrados.add(`${ano}-${String(mes).padStart(2,"0")}`);
-  encontrados.delete("sem-data");
-  return [...encontrados].sort().reverse();
-}
-function itensComPreco(v){
-  if(Array.isArray(v.itens)){
-    return v.itens.map(item=>{
-      const qtd=Number(item.quantidade||0),preco=Number(item.preco||0);
-      return `${item.produto} — ${qtd} x ${dinheiro(preco)} = ${dinheiro(qtd*preco)}`;
-    }).join("<br>");
-  }
-  const qtd=Number(v.quantidade||0),preco=Number(v.preco||v.valorUnitario||0);
-  return `${v.produto||""}${qtd?" — "+qtd+" x "+dinheiro(preco):""}`;
-}
-function renderRelatorioHistorico(){
-  sincronizarHistorico();
-  const select=document.getElementById("mesRelatorio");
-  if(!select)return;
-  const meses=mesesDisponiveis(),atual=select.value;
-  select.innerHTML=meses.map(m=>`<option value="${m}">${nomeMes(m)}</option>`).join("");
-  if(meses.includes(atual))select.value=atual;
-  else{
-    const agora=new Date(),mesAtual=`${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,"0")}`;
-    select.value=meses.includes(mesAtual)?mesAtual:meses[0];
-  }
-  const mes=select.value,compras=historicoCompras.filter(v=>chaveMes(v.data)===mes);
-  const total=compras.reduce((s,v)=>s+Number(v.total||0),0);
-  const itens=compras.reduce((s,v)=>s+quantidadeTotalVenda(v),0);
-  const resumo=document.getElementById("resumoRelatorio"),tabela=document.getElementById("tabelaHistoricoCompras");
-  if(resumo)resumo.innerHTML=`<b>${nomeMes(mes)}</b><br>Compras finalizadas: <b>${compras.length}</b> &nbsp; | &nbsp; Itens: <b>${itens}</b> &nbsp; | &nbsp; Faturamento: <b>${dinheiro(total)}</b>`;
-  if(tabela)tabela.innerHTML=compras.length?compras.map((v,i)=>`<tr><td>Compra #${v.numero||i+1}</td><td>${v.data||""}</td><td>${itensComPreco(v)}</td><td>${v.pagamento||""}</td><td>${dinheiro(v.total||0)}</td></tr>`).join(""):'<tr><td colspan="5" style="text-align:center">Nenhuma compra finalizada neste mês.</td></tr>';
-}
-function imprimirRelatorioHistorico(){
-  sincronizarHistorico();
-  const select=document.getElementById("mesRelatorio"),mes=select?select.value:"";
-  const compras=historicoCompras.filter(v=>chaveMes(v.data)===mes);
-  const total=compras.reduce((s,v)=>s+Number(v.total||0),0);
-  const itens=compras.reduce((s,v)=>s+quantidadeTotalVenda(v),0);
-  const janela=window.open("","_blank");
-  if(!janela){alert("O navegador bloqueou a janela de impressão. Permita pop-ups para este site.");return}
-  const linhas=compras.length?compras.map((v,i)=>`<tr><td>Compra #${v.numero||i+1}</td><td>${v.data||""}</td><td>${itensComPreco(v)}</td><td>${quantidadeTotalVenda(v)}</td><td>${v.pagamento||""}</td><td>${dinheiro(v.total||0)}</td></tr>`).join(""):'<tr><td colspan="6" style="text-align:center">Nenhuma compra finalizada neste mês.</td></tr>';
-  janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Compras - ${nomeMes(mes)}</title><style>
-  body{font-family:Arial,sans-serif;color:#222;margin:25px}h1{text-align:center;margin-bottom:5px;font-size:28px}.sub{text-align:center;color:#555;margin-bottom:22px}.resumo{display:flex;gap:25px;flex-wrap:wrap;border:1px solid #999;padding:12px;margin-bottom:18px}.resumo b{font-size:18px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #999;padding:8px;text-align:left;vertical-align:top;word-wrap:break-word}th{background:#eee}th:nth-child(1){width:12%}th:nth-child(2){width:16%}th:nth-child(3){width:34%}th:nth-child(4){width:8%}th:nth-child(5){width:14%}th:nth-child(6){width:16%}.total{text-align:right;font-size:20px;font-weight:bold;margin-top:18px}.rodape{margin-top:35px;font-size:12px;color:#666;text-align:center}@media print{button{display:none!important}body{margin:10mm}@page{size:A4 portrait;margin:10mm}}
-  </style></head><body><h1>RELATÓRIO DE COMPRAS</h1><div class="sub">Sistema de Vendas — ${nomeMes(mes)}<br>Emitido em ${new Date().toLocaleString("pt-BR")}</div>
-  <div class="resumo"><span>Compras finalizadas: <b>${compras.length}</b></span><span>Itens vendidos: <b>${itens}</b></span><span>Faturamento: <b>${dinheiro(total)}</b></span></div>
-  <table><thead><tr><th>Compra</th><th>Data</th><th>Produto — quantidade x preço = subtotal</th><th>Qtd.</th><th>Pagamento</th><th>Total da compra</th></tr></thead><tbody>${linhas}</tbody></table>
-  <div class="total">TOTAL DO MÊS: ${dinheiro(total)}</div><div class="rodape">Registro histórico de compras finalizadas.</div><br><button onclick="window.print()">🖨️ Imprimir</button></body></html>`);
-  janela.document.close();
-}
-
-function backup(){let dados={produtos,vendas,carrinhoVenda,data:new Date().toISOString()},arquivo=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"}),url=URL.createObjectURL(arquivo),a=document.createElement("a");a.href=url;a.download="backup_sistema_vendas.json";a.click();URL.revokeObjectURL(url)}
-function limparDados(){if(confirm("ATENÇÃO: apagar todos os produtos, vendas e histórico permanente?"))if(confirm("Tem certeza? Esta operação não pode ser desfeita.")){produtos=[];vendas=[];carrinhoVenda=[];historicoCompras=[];salvar();atualizar();renderRelatorioHistorico()}}
-atualizar();renderRelatorioHistorico();
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+carregarDados(false);
 </script>
 </body>
 </html>
