@@ -356,6 +356,46 @@ function mostrarMensagem(texto,tipo='sucesso'){
     box.style.opacity='0';
   },6000);
 }
+function normalizarDadosCompatibilidade(){
+  let alterou=false;
+
+  produtos=produtos.map(p=>{
+    const q={...p};
+    if(q.estoque_inteiro===undefined){q.estoque_inteiro=Math.max(0,Math.trunc(numero(q.estoque))); alterou=true;}
+    if(q['mínimo']===undefined){q['mínimo']=Math.max(0,Math.trunc(numero(q.minimo))); alterou=true;}
+    if(q.personalizado===undefined){q.personalizado=Number(numero(q.custo).toFixed(2)); alterou=true;}
+    return q;
+  });
+
+  vendas=vendas.map((v,idx)=>{
+    const q={...v};
+    if(!q.id){
+      const numeroVenda=q.numero??(idx+1);
+      const base=q.timestamp??q.timestampz??numeroVenda;
+      q.id='legado-'+String(numeroVenda)+'-'+String(base);
+      alterou=true;
+    }
+    if(!q.timestampz && q.timestamp){
+      const d=new Date(q.timestamp);
+      if(!isNaN(d.getTime())){q.timestampz=d.toISOString();alterou=true;}
+    }
+    const itens=Array.isArray(q.itens)?q.itens:(Array.isArray(q.items)?q.items:[]);
+    q.itens=itens.map(x=>{
+      const y={...x};
+      if(y.produto_id===undefined && y.produtoId!==undefined){y.produto_id=y.produtoId;alterou=true;}
+      if(y.nome===undefined && y.produto!==undefined){y.nome=y.produto;alterou=true;}
+      if(y.subtotal===undefined){y.subtotal=Number((numero(y.preco)*numero(y.quantidade)).toFixed(2));alterou=true;}
+      return y;
+    });
+    if(q.subtotal===undefined){q.subtotal=Number(q.itens.reduce((a,x)=>a+numero(x.subtotal??(numero(x.preco)*numero(x.quantidade))),0).toFixed(2));alterou=true;}
+    if(q.desconto===undefined){q.desconto=0;alterou=true;}
+    if(q.forma_pagamento===undefined && q.pagamento!==undefined){q.forma_pagamento=q.pagamento;alterou=true;}
+    if(q.texto_pagamento===undefined){q.texto_pagamento=q.forma_pagamento||q.pagamento||'-';alterou=true;}
+    return q;
+  });
+  return alterou;
+}
+
 function salvarDados(){
   const pacote=JSON.stringify({produtos,vendas});
   localStorage.setItem(CHAVE_DADOS,pacote);
@@ -375,6 +415,8 @@ function carregarDados(silencioso=false){
         ? JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.vendas)) : [];
       salvarDados();
     }
+    const foiNormalizado=normalizarDadosCompatibilidade();
+    if(foiNormalizado) salvarDados();
     const status=document.getElementById('statusConexao');
     status.className='status-online';
     status.textContent='● Modo local • '+produtos.length+' produto(s) • dados salvos neste aparelho';
@@ -626,6 +668,159 @@ function limparCarrinho(){
 /* =========================================================
    EXCLUSÃO DE VENDAS / DADOS
    ========================================================= */
+function excluirVendaPorId(id){
+  const senha=prompt('Digite a senha para excluir itens da venda:');
+  if(senha===null)return;
+
+  if(senha!=='8526'){
+    alert('Senha incorreta.');
+    return;
+  }
+
+  const indice=vendas.findIndex(v=>String(v.id)===String(id));
+  if(indice<0){
+    alert('Venda não encontrada.');
+    return;
+  }
+
+  const venda=vendas[indice];
+  const itens=obterItensVenda(venda);
+
+  if(!itens.length){
+    alert('Esta venda não possui produtos para excluir.');
+    return;
+  }
+
+  let escolha='';
+
+  if(itens.length===1){
+    escolha='1';
+  }else{
+    let lista='PRODUTOS DA VENDA Nº '+String(venda.numero??(indice+1))+'\n\n';
+
+    itens.forEach((x,i)=>{
+      lista+=(i+1)+' — '+nomeItemVenda(x)+' — quantidade: '+numero(x.quantidade)+'\n';
+    });
+
+    escolha=prompt(
+      lista+
+      '\nDigite o número do produto que deseja excluir:'
+    );
+
+    if(escolha===null)return;
+  }
+
+  const itemIndex=Math.trunc(numero(escolha))-1;
+
+  if(itemIndex<0 || itemIndex>=itens.length){
+    alert('Produto não encontrado.');
+    return;
+  }
+
+  const item=itens[itemIndex];
+  const quantidadeAtual=numero(item.quantidade);
+
+  if(quantidadeAtual<=0){
+    alert('A quantidade deste produto já está zerada.');
+    return;
+  }
+
+  const quantidadeTexto=prompt(
+    'PRODUTO: '+nomeItemVenda(item)+
+    '\nQuantidade atual: '+quantidadeAtual+
+    '\n\nQuantas unidades deseja excluir?'
+  );
+
+  if(quantidadeTexto===null)return;
+
+  const quantidadeExcluir=numero(quantidadeTexto);
+
+  if(
+    !Number.isInteger(quantidadeExcluir) ||
+    quantidadeExcluir<=0 ||
+    quantidadeExcluir>quantidadeAtual
+  ){
+    alert(
+      'Digite uma quantidade inteira entre 1 e '+
+      quantidadeAtual+'.'
+    );
+    return;
+  }
+
+  const nome=nomeItemVenda(item);
+  const valorUnitario=numero(item.preco);
+
+  if(!confirm(
+    'CONFIRMAR EXCLUSÃO?\n\n'+
+    nome+'\n'+
+    'Quantidade: '+quantidadeExcluir+'\n'+
+    'Valor: '+moeda(valorUnitario*quantidadeExcluir)+
+    '\n\nEsta quantidade será devolvida ao estoque.'
+  )){
+    return;
+  }
+
+  const pid=item.produto_id??item.produtoId;
+  const produto=produtos.find(
+    p=>String(p.id)===String(pid)
+  );
+
+  if(produto){
+    produto.estoque_inteiro=
+      numero(produto.estoque_inteiro)+
+      quantidadeExcluir;
+  }
+
+  item.quantidade=
+    quantidadeAtual-quantidadeExcluir;
+
+  if(numero(item.quantidade)<=0){
+    itens.splice(itemIndex,1);
+  }
+
+  if(!itens.length){
+    vendas.splice(indice,1);
+    salvarDados();
+    renderizarTudo();
+
+    mostrarMensagem(
+      'Venda nº '+
+      String(venda.numero??(indice+1))+
+      ' excluída. Estoque restaurado.',
+      'sucesso'
+    );
+
+    return;
+  }
+
+  const subtotal=itens.reduce(
+    (s,x)=>s+numero(x.preco)*numero(x.quantidade),
+    0
+  );
+
+  const desconto=Math.min(
+    numero(venda.desconto),
+    subtotal
+  );
+
+  venda.total=Math.max(
+    0,
+    subtotal-desconto
+  );
+
+  salvarDados();
+  renderizarTudo();
+
+  mostrarMensagem(
+    'Excluído: '+
+    quantidadeExcluir+
+    ' × '+
+    nome+
+    '. Estoque restaurado.',
+    'sucesso'
+  );
+}
+
 function excluirVenda(){
   const senha=prompt('Digite a senha para excluir vendas:');
   if(senha===null)return;
@@ -638,7 +833,7 @@ function excluirVenda(){
     const data=v.timestampz?new Date(v.timestampz).toLocaleString('pt-BR'):'-';
     const itens=obterItensVenda(v);
     lista+='Venda nº '+num+' | '+data+' | '+moeda(v.total)+'\n';
-    itens.forEach(x=>lista+='  • '+x.nome+' — quantidade: '+numero(x.quantidade)+'\n');
+    itens.forEach(x=>lista+='  • '+nomeItemVenda(x)+' — quantidade: '+numero(x.quantidade)+'\n');
     lista+='\n';
   });
 
@@ -651,7 +846,7 @@ function excluirVenda(){
   const venda=vendas[indice];
   const itens=obterItensVenda(venda);
   let confirmacao='EXCLUIR VENDA Nº '+numEscolhido+'?\n\n';
-  itens.forEach(x=>confirmacao+='• '+x.nome+' — quantidade: '+numero(x.quantidade)+'\n');
+  itens.forEach(x=>confirmacao+='• '+nomeItemVenda(x)+' — quantidade: '+numero(x.quantidade)+'\n');
   confirmacao+='\nTotal: '+moeda(venda.total)+'\n\nOs produtos voltarão ao estoque.';
   if(!confirm(confirmacao))return;
 
@@ -695,6 +890,7 @@ function restaurarBackupArquivo(event){
       if(!confirm('Restaurar este backup? Os dados atuais deste navegador serão substituídos.')) return;
       produtos=JSON.parse(JSON.stringify(dados.produtos));
       vendas=JSON.parse(JSON.stringify(dados.vendas));
+      normalizarDadosCompatibilidade();
       carrinhoVenda=[];
       salvarDados();
       renderizarTudo();
@@ -716,6 +912,7 @@ function restaurarSistemaInicial(){
   if(!confirm('Restaurar os dados iniciais do sistema? Os dados atuais serão substituídos.'))return;
   produtos=Array.isArray(DADOS_INICIAIS_IMPORTADOS.produtos)?JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.produtos)):[];
   vendas=Array.isArray(DADOS_INICIAIS_IMPORTADOS.vendas)?JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.vendas)):[];
+  normalizarDadosCompatibilidade();
   carrinhoVenda=[];
   salvarDados();
   renderizarTudo();
@@ -828,7 +1025,7 @@ function renderizarVendas(){
       '<td class="venda-produtos">'+(resumo||'-')+'</td>'+
       '<td><span class="badge-pagamento">'+esc(pagamentoVenda(v))+'</span></td>'+
       '<td><b>'+moeda(v.total)+'</b></td>'+
-      '<td><button onclick="imprimirCupomVenda(\''+esc(v.id)+'\')">🧾 Cupom</button></td>'+
+      '<td><button onclick="imprimirCupomVenda(\''+esc(v.id)+'\')">🧾 Cupom</button> <button class="excluir" onclick="excluirVendaPorId(\''+esc(v.id)+'\')">🗑️ Excluir</button></td>'+
       '</tr>';
   }).join('');
 }
@@ -941,7 +1138,7 @@ function imprimirCupomVenda(id){
   const win=window.open('','_blank','width=420,height=720');
   if(!win){ alert('O navegador bloqueou a impressão. Permita pop-ups para este sistema.'); return; }
   const itens=obterItensVenda(v);
-  const linhas=itens.map(i=>`<tr><td>${esc(i.nome)}</td><td class="q">${numero(i.quantidade)}</td><td class="v">${moeda(numero(i.preco)*numero(i.quantidade))}</td></tr>`).join('');
+  const linhas=itens.map(i=>`<tr><td>${esc(nomeItemVenda(i))}</td><td class="q">${numero(i.quantidade)}</td><td class="v">${moeda(numero(i.preco)*numero(i.quantidade))}</td></tr>`).join('');
   const desconto=numero(v.desconto);
   const forma=esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-');
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cupom ${esc(v.numero)}</title><style>
