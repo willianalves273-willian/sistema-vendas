@@ -7,25 +7,37 @@
 <title>Sistema de Vendas</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;color:#222}
-header{background:#1f2937;color:#fff;padding:18px}
-header h1{margin:0 0 5px;font-size:25px}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef7f2 0%,#f5f7fb 48%,#eef3ff 100%);color:#172033}
+header{position:relative;overflow:hidden;background:linear-gradient(135deg,#063b3d 0%,#075e5b 45%,#0b7a62 100%);color:#fff;padding:22px 20px;box-shadow:0 8px 24px rgba(0,0,0,.16)}
+header:after{content:"";position:absolute;right:-70px;top:-100px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.09);box-shadow:-120px 120px 0 rgba(255,193,7,.07)}
+header h1{margin:0 0 5px;font-size:27px;letter-spacing:.3px;text-shadow:0 2px 4px rgba(0,0,0,.18)}
 header small{opacity:.9}
-nav{background:#fff;padding:10px;display:flex;gap:8px;flex-wrap:wrap;box-shadow:0 2px 5px #ccc;position:sticky;top:0;z-index:10}
-button{padding:10px 14px;border:0;border-radius:6px;cursor:pointer;background:#2563eb;color:#fff;font-size:14px}
+nav{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);padding:10px;display:flex;gap:8px;flex-wrap:wrap;box-shadow:0 4px 18px rgba(15,23,42,.10);position:sticky;top:0;z-index:10}
+button{padding:10px 14px;border:0;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,#0b78d0,#1769e0);color:#fff;font-size:14px;font-weight:700;box-shadow:0 3px 8px rgba(37,99,235,.20);transition:.15s transform,.15s box-shadow} button:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(15,23,42,.18)}
 button:disabled{opacity:.55;cursor:not-allowed}
-button.excluir{background:#dc2626}
-button.editar{background:#15803d}
-button.secundario{background:#6b7280}
+button.excluir{background:linear-gradient(135deg,#ef4444,#c81e1e)}
+button.editar{background:linear-gradient(135deg,#16a34a,#087443)}
+button.secundario{background:linear-gradient(135deg,#64748b,#475569)}
+/* Barra e área de Vendas */
+.nav-vendas{background:linear-gradient(135deg,#7c3aed,#4f46e5);position:relative;padding-right:18px}
+.nav-vendas #badgeVendas{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;margin-left:5px;padding:0 6px;border-radius:999px;background:#fff;color:#4f46e5;font-size:12px;font-weight:800}
+.vendas-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;background:linear-gradient(135deg,#0b4f52,#087f68 55%,#1769e0);color:#fff;border-radius:14px;padding:18px 20px;margin-bottom:15px;box-shadow:0 8px 20px rgba(15,23,42,.12)}
+.vendas-cabecalho h2{margin:0;font-size:25px}.vendas-cabecalho p{margin:4px 0 0;opacity:.9}
+.vendas-acoes{display:flex;gap:8px;flex-wrap:wrap}.vendas-acoes button{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);box-shadow:none}.vendas-acoes button:hover{background:rgba(255,255,255,.25)}
+.vendas-filtros{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:15px}
+.vendas-filtros label{margin:0}.vendas-filtros input,.vendas-filtros select{margin-top:5px}
+.badge-pagamento{display:inline-block;padding:5px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700}
+.venda-numero{font-size:16px;color:#4f46e5}.venda-produtos{line-height:1.45}.venda-produtos div{margin:2px 0}.venda-produtos b{color:#172033}.vendas-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}.venda-mini{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 5px 15px rgba(15,23,42,.06)}.venda-mini span{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}.venda-mini strong{display:block;font-size:21px;margin-top:4px;color:#0f766e}
+@media(max-width:700px){.vendas-filtros{grid-template-columns:1fr}.vendas-resumo{grid-template-columns:1fr}.vendas-cabecalho{padding:15px}.vendas-cabecalho h2{font-size:21px}}
 .container{max-width:1150px;margin:20px auto;padding:0 15px}
-.card,.kpi{background:#fff;padding:20px;margin-bottom:20px;border-radius:10px;box-shadow:0 2px 8px #ddd}
+.card,.kpi{background:rgba(255,255,255,.97);padding:20px;margin-bottom:20px;border-radius:15px;box-shadow:0 8px 25px rgba(15,23,42,.08);border:1px solid rgba(148,163,184,.16)}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 input,select{width:100%;padding:10px;margin:5px 0;border:1px solid #bbb;border-radius:5px;font-size:16px;background:#fff}
 label{font-weight:600;font-size:14px;display:block;margin-top:5px}
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{border:1px solid #ddd;padding:9px;text-align:left}
-th{background:#e5e7eb}
+th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
 .tabela-scroll{overflow-x:auto}
 .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -37,7 +49,7 @@ th{background:#e5e7eb}
 .aviso{background:#fff7ed;border:1px solid #fed7aa}
 .sucesso{background:#ecfdf5;border:1px solid #a7f3d0}
 .erro{background:#fef2f2;border:1px solid #fecaca}
-.mensagem{position:fixed;right:18px;bottom:18px;z-index:50;max-width:420px}
+.mensagem{position:fixed;right:18px;bottom:18px;z-index:2147483647;max-width:520px;padding:14px 18px;border-radius:10px;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,.18);border-left:6px solid #16a34a;background:#fff;line-height:1.35;display:block;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .2s ease}.mensagem.erro{border-left-color:#dc2626;background:#fff7f7;visibility:visible;opacity:1}.mensagem.sucesso{left:50%;right:auto;bottom:50%;transform:translate(-50%,50%);width:min(90vw,900px);max-width:900px;padding:34px 42px;border:4px solid #16a34a;border-left-width:4px;border-radius:18px;background:#f0fdf4;color:#166534;font-size:30px;line-height:1.25;text-align:center;box-shadow:0 18px 55px rgba(0,0,0,.28);font-weight:900;visibility:visible;opacity:1}.mensagem.visivel{visibility:visible;opacity:1}
 .vazio{text-align:center;padding:25px;color:#666}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:15px;z-index:20}
 .caixa{background:#fff;border-radius:10px;padding:20px;width:min(620px,100%);max-height:92vh;overflow:auto}
@@ -82,10 +94,12 @@ th{background:#e5e7eb}
   <button onclick="mostrar('inicio')">Início</button>
   <button onclick="mostrar('produtos')">Produtos</button>
   <button onclick="mostrar('venda')">Nova Venda</button>
-  <button onclick="mostrar('vendas')">Vendas</button>
+  <button class="nav-vendas" onclick="mostrar('vendas')">🧾 Vendas <span id="badgeVendas">0</span></button>
   <button onclick="mostrar('estoque')">Estoque</button>
   <button onclick="mostrar('relatorios')">Relatórios</button>
+  <button onclick="imprimirCupomUltimaVenda()">🧾 Cupom</button>
   <button onclick="imprimirVendas()">🖨️ Imprimir</button>
+  <button onclick="mostrar('backup')">💾 Backup / Restaurar</button>
 </nav>
 
 <div id="mensagem" class="mensagem"></div>
@@ -93,6 +107,11 @@ th{background:#e5e7eb}
 <main class="container">
 
 <section id="inicio" class="pagina">
+  <div class="card" style="background:linear-gradient(135deg,#073b3d,#0b7a62 62%,#1687d9);color:#fff;position:relative;overflow:hidden">
+    <div style="position:relative;z-index:1"><div style="font-size:13px;opacity:.85;letter-spacing:1px;text-transform:uppercase">Controle completo</div><h2 style="font-size:30px;margin:6px 0">Sistema de Vendas V2</h2><p style="margin:0;max-width:720px;opacity:.92">Produtos, estoque, vendas, relatórios, backup e impressão em um único sistema local.</p></div>
+    <div style="position:absolute;right:-30px;top:-70px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.10)"></div>
+    <div style="position:absolute;right:90px;bottom:-110px;width:220px;height:220px;border-radius:50%;background:rgba(255,193,7,.10)"></div>
+  </div>
   <div class="kpis">
     <div class="kpi">Produtos<strong id="kpiProdutos">0</strong></div>
     <div class="kpi">Itens em estoque<strong id="kpiEstoque">0</strong></div>
@@ -192,18 +211,33 @@ th{background:#e5e7eb}
     </div>
     <div class="aviso" id="resumoPagamento">Total: <b id="totalCarrinho">R$ 0,00</b></div>
     <div class="acoes">
-      <button onclick="registrarVenda()">💾 Registrar venda</button>
+      <button onclick="registrarVenda()">✅ Finalizar e registrar venda</button>
+      <button onclick="imprimirCupomUltimaVenda()">🧾 Imprimir cupom</button>
       <button class="secundario" onclick="limparCarrinho()">Limpar carrinho</button>
     </div>
   </div>
 </section>
 
 <section id="vendas" class="pagina oculto">
+  <div class="vendas-cabecalho">
+    <div><h2>🧾 Vendas registradas</h2><p>Consulte, imprima o cupom e acompanhe cada venda realizada.</p></div>
+    <div class="vendas-acoes"><button onclick="imprimirVendas()">🖨️ Imprimir relatório</button><button onclick="imprimirCupomUltimaVenda()">🧾 Último cupom</button><button class="excluir" onclick="excluirVenda()">🗑️ Excluir venda</button></div>
+  </div>
+  <div class="vendas-resumo">
+    <div class="venda-mini"><span>Vendas registradas</span><strong id="vendasQtdBarra">0</strong></div>
+    <div class="venda-mini"><span>Total vendido</span><strong id="vendasTotalBarra">R$ 0,00</strong></div>
+    <div class="venda-mini"><span>Itens vendidos</span><strong id="vendasItensBarra">0</strong></div>
+  </div>
   <div class="card">
-    <h2>Vendas registradas</h2>
+    <div class="vendas-filtros nao-imprimir">
+      <div><label>🔎 Buscar produto ou número</label><input id="filtroVendas" placeholder="Ex.: Fumo Juriti ou 20" oninput="renderizarVendas()"></div>
+      <div><label>Pagamento</label><select id="filtroPagamento" onchange="renderizarVendas()"><option value="">Todos</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Cartão Caixa</option><option>Cartão Inter</option><option>PIX</option><option>Dinheiro</option><option>Outros</option></select></div>
+      <div><label>Ordenação</label><select id="filtroOrdem" onchange="renderizarVendas()"><option value="desc">Mais recentes</option><option value="asc">Mais antigas</option></select></div>
+      <button class="secundario" onclick="limparFiltroVendas()">Limpar filtros</button>
+    </div>
     <div class="tabela-scroll">
       <table>
-        <thead><tr><th>Data</th><th>Total</th><th>Itens</th><th>Pagamento</th></tr></thead>
+        <thead><tr><th>Nº</th><th>Data</th><th>Produtos vendidos</th><th>Pagamento</th><th>Total</th><th>Ações</th></tr></thead>
         <tbody id="tabelaVendas"></tbody>
       </table>
     </div>
@@ -219,6 +253,20 @@ th{background:#e5e7eb}
         <tbody id="tabelaEstoque"></tbody>
       </table>
     </div>
+  </div>
+</section>
+
+<section id="backup" class="pagina oculto">
+  <div class="card">
+    <h2>💾 Backup e Restauração</h2>
+    <div class="aviso"><b>Segurança:</b> faça um backup antes de trocar de computador, limpar o navegador ou restaurar o sistema.</div>
+    <div class="acoes">
+      <button onclick="baixarBackup()">⬇️ Fazer backup agora</button>
+      <button onclick="selecionarBackup()">⬆️ Restaurar backup</button>
+      <button class="secundario" onclick="restaurarSistemaInicial()">🔄 Restaurar sistema inicial</button>
+    </div>
+    <input id="arquivoBackup" type="file" accept=".json,application/json" class="oculto" onchange="restaurarBackupArquivo(event)">
+    <p class="pequeno">O backup contém produtos e vendas. Restaurar um backup substitui os dados atuais deste navegador.</p>
   </div>
 </section>
 
@@ -263,7 +311,7 @@ const CHAVE_DADOS='sistema_vendas_local_v1';
    São carregados somente se este aparelho ainda não tiver dados locais.
    Não há conexão com Supabase.
 */
-const DADOS_INICIAIS_IMPORTADOS = {"produtos":[{"id":"1789590494039","nome":"BATATINHA IGLESA KILO","preco":9.2,"personalizado":6.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590522198","nome":"ISQUEIRO BIC GRANDE","preco":6.0,"personalizado":5.5,"estoque_inteiro":998,"mínimo":10},{"id":"1789590545636","nome":"OVOS DE GRANJA","preco":1.2,"personalizado":0.5,"estoque_inteiro":972,"mínimo":10},{"id":"1789590583268","nome":"SARDINHA ENLATADAS","preco":7.5,"personalizado":5.99,"estoque_inteiro":996,"mínimo":10},{"id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","preco":5.5,"personalizado":4.5,"estoque_inteiro":997,"mínimo":10},{"id":"1789590640778","nome":"TODINHO IBITURUNA","preco":1.5,"personalizado":1.0,"estoque_inteiro":991,"mínimo":10},{"id":"1789590673868","nome":"AÇUCAR CRISTAL 5KG","preco":17.0,"personalizado":15.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","preco":4.0,"personalizado":2.99,"estoque_inteiro":996,"mínimo":10},{"id":"1789590736537","nome":"CREME DENTAL 180","preco":9.0,"personalizado":7.45,"estoque_inteiro":999,"mínimo":10},{"id":"1789590766449","nome":"GILLETE PRESTORBARBA","preco":4.0,"personalizado":2.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590792606","nome":"FUBÁ MIMOSO 1KG","preco":4.0,"personalizado":2.0,"estoque_inteiro":998,"mínimo":10},{"id":"1789590824849","nome":"AGUA SANTARIA 2L","preco":7.0,"personalizado":5.5,"estoque_inteiro":998,"mínimo":10},{"id":"1789590868236","nome":"SUCOS SABORES DIV","preco":1.5,"personalizado":0.5,"estoque_inteiro":992,"mínimo":10},{"id":"1789590893756","nome":"RAÇÃO PARA GATO","preco":10.0,"personalizado":8.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789590924276","nome":"CARNE DE PORCO","preco":85.0,"personalizado":33.0,"estoque_inteiro":997,"mínimo":10},{"id":"1789590958630","nome":"DOCE DE AMENDOIM","preco":1.5,"personalizado":0.95,"estoque_inteiro":997,"mínimo":110},{"id":"1789590987488","nome":"FUMO JURITI ESPECIAL","preco":4.5,"personalizado":3.5,"estoque_inteiro":988,"mínimo":10},{"id":"1789678550585","nome":"LEITE IBITURUNA 1 L","preco":7.5,"personalizado":6.2,"estoque_inteiro":998,"mínimo":10},{"id":"1789678776877","nome":"ESCOVA DE DENTE","preco":5.0,"personalizado":2.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789678819735","nome":"TOMATE LONGA V KG","preco":4.2,"personalizado":2.99,"estoque_inteiro":998,"mínimo":10},{"id":"1789678864801","nome":"MORTADELA PEDAÇO","preco":13.5,"personalizado":4.99,"estoque_inteiro":998,"mínimo":10},{"id":"1789678910429","nome":"SHAMPOO SEDA","preco":15.0,"personalizado":13.25,"estoque_inteiro":999,"mínimo":10},{"id":"1789678944813","nome":"CARNE DE BOI","preco":42.0,"personalizado":32.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1789688099227","nome":"FEIJÃO SUPANG 1K","preco":8.99,"personalizado":6.59,"estoque_inteiro":975,"mínimo":10},{"id":"1789688122346","nome":"OLEO DE SOJA C","preco":7.99,"personalizado":6.5,"estoque_inteiro":997,"mínimo":10},{"id":"1789688148979","nome":"DETERGENTE YPÊ 500","preco":3.49,"personalizado":2.5,"estoque_inteiro":997,"mínimo":10},{"id":"1789688193264","nome":"ESPONJA DE AÇO BB","preco":2.49,"personalizado":0.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789688229716","nome":"LEITE QUATÁ INTEGRAL 1L","preco":5.79,"personalizado":4.1,"estoque_inteiro":996,"mínimo":10},{"id":"1789689832852","nome":"MARGARINA DELÍCIA 250","preco":7.0,"personalizado":5.8,"estoque_inteiro":999,"mínimo":10},{"id":"1789689865118","nome":"LEITE LITRO DESCARTÁVEL","preco":10.0,"personalizado":5.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690056338","nome":"FUMO JURITI ESPECIAL","preco":4.5,"personalizado":3.1,"estoque_inteiro":1000,"mínimo":10},{"id":"1789690148324","nome":"LINGUIÇA DEFUMADA KG","preco":28.0,"personalizado":22.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690195930","nome":"PÃO DE DOCE SACOLA","preco":10.0,"personalizado":6.99,"estoque_inteiro":999,"mínimo":10},{"id":"1789690419991","nome":"UNIEPAZ","preco":45.0,"personalizado":40.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690546689","nome":"CEMIG DISTRIBUIÇÃO SA","preco":34.84,"personalizado":29.9,"estoque_inteiro":999,"mínimo":10},{"id":"1789690593666","nome":"SAAE RAUL SOARES","preco":51.86,"personalizado":16.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690620658","nome":"FIBROM INTERNET","preco":90.0,"personalizado":80.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690832151","nome":"PÓ DE CAFÉ 500","preco":24.0,"personalizado":20.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789690877384","nome":"BUCHA DE LAVAR LOUÇA","preco":2.5,"personalizado":1.2,"estoque_inteiro":999,"mínimo":10},{"id":"1789690919426","nome":"SABONETE GRANDE","preco":5.0,"personalizado":2.0,"estoque_inteiro":998,"mínimo":10},{"id":"1789690957042","nome":"BISCOITO WAFFER","preco":4.0,"personalizado":2.0,"estoque_inteiro":998,"mínimo":10},{"id":"1789749627992","nome":"TORNEIRA DUAS BOCAS","preco":28.0,"personalizado":21.0,"estoque_inteiro":999,"mínimo":10},{"id":"1789749660657","nome":"TEMPERO SALE ALHO POTE 1KG","preco":13.0,"personalizado":9.5,"estoque_inteiro":999,"mínimo":10},{"id":"1789856232378","nome":"ARREDODAMENTO DOCE AMENDOIM","preco":0.5,"personalizado":0.5,"estoque_inteiro":9,"mínimo":2},{"id":"1790088454896","nome":"AMACIANTE DE ROUPAS","preco":11.0,"personalizado":10.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088490917","nome":"PAR DE CORREIA CHINELO 42","preco":5.0,"personalizado":5.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088534731","nome":"TABLET DE SABÃO YPÊ","preco":16.0,"personalizado":10.0,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088570271","nome":"PILHAS AA","preco":2.0,"personalizado":1.2,"estoque_inteiro":1000,"mínimo":10},{"id":"1790088600959","nome":"CAIXA DE SABÃO EM PÓ","preco":22.0,"personalizado":15.2,"estoque_inteiro":1000,"mínimo":10},{"id":"1790171537188","nome":"BALAS MACIA DE FRUTAS","preco":0.1428571428571429,"personalizado":0.02,"estoque_inteiro":1000,"mínimo":10},{"id":"1790171669694","nome":"DESCONTO","preco":0.36,"personalizado":0.36,"estoque_inteiro":1000,"mínimo":10}],"vendas":[{"id":"importado-1","numero":1,"timestampz":"2026-09-16T20:40:23.457000+00:00","subtotal":151.2,"desconto":0,"total":151.2,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":151.2,"itens":[{"produto_id":"1789590494039","nome":"BATATINHA IGLESA KILO","quantidade":1,"preco":9.2,"subtotal":9.2},{"produto_id":"1789590522198","nome":"ISQUEIRO BIC GRANDE","quantidade":2,"preco":6.0,"subtotal":12.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":7,"preco":1.0,"subtotal":7.0},{"produto_id":"1789590583268","nome":"SARDINHA ENLATADAS","quantidade":2,"preco":7.0,"subtotal":14.0},{"produto_id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5,"subtotal":5.5},{"produto_id":"1789590640778","nome":"TODINHO IBITURUNA","quantidade":3,"preco":2.0,"subtotal":6.0},{"produto_id":"1789590673868","nome":"AÇUCAR CRISTAL 5KG","quantidade":1,"preco":17.0,"subtotal":17.0},{"produto_id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590736537","nome":"CREME DENTAL 180","quantidade":1,"preco":9.0,"subtotal":9.0},{"produto_id":"1789590766449","nome":"GILLETE PRESTORBARBA","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590792606","nome":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590824849","nome":"AGUA SANTARIA 2L","quantidade":1,"preco":7.0,"subtotal":7.0},{"produto_id":"1789590868236","nome":"SUCOS SABORES DIV","quantidade":2,"preco":1.0,"subtotal":2.0},{"produto_id":"1789590893756","nome":"RAÇÃO PARA GATO","quantidade":1,"preco":10.0,"subtotal":10.0},{"produto_id":"1789590924276","nome":"CARNE DE PORCO","quantidade":1,"preco":39.0,"subtotal":39.0},{"produto_id":"1789590958630","nome":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5,"subtotal":1.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-2","numero":2,"timestampz":"2026-09-18T16:43:09.957000+00:00","subtotal":42.5,"desconto":0,"total":42.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":42.5,"itens":[{"produto_id":"1789590958630","nome":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5,"subtotal":1.5},{"produto_id":"1789749627992","nome":"TORNEIRA DUAS BOCAS","quantidade":1,"preco":28.0,"subtotal":28.0},{"produto_id":"1789749660657","nome":"TEMPERO SALE ALHO POTE 1KG","quantidade":1,"preco":13.0,"subtotal":13.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-3","numero":3,"timestampz":"2026-09-19T21:49:50.468000+00:00","subtotal":115.9,"desconto":0,"total":115.9,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":115.9,"itens":[{"produto_id":"1789678550585","nome":"LEITE IBITURUNA 1 L","quantidade":2,"preco":7.5,"subtotal":15.0},{"produto_id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5,"subtotal":5.5},{"produto_id":"1789678776877","nome":"ESCOVA DE DENTE","quantidade":1,"preco":5.0,"subtotal":5.0},{"produto_id":"1789590868236","nome":"SUCOS SABORES DIV","quantidade":3,"preco":1.0,"subtotal":3.0},{"produto_id":"1789678819735","nome":"TOMATE LONGA V KG","quantidade":1,"preco":3.4,"subtotal":3.4},{"produto_id":"1789590640778","nome":"TODINHO IBITURUNA","quantidade":3,"preco":2.0,"subtotal":6.0},{"produto_id":"1789678864801","nome":"MORTADELA PEDAÇO","quantidade":1,"preco":6.0,"subtotal":6.0},{"produto_id":"1789678910429","nome":"SHAMPOO SEDA","quantidade":1,"preco":15.0,"subtotal":15.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":7,"preco":1.0,"subtotal":7.0},{"produto_id":"1789590792606","nome":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4.0,"subtotal":4.0},{"produto_id":"1789590924276","nome":"CARNE DE PORCO","quantidade":1,"preco":42.0,"subtotal":42.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-4","numero":4,"timestampz":"2026-09-19T21:52:23.750000+00:00","subtotal":284.84000000000003,"desconto":0,"total":284.84000000000003,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":284.84000000000003,"itens":[{"produto_id":"1789688099227","nome":"FEIJÃO SUPANG 1K","quantidade":25,"preco":8.99,"subtotal":224.75},{"produto_id":"1789688122346","nome":"OLEO DE SOJA C","quantidade":3,"preco":7.99,"subtotal":23.97},{"produto_id":"1789688148979","nome":"DETERGENTE YPÊ 500","quantidade":3,"preco":3.49,"subtotal":10.47},{"produto_id":"1789688193264","nome":"ESPONJA DE AÇO BB","quantidade":1,"preco":2.49,"subtotal":2.49},{"produto_id":"1789688229716","nome":"LEITE QUATÁ INTEGRAL 1L","quantidade":4,"preco":5.79,"subtotal":23.16}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-5","numero":5,"timestampz":"2026-09-19T21:53:59.436000+00:00","subtotal":20.0,"desconto":0,"total":20.0,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":20.0,"itens":[{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":3,"preco":1.0,"subtotal":3.0},{"produto_id":"1789689832852","nome":"MARGARINA DELÍCIA 250","quantidade":1,"preco":7.0,"subtotal":7.0},{"produto_id":"1789689865118","nome":"LEITE LITRO DESCARTÁVEL","quantidade":1,"preco":10.0,"subtotal":10.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-6","numero":6,"timestampz":"2026-09-19T21:55:25.662000+00:00","subtotal":101.0,"desconto":0,"total":101.0,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":101.0,"itens":[{"produto_id":"1789690148324","nome":"LINGUIÇA DEFUMADA KG","quantidade":1,"preco":28.0,"subtotal":28.0},{"produto_id":"1789690195930","nome":"PÃO DE DOCE SACOLA","quantidade":1,"preco":10.0,"subtotal":10.0},{"produto_id":"1789690419991","nome":"UNIEPAZ","quantidade":1,"preco":45.0,"subtotal":45.0},{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5,"subtotal":18.0}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-7","numero":7,"timestampz":"2026-09-19T22:02:38.566000+00:00","subtotal":107.2,"desconto":0,"total":107.2,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":107.2,"itens":[{"produto_id":"1789690832151","nome":"PÓ DE CAFÉ 500","quantidade":1,"preco":24.0,"subtotal":24.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":7,"preco":1.0,"subtotal":7.0},{"produto_id":"1789590640778","nome":"TODINHO IBITURUNA","quantidade":3,"preco":2.0,"subtotal":6.0},{"produto_id":"1789690877384","nome":"BUCHA DE LAVAR LOUÇA","quantidade":1,"preco":2.5,"subtotal":2.5},{"produto_id":"1789678819735","nome":"TOMATE LONGA V KG","quantidade":1,"preco":4.2,"subtotal":4.2},{"produto_id":"1789590583268","nome":"SARDINHA ENLATADAS","quantidade":2,"preco":7.0,"subtotal":14.0},{"produto_id":"1789690919426","nome":"SABONETE GRANDE","quantidade":2,"preco":5.0,"subtotal":10.0},{"produto_id":"1789590702268","nome":"PACOTE DE MACARRÃO 500","quantidade":2,"preco":4.0,"subtotal":8.0},{"produto_id":"1789590615088","nome":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5,"subtotal":5.5},{"produto_id":"1789678864801","nome":"MORTADELA PEDAÇO","quantidade":1,"preco":13.5,"subtotal":13.5},{"produto_id":"1789690957042","nome":"BISCOITO WAFFER","quantidade":2,"preco":4.0,"subtotal":8.0},{"produto_id":"1789590868236","nome":"SUCOS SABORES DIV","quantidade":3,"preco":1.5,"subtotal":4.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-8","numero":8,"timestampz":"2026-09-19T22:04:34.262000+00:00","subtotal":115.5,"desconto":0,"total":115.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":115.5,"itens":[{"produto_id":"1789590924276","nome":"CARNE DE PORCO","quantidade":1,"preco":85.0,"subtotal":85.0},{"produto_id":"1789590824849","nome":"AGUA SANTARIA 2L","quantidade":1,"preco":7.0,"subtotal":7.0},{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5,"subtotal":18.0},{"produto_id":"1789590545636","nome":"OVOS DE GRANJA","quantidade":4,"preco":1.0,"subtotal":4.0},{"produto_id":"1789590958630","nome":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5,"subtotal":1.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-9","numero":9,"timestampz":"2026-09-19T22:15:56.598000+00:00","subtotal":176.70000000000002,"desconto":0,"total":176.70000000000002,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":176.70000000000002,"itens":[{"produto_id":"1789690593666","nome":"SAAE RAUL SOARES","quantidade":1,"preco":51.86,"subtotal":51.86},{"produto_id":"1789690620658","nome":"FIBROM INTERNET","quantidade":1,"preco":90.0,"subtotal":90.0},{"produto_id":"1789690546689","nome":"CEMIG DISTRIBUIÇÃO SA","quantidade":1,"preco":34.84,"subtotal":34.84}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-10","numero":10,"timestampz":"2026-09-19T22:17:25.983000+00:00","subtotal":0.5,"desconto":0,"total":0.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":0.5,"itens":[{"produto_id":"1789856232378","nome":"ARREDODAMENTO DOCE AMENDOIM","quantidade":1,"preco":0.5,"subtotal":0.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-11","numero":11,"timestampz":"2026-09-20T15:46:34.272000+00:00","subtotal":4.5,"desconto":0,"total":4.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":4.5,"itens":[{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":1,"preco":4.5,"subtotal":4.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-12","numero":12,"timestampz":"2026-09-20T15:47:35.163000+00:00","subtotal":13.5,"desconto":0,"total":13.5,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":13.5,"itens":[{"produto_id":"1789590987488","nome":"FUMO JURITI ESPECIAL","quantidade":3,"preco":4.5,"subtotal":13.5}],"texto_pagamento":"Cartão de crédito"},{"id":"importado-13","numero":13,"timestampz":"2026-09-20T19:13:43.884000+00:00","subtotal":2459.9,"desconto":0,"total":2459.9,"forma_pagamento":"Outros cartões de crédito","parcelado":false,"parcelas":1,"valor_parcela":2459.9,"itens":[{"produto_id":"1789929318838","nome":"MAQUINA DE LAVAR ROUPA CONSUL 16KG","quantidade":1,"preco":2459.9,"subtotal":2459.9}],"texto_pagamento":"Cartão de crédito"}]};
+const DADOS_INICIAIS_IMPORTADOS = {"produtos":[{"id":1789590494039,"nome":"BATATINHA IGLESA KILO","preco":9.2,"custo":6.99,"estoque":999,"minimo":10},{"id":1789590522198,"nome":"ISQUEIRO BIC GRANDE","preco":6,"custo":5.5,"estoque":998,"minimo":10},{"id":1789590545636,"nome":"OVOS DE GRANJA","preco":1.2,"custo":0.5,"estoque":965,"minimo":10},{"id":1789590583268,"nome":"SARDINHA ENLATADAS","preco":7.5,"custo":5.99,"estoque":994,"minimo":10},{"id":1789590615088,"nome":"EXTRATO DE TOMATE LATA","preco":5.5,"custo":4.5,"estoque":997,"minimo":10},{"id":1789590640778,"nome":"TODINHO IBITURUNA","preco":1.5,"custo":1,"estoque":988,"minimo":10},{"id":1789590673868,"nome":"AÇUCAR CRISTAL 5KG","preco":17,"custo":15.99,"estoque":999,"minimo":10},{"id":1789590702268,"nome":"PACOTE DE MACARRÃO 500","preco":4,"custo":2.99,"estoque":996,"minimo":10},{"id":1789590736537,"nome":"CREME DENTAL 180","preco":9,"custo":7.45,"estoque":999,"minimo":10},{"id":1789590766449,"nome":"GILLETE PRESTORBARBA","preco":4,"custo":2.99,"estoque":999,"minimo":10},{"id":1789590792606,"nome":"FUBÁ MIMOSO 1KG","preco":4,"custo":2,"estoque":998,"minimo":10},{"id":1789590824849,"nome":"AGUA SANTARIA 2L","preco":7,"custo":5.5,"estoque":998,"minimo":10},{"id":1789590868236,"nome":"SUCOS SABORES DIV","preco":1.5,"custo":0.5,"estoque":989,"minimo":10},{"id":1789590893756,"nome":"RAÇÃO PARA GATO","preco":10,"custo":8.99,"estoque":999,"minimo":10},{"id":1789590924276,"nome":"CARNE DE PORCO","preco":85,"custo":33,"estoque":997,"minimo":10},{"id":1789590958630,"nome":"DOCE DE AMENDOIM","preco":1.5,"custo":0.95,"estoque":996,"minimo":110},{"id":1789590987488,"nome":"FUMO JURITI ESPECIAL","preco":4.5,"custo":3.5,"estoque":976,"minimo":10},{"id":1789678550585,"nome":"LEITE IBITURUNA 1 L","preco":7.5,"custo":6.2,"estoque":996,"minimo":10},{"id":1789678776877,"nome":"ESCOVA DE DENTE","preco":5,"custo":2.99,"estoque":999,"minimo":10},{"id":1789678819735,"nome":"TOMATE LONGA V KG","preco":4.2,"custo":2.99,"estoque":998,"minimo":10},{"id":1789678864801,"nome":"MORTADELA PEDAÇO","preco":7.5,"custo":4.99,"estoque":997,"minimo":10},{"id":1789678910429,"nome":"SHAMPOO SEDA","preco":15,"custo":13.25,"estoque":999,"minimo":10},{"id":1789678944813,"nome":"CARNE DE BOI","preco":42,"custo":32,"estoque":1000,"minimo":10},{"id":1789688099227,"nome":"FEIJÃO SUPANG 1K","preco":8.99,"custo":6.59,"estoque":975,"minimo":10},{"id":1789688122346,"nome":"OLEO DE SOJA C","preco":7.99,"custo":6.5,"estoque":997,"minimo":10},{"id":1789688148979,"nome":"DETERGENTE YPÊ 500","preco":3.49,"custo":2.5,"estoque":997,"minimo":10},{"id":1789688193264,"nome":"ESPONJA DE AÇO BB","preco":2.49,"custo":0.99,"estoque":999,"minimo":10},{"id":1789688229716,"nome":"LEITE QUATÁ INTEGRAL 1L","preco":5.79,"custo":4.1,"estoque":996,"minimo":10},{"id":1789689832852,"nome":"MARGARINA DELÍCIA 250","preco":7,"custo":5.8,"estoque":999,"minimo":10},{"id":1789689865118,"nome":"LEITE LITRO DESCARTÁVEL","preco":10,"custo":5,"estoque":999,"minimo":10},{"id":1789690056338,"nome":"FUMO JURITI ESPECIAL","preco":4.5,"custo":3.1,"estoque":1000,"minimo":10},{"id":1789690148324,"nome":"LINGUIÇA DEFUMADA KG","preco":30,"custo":22,"estoque":998,"minimo":10},{"id":1789690195930,"nome":"PÃO DE DOCE SACOLA","preco":10,"custo":6.99,"estoque":998,"minimo":10},{"id":1789690419991,"nome":"UNIEPAZ","preco":45,"custo":40,"estoque":999,"minimo":10},{"id":1789690546689,"nome":"CEMIG DISTRIBUIÇÃO SA","preco":34.84,"custo":29.9,"estoque":999,"minimo":10},{"id":1789690593666,"nome":"SAAE RAUL SOARES","preco":51.86,"custo":16,"estoque":999,"minimo":10},{"id":1789690620658,"nome":"FIBROM INTERNET","preco":90,"custo":80,"estoque":999,"minimo":10},{"id":1789690832151,"nome":"PÓ DE CAFÉ 500","preco":24,"custo":20,"estoque":999,"minimo":10},{"id":1789690877384,"nome":"BUCHA DE LAVAR LOUÇA","preco":2.5,"custo":1.2,"estoque":999,"minimo":10},{"id":1789690919426,"nome":"SABONETE GRANDE","preco":5,"custo":2,"estoque":998,"minimo":10},{"id":1789690957042,"nome":"BISCOITO WAFFER","preco":4,"custo":2,"estoque":998,"minimo":10},{"id":1789749627992,"nome":"TORNEIRA DUAS BOCAS","preco":28,"custo":21,"estoque":999,"minimo":10},{"id":1789749660657,"nome":"TEMPERO SALE ALHO POTE 1KG","preco":13,"custo":9.5,"estoque":999,"minimo":10},{"id":1789856232378,"nome":"ARREDODAMENTO DOCE AMENDOIM","preco":0.5,"custo":0.5,"estoque":9,"minimo":2},{"id":1790088454896,"nome":"AMACIANTE DE ROUPAS","preco":11,"custo":10,"estoque":998,"minimo":10},{"id":1790088490917,"nome":"PAR DE CORREIA CHINELO 42","preco":5,"custo":5,"estoque":999,"minimo":10},{"id":1790088534731,"nome":"TABLET DE SABÃO YPÊ","preco":16,"custo":10,"estoque":999,"minimo":10},{"id":1790088570271,"nome":"PILHAS AA","preco":2,"custo":1.2,"estoque":998,"minimo":10},{"id":1790088600959,"nome":"CAIXA DE SABÃO EM PÓ","preco":22,"custo":15.2,"estoque":999,"minimo":10},{"id":1790171537188,"nome":"BALAS MACIA DE FRUTAS","preco":0.1428571428571429,"custo":0.02,"estoque":986,"minimo":10},{"id":1790171669694,"nome":"DESCONTO","preco":0.36,"custo":0.36,"estoque":1000,"minimo":10},{"id":1790218526853,"nome":"TESTE","preco":0.01,"custo":0.01,"estoque":0,"minimo":1},{"id":1790357295019,"nome":"CADERNO B 96FLS","preco":7,"custo":3,"estoque":999,"minimo":10},{"id":1790357328814,"nome":"JOGO DE CABIDES","preco":3,"custo":1,"estoque":994,"minimo":10},{"id":1790463421909,"nome":"CICLOBENZAPRINA 10 MG","preco":13,"custo":6.5,"estoque":999,"minimo":10}],"vendas":[{"numero":1,"data":"16/09/2026, 17:40:23","timestamp":1789591223457,"itens":[{"produtoId":1789590494039,"produto":"BATATINHA IGLESA KILO","quantidade":1,"preco":9.2},{"produtoId":1789590522198,"produto":"ISQUEIRO BIC GRANDE","quantidade":2,"preco":6},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1},{"produtoId":1789590583268,"produto":"SARDINHA ENLATADAS","quantidade":2,"preco":7},{"produtoId":1789590615088,"produto":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":2},{"produtoId":1789590673868,"produto":"AÇUCAR CRISTAL 5KG","quantidade":1,"preco":17},{"produtoId":1789590702268,"produto":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4},{"produtoId":1789590736537,"produto":"CREME DENTAL 180","quantidade":1,"preco":9},{"produtoId":1789590766449,"produto":"GILLETE PRESTORBARBA","quantidade":1,"preco":4},{"produtoId":1789590792606,"produto":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4},{"produtoId":1789590824849,"produto":"AGUA SANTARIA 2L","quantidade":1,"preco":7},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":2,"preco":1},{"produtoId":1789590893756,"produto":"RAÇÃO PARA GATO","quantidade":1,"preco":10},{"produtoId":1789590924276,"produto":"CARNE DE PORCO","quantidade":1,"preco":39},{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5}],"pagamento":"Cartão de crédito","total":151.2},{"numero":2,"data":"18/09/2026, 13:43:09","timestamp":1789749789957,"itens":[{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5},{"produtoId":1789749627992,"produto":"TORNEIRA DUAS BOCAS","quantidade":1,"preco":28},{"produtoId":1789749660657,"produto":"TEMPERO SALE ALHO POTE 1KG","quantidade":1,"preco":13}],"pagamento":"Cartão de crédito","total":42.5},{"numero":3,"data":"19/09/2026, 18:49:50","timestamp":1789854590468,"itens":[{"produtoId":1789678550585,"produto":"LEITE IBITURUNA 1 L","quantidade":2,"preco":7.5},{"produtoId":1789590702268,"produto":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4},{"produtoId":1789590615088,"produto":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5},{"produtoId":1789678776877,"produto":"ESCOVA DE DENTE","quantidade":1,"preco":5},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":3,"preco":1},{"produtoId":1789678819735,"produto":"TOMATE LONGA V KG","quantidade":1,"preco":3.4},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":2},{"produtoId":1789678864801,"produto":"MORTADELA PEDAÇO","quantidade":1,"preco":6},{"produtoId":1789678910429,"produto":"SHAMPOO SEDA","quantidade":1,"preco":15},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1},{"produtoId":1789590792606,"produto":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4},{"produtoId":1789590924276,"produto":"CARNE DE PORCO","quantidade":1,"preco":42}],"pagamento":"Cartão de crédito","total":115.9},{"numero":4,"data":"19/09/2026, 18:52:23","timestamp":1789854743750,"itens":[{"produtoId":1789688099227,"produto":"FEIJÃO SUPANG 1K","quantidade":25,"preco":8.99},{"produtoId":1789688122346,"produto":"OLEO DE SOJA C","quantidade":3,"preco":7.99},{"produtoId":1789688148979,"produto":"DETERGENTE YPÊ 500","quantidade":3,"preco":3.49},{"produtoId":1789688193264,"produto":"ESPONJA DE AÇO BB","quantidade":1,"preco":2.49},{"produtoId":1789688229716,"produto":"LEITE QUATÁ INTEGRAL 1L","quantidade":4,"preco":5.79}],"pagamento":"Cartão de crédito","total":284.84000000000003},{"numero":5,"data":"19/09/2026, 18:53:59","timestamp":1789854839436,"itens":[{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":3,"preco":1},{"produtoId":1789689832852,"produto":"MARGARINA DELÍCIA 250","quantidade":1,"preco":7},{"produtoId":1789689865118,"produto":"LEITE LITRO DESCARTÁVEL","quantidade":1,"preco":10}],"pagamento":"Cartão de crédito","total":20},{"numero":6,"data":"19/09/2026, 18:55:25","timestamp":1789854925662,"itens":[{"produtoId":1789690148324,"produto":"LINGUIÇA DEFUMADA KG","quantidade":1,"preco":28},{"produtoId":1789690195930,"produto":"PÃO DE DOCE SACOLA","quantidade":1,"preco":10},{"produtoId":1789690419991,"produto":"UNIEPAZ","quantidade":1,"preco":45},{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5}],"pagamento":"Cartão de crédito","total":101},{"numero":7,"data":"19/09/2026, 19:02:38","timestamp":1789855358566,"itens":[{"produtoId":1789690832151,"produto":"PÓ DE CAFÉ 500","quantidade":1,"preco":24},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":2},{"produtoId":1789690877384,"produto":"BUCHA DE LAVAR LOUÇA","quantidade":1,"preco":2.5},{"produtoId":1789678819735,"produto":"TOMATE LONGA V KG","quantidade":1,"preco":4.2},{"produtoId":1789590583268,"produto":"SARDINHA ENLATADAS","quantidade":2,"preco":7},{"produtoId":1789690919426,"produto":"SABONETE GRANDE","quantidade":2,"preco":5},{"produtoId":1789590702268,"produto":"PACOTE DE MACARRÃO 500","quantidade":2,"preco":4},{"produtoId":1789590615088,"produto":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5},{"produtoId":1789678864801,"produto":"MORTADELA PEDAÇO","quantidade":1,"preco":13.5},{"produtoId":1789690957042,"produto":"BISCOITO WAFFER","quantidade":2,"preco":4},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":3,"preco":1.5}],"pagamento":"Cartão de crédito","total":107.2},{"numero":8,"data":"19/09/2026, 19:04:34","timestamp":1789855474262,"itens":[{"produtoId":1789590924276,"produto":"CARNE DE PORCO","quantidade":1,"preco":85},{"produtoId":1789590824849,"produto":"AGUA SANTARIA 2L","quantidade":1,"preco":7},{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":4,"preco":1},{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5}],"pagamento":"Cartão de crédito","total":115.5},{"numero":9,"data":"19/09/2026, 19:15:56","timestamp":1789856156598,"itens":[{"produtoId":1789690593666,"produto":"SAAE RAUL SOARES","quantidade":1,"preco":51.86},{"produtoId":1789690620658,"produto":"FIBROM INTERNET","quantidade":1,"preco":90},{"produtoId":1789690546689,"produto":"CEMIG DISTRIBUIÇÃO SA","quantidade":1,"preco":34.84}],"pagamento":"Cartão de crédito","total":176.70000000000002},{"numero":10,"data":"19/09/2026, 19:17:25","timestamp":1789856245983,"itens":[{"produtoId":1789856232378,"produto":"ARREDODAMENTO DOCE AMENDOIM","quantidade":1,"preco":0.5}],"pagamento":"Cartão de crédito","total":0.5},{"numero":11,"data":"20/09/2026, 12:46:34","timestamp":1789919194272,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":1,"preco":4.5}],"pagamento":"Cartão de crédito","total":4.5},{"numero":12,"data":"20/09/2026, 12:47:35","timestamp":1789919255163,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":3,"preco":4.5}],"pagamento":"Cartão de crédito","total":13.5},{"numero":13,"data":"20/09/2026, 16:13:43","timestamp":1789931623884,"itens":[{"produtoId":1789929318838,"produto":"MAQUINA DE LAVAR ROUPA CONSUL 16KG","quantidade":1,"preco":2459.9}],"pagamento":"Cartão de crédito","total":2459.9},{"numero":15,"data":"23/09/2026, 23:56:31","timestamp":1790218591492,"itens":[{"produtoId":1790218526853,"produto":"TESTE","quantidade":1,"preco":0.01}],"pagamento":"Dinheiro","total":0.01},{"numero":16,"data":"25/09/2026, 14:36:59","timestamp":1790357819409,"itens":[{"produtoId":1789690195930,"produto":"PÃO DE DOCE SACOLA","quantidade":1,"preco":10},{"produtoId":1789690148324,"produto":"LINGUIÇA DEFUMADA KG","quantidade":1,"preco":30},{"produtoId":1790357295019,"produto":"CADERNO B 96FLS","quantidade":1,"preco":7},{"produtoId":1789678864801,"produto":"MORTADELA PEDAÇO","quantidade":1,"preco":7.5},{"produtoId":1790357328814,"produto":"JOGO DE CABIDES","quantidade":6,"preco":3}],"pagamento":"Cartão de crédito","total":72.5},{"numero":17,"data":"26/09/2026, 19:57:20","timestamp":1790463440916,"itens":[{"produtoId":1790463421909,"produto":"CICLOBENZAPRINA 10 MG","quantidade":1,"preco":13}],"pagamento":"Pix","total":13},{"numero":18,"data":"26/09/2026, 20:17:35","timestamp":1790464655330,"itens":[{"produtoId":1789678550585,"produto":"LEITE IBITURUNA 1 L","quantidade":2,"preco":7.5},{"produtoId":1790088454896,"produto":"AMACIANTE DE ROUPAS","quantidade":2,"preco":11},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":1.5},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1.2},{"produtoId":1790088490917,"produto":"PAR DE CORREIA CHINELO 42","quantidade":1,"preco":5},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":3,"preco":1.5},{"produtoId":1789590583268,"produto":"SARDINHA ENLATADAS","quantidade":2,"preco":7.5},{"produtoId":1790088534731,"produto":"TABLET DE SABÃO YPÊ","quantidade":1,"preco":16},{"produtoId":1790088570271,"produto":"PILHAS AA","quantidade":2,"preco":2},{"produtoId":1790088600959,"produto":"CAIXA DE SABÃO EM PÓ","quantidade":1,"preco":22},{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5},{"produtoId":1790171537188,"produto":"BALAS MACIA DE FRUTAS","quantidade":14,"preco":0.1428571428571429}],"pagamento":"Cartão de crédito","total":119.9},{"numero":19,"data":"26/09/2026, 20:19:54","timestamp":1790464794054,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5}],"pagamento":"Cartão de crédito","total":18},{"numero":20,"data":"26/09/2026, 21:33:57","timestamp":1790469237226,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":8,"preco":4.5}],"pagamento":"Cartão de crédito","total":36}]};
 
 
 let produtos=[];
@@ -289,11 +337,24 @@ function novoId(){
   return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
 }
 function mostrarMensagem(texto,tipo='sucesso'){
-  const box=document.getElementById('mensagem');
-  box.className='mensagem '+tipo;
-  box.textContent=texto;
+  let box=document.getElementById('mensagem');
+  if(!box){
+    box=document.createElement('div');
+    box.id='mensagem';
+    document.body.appendChild(box);
+  }
   clearTimeout(window._timerMensagem);
-  window._timerMensagem=setTimeout(()=>{box.className='mensagem';box.textContent='';},6000);
+  box.className='mensagem '+tipo+' visivel';
+  if(tipo==='sucesso') box.innerHTML=String(texto);
+  else box.textContent=String(texto);
+  // Garante que a confirmação seja pintada depois do registro/renderização da tela.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ box.style.display='block'; box.style.visibility='visible'; box.style.opacity='1'; box.style.zIndex='2147483647'; }));
+  window._timerMensagem=setTimeout(()=>{
+    box.className='mensagem';
+    box.textContent='';
+    box.style.visibility='hidden';
+    box.style.opacity='0';
+  },6000);
 }
 function salvarDados(){
   const pacote=JSON.stringify({produtos,vendas});
@@ -350,7 +411,7 @@ function cadastrarProduto(){
   };
   produtos.push(dados);
   salvarDados(); limparFormularioProduto(); renderizarTudo();
-  mostrarMensagem('Produto cadastrado neste aparelho.','sucesso');
+  mostrarMensagem('✓ PRODUTO CADASTRADO COM SUCESSO!','sucesso');
 }
 
 function abrirEdicao(id){
@@ -440,7 +501,12 @@ function adicionarAoCarrinho(){
     });
   }
 
+  // Depois de lançar o produto, limpa o campo para o próximo item.
+  document.getElementById('produtoVenda').value='';
+  document.getElementById('quantidadeVenda').value='1';
   renderizarCarrinho();
+  document.getElementById('produtoVenda').focus();
+  mostrarMensagem('✓ Produto adicionado ao carrinho.','sucesso');
 }
 
 function removerDoCarrinho(id){
@@ -537,8 +603,19 @@ function registrarVenda(){
     p.estoque_inteiro=numero(p.estoque_inteiro)-item.quantidade;
   }
   salvarDados();
-  carrinhoVenda=[]; document.getElementById('descontoVenda').value='0'; document.getElementById('parcelado').value='nao'; document.getElementById('parcelas').value='2'; atualizarPagamento(); renderizarTudo();
-  mostrarMensagem('Venda registrada e estoque atualizado.','sucesso');
+
+  // Venda concluída: limpa completamente o carrinho e prepara a próxima venda.
+  carrinhoVenda=[];
+  document.getElementById('produtoVenda').value='';
+  document.getElementById('quantidadeVenda').value='1';
+  document.getElementById('descontoVenda').value='0';
+  document.getElementById('parcelado').value='nao';
+  document.getElementById('parcelas').value='2';
+  document.getElementById('formaPagamento').value='Pix';
+  atualizarPagamento();
+  renderizarTudo();
+  document.getElementById('produtoVenda').focus();
+  mostrarMensagem('<div style="font-size:34px;letter-spacing:.3px">VENDA CONCLUÍDA COM SUCESSO.</div><div style="font-size:28px;margin-top:12px">OBRIGADO, VOLTE SEMPRE!</div>','sucesso');
 }
 
 function limparCarrinho(){
@@ -587,6 +664,63 @@ function excluirVenda(){
   salvarDados();
   renderizarTudo();
   mostrarMensagem('Venda nº '+numEscolhido+' excluída e estoque restaurado.','sucesso');
+}
+
+function baixarBackup(){
+  try{
+    const pacote={produtos:JSON.parse(JSON.stringify(produtos)),vendas:JSON.parse(JSON.stringify(vendas)),data:new Date().toISOString(),versao:'Sistema de Vendas V2'};
+    const blob=new Blob([JSON.stringify(pacote,null,2)],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const d=new Date().toISOString().slice(0,10);
+    a.href=url; a.download='backup_sistema_vendas_'+d+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    mostrarMensagem('✓ BACKUP GERADO COM SUCESSO!','sucesso');
+  }catch(e){ mostrarMensagem('Não foi possível gerar o backup.','erro'); console.error(e); }
+}
+
+function selecionarBackup(){
+  const input=document.getElementById('arquivoBackup');
+  if(input){ input.value=''; input.click(); }
+}
+
+function restaurarBackupArquivo(event){
+  const arquivo=event.target.files && event.target.files[0];
+  if(!arquivo)return;
+  const leitor=new FileReader();
+  leitor.onload=function(){
+    try{
+      const dados=JSON.parse(leitor.result);
+      if(!Array.isArray(dados.produtos) || !Array.isArray(dados.vendas)) throw new Error('Formato inválido');
+      if(!confirm('Restaurar este backup? Os dados atuais deste navegador serão substituídos.')) return;
+      produtos=JSON.parse(JSON.stringify(dados.produtos));
+      vendas=JSON.parse(JSON.stringify(dados.vendas));
+      carrinhoVenda=[];
+      salvarDados();
+      renderizarTudo();
+      mostrar('inicio');
+      mostrarMensagem('✓ BACKUP RESTAURADO COM SUCESSO! Produtos, vendas e estoque foram recuperados.','sucesso');
+    }catch(e){
+      mostrarMensagem('Arquivo de backup inválido ou corrompido.','erro');
+      console.error(e);
+    }finally{ event.target.value=''; }
+  };
+  leitor.onerror=function(){mostrarMensagem('Não foi possível ler o arquivo de backup.','erro');};
+  leitor.readAsText(arquivo,'UTF-8');
+}
+
+function restaurarSistemaInicial(){
+  const senha=prompt('Digite a senha para restaurar o sistema inicial:');
+  if(senha===null)return;
+  if(senha!=='8526'){mostrarMensagem('Senha incorreta.','erro');return;}
+  if(!confirm('Restaurar os dados iniciais do sistema? Os dados atuais serão substituídos.'))return;
+  produtos=Array.isArray(DADOS_INICIAIS_IMPORTADOS.produtos)?JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.produtos)):[];
+  vendas=Array.isArray(DADOS_INICIAIS_IMPORTADOS.vendas)?JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.vendas)):[];
+  carrinhoVenda=[];
+  salvarDados();
+  renderizarTudo();
+  mostrar('inicio');
+  mostrarMensagem('✓ SISTEMA RESTAURADO COM SUCESSO! Os dados iniciais foram recuperados.','sucesso');
 }
 
 function apagarTodosOsDados(){
@@ -650,27 +784,52 @@ function obterItensVenda(v){
   return [];
 }
 
+function nomeItemVenda(x){
+  return x?.nome || x?.produto || x?.name || ('Produto #'+(x?.produtoId ?? ''));
+}
+function pagamentoVenda(v){
+  return v.texto_pagamento || v.forma_pagamento || v.pagamento || '-';
+}
+function limparFiltroVendas(){
+  const f=document.getElementById('filtroVendas'), p=document.getElementById('filtroPagamento'), o=document.getElementById('filtroOrdem');
+  if(f)f.value=''; if(p)p.value=''; if(o)o.value='desc'; renderizarVendas();
+}
 function renderizarVendas(){
   const tbody=document.getElementById('tabelaVendas');
-
-  if(!vendas.length){
-    tbody.innerHTML='<tr><td colspan="4" class="vazio">Nenhuma venda registrada.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML=vendas.map(v=>{
+  if(!tbody)return;
+  const filtro=(document.getElementById('filtroVendas')?.value||'').trim().toLowerCase();
+  const pag=(document.getElementById('filtroPagamento')?.value||'').toLowerCase();
+  const ordem=document.getElementById('filtroOrdem')?.value||'desc';
+  let lista=vendas.filter(v=>{
     const itens=obterItensVenda(v);
-    const resumo=itens.map(i=>esc(i.nome)+' ('+numero(i.quantidade)+')').join(', ');
-    const data=v.timestampz?new Date(v.timestampz).toLocaleString('pt-BR'):'-';
-
-    return `
-      <tr>
-        <td>${esc(data)}</td>
-        <td>${moeda(v.total)}</td>
-        <td>${resumo||'-'}</td>
-        <td>${esc(v.texto_pagamento||'-')}</td>
-      </tr>
-    `;
+    const nomes=itens.map(nomeItemVenda).join(' ').toLowerCase();
+    const numeroVenda=String(v.numero??'').toLowerCase();
+    const pagamento=pagamentoVenda(v).toLowerCase();
+    return (!filtro || nomes.includes(filtro) || numeroVenda.includes(filtro)) && (!pag || pagamento.includes(pag));
+  });
+  lista.sort((a,b)=>{
+    const na=Number(a.numero)||0, nb=Number(b.numero)||0;
+    return ordem==='asc'?na-nb:nb-na;
+  });
+  const qtd=vendas.length;
+  const total=vendas.reduce((s,v)=>s+numero(v.total),0);
+  const itensTotais=vendas.reduce((s,v)=>s+obterItensVenda(v).reduce((a,x)=>a+numero(x.quantidade),0),0);
+  const badge=document.getElementById('badgeVendas'); if(badge)badge.textContent=qtd;
+  const qbar=document.getElementById('vendasQtdBarra'); if(qbar)qbar.textContent=qtd;
+  const tbar=document.getElementById('vendasTotalBarra'); if(tbar)tbar.textContent=moeda(total);
+  const ibar=document.getElementById('vendasItensBarra'); if(ibar)ibar.textContent=itensTotais;
+  if(!lista.length){ tbody.innerHTML='<tr><td colspan="6" class="vazio">Nenhuma venda encontrada com esses filtros.</td></tr>'; return; }
+  tbody.innerHTML=lista.map((v,i)=>{
+    const itens=obterItensVenda(v);
+    const resumo=itens.map(x=>'<div>• <b>'+esc(nomeItemVenda(x))+'</b> — '+numero(x.quantidade)+' × '+moeda(x.preco)+'</div>').join('');
+    return '<tr>'+
+      '<td><span class="venda-numero"><b>#'+esc(v.numero??(i+1))+'</b></span></td>'+
+      '<td>'+esc(formatarDataVenda(v))+'</td>'+
+      '<td class="venda-produtos">'+(resumo||'-')+'</td>'+
+      '<td><span class="badge-pagamento">'+esc(pagamentoVenda(v))+'</span></td>'+
+      '<td><b>'+moeda(v.total)+'</b></td>'+
+      '<td><button onclick="imprimirCupomVenda(\''+esc(v.id)+'\')">🧾 Cupom</button></td>'+
+      '</tr>';
   }).join('');
 }
 
@@ -771,6 +930,25 @@ function renderizarTudo(){
   renderizarRelatorio();
 }
 
+function imprimirCupomUltimaVenda(){
+  if(!vendas.length){ mostrarMensagem('Nenhuma venda registrada para imprimir.','erro'); return; }
+  imprimirCupomVenda(vendas[0].id);
+}
+
+function imprimirCupomVenda(id){
+  const v=vendas.find(x=>String(x.id)===String(id));
+  if(!v){ mostrarMensagem('Venda não encontrada.','erro'); return; }
+  const win=window.open('','_blank','width=420,height=720');
+  if(!win){ alert('O navegador bloqueou a impressão. Permita pop-ups para este sistema.'); return; }
+  const itens=obterItensVenda(v);
+  const linhas=itens.map(i=>`<tr><td>${esc(i.nome)}</td><td class="q">${numero(i.quantidade)}</td><td class="v">${moeda(numero(i.preco)*numero(i.quantidade))}</td></tr>`).join('');
+  const desconto=numero(v.desconto);
+  const forma=esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cupom ${esc(v.numero)}</title><style>
+  @page{size:80mm auto;margin:4mm} body{font-family:Arial,sans-serif;width:72mm;margin:0 auto;color:#111;font-size:12px} h1{text-align:center;font-size:18px;margin:0 0 3px} .sub{text-align:center;font-size:10px;color:#555;margin-bottom:8px}.linha{border-top:1px dashed #555;margin:7px 0} table{width:100%;border-collapse:collapse} td{padding:3px 0;vertical-align:top} .q{width:25px;text-align:center}.v{width:65px;text-align:right;white-space:nowrap}.total{font-size:17px;font-weight:bold;text-align:right;margin-top:6px}.rodape{text-align:center;font-size:10px;margin-top:10px;line-height:1.35} .nf{font-weight:bold;text-align:center;border:1px solid #222;padding:4px;margin-top:8px}@media print{button{display:none}}</style></head><body><h1>SISTEMA DE VENDAS</h1><div class="sub">COMPROVANTE DE VENDA</div><div>Venda nº <b>${esc(v.numero)}</b><br>${esc(formatarDataVenda(v))}</div><div class="linha"></div><table>${linhas}</table><div class="linha"></div>${desconto>0?'<div>Desconto: '+moeda(desconto)+'</div>':''}<div class="total">TOTAL: ${moeda(v.total)}</div><div style="margin-top:5px">Pagamento: ${forma}</div><div class="nf">SEM VALOR FISCAL</div><div class="rodape">Este comprovante não substitui documento fiscal.<br>Obrigado pela preferência!</div><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  win.document.close();
+}
+
 function imprimirRelatorio(){
   const win=window.open('','_blank');
   if(!win){alert('O navegador bloqueou a impressão. Permita pop-ups para este sistema.');return;}
@@ -780,10 +958,10 @@ function imprimirRelatorio(){
   const total=vendas.reduce((s,v)=>s+numero(v.total),0);
   const pagamentos=resumoPagamentos();
   const linhas=vendas.map((v,i)=>{
-    const itens=obterItensVenda(v).map(x=>esc(x.nome)+' x'+numero(x.quantidade)).join(', ');
-    return '<tr><td>'+esc(v.numero??(i+1))+'</td><td>'+esc(formatarDataVenda(v))+'</td><td>'+itens+'</td><td>'+esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-')+'</td><td>'+moeda(v.desconto)+'</td><td>'+moeda(v.total)+'</td></tr>';
+    const itens=obterItensVenda(v).map(x=>'<div><b>'+esc(nomeItemVenda(x))+'</b> — '+numero(x.quantidade)+' × '+moeda(x.preco)+'</div>').join('');
+    return '<tr><td><b>#'+esc(v.numero??(i+1))+'</b></td><td>'+esc(formatarDataVenda(v))+'</td><td>'+itens+'</td><td>'+esc(pagamentoVenda(v))+'</td><td>'+moeda(v.desconto)+'</td><td><b>'+moeda(v.total)+'</b></td></tr>';
   }).join('');
-  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:25px;color:#222}h1{text-align:center;margin-bottom:5px}.data{text-align:center;color:#666;margin-bottom:20px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.box{border:1px solid #aaa;padding:10px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:12px}th,td{border:1px solid #aaa;padding:6px;text-align:left}th{background:#eee}.total{text-align:right;font-size:18px;font-weight:bold;margin-top:15px}@media print{button{display:none}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Emitido em ${esc(new Date().toLocaleString('pt-BR'))}</div><div class="kpis"><div class="box">Vendas<b>${quantidade}</b></div><div class="box">Valor bruto<b>${moeda(bruto)}</b></div><div class="box">Descontos<b>${moeda(descontos)}</b></div><div class="box">Total vendido<b>${moeda(total)}</b></div></div><h2>Vendas</h2><table><thead><tr><th>Nº</th><th>Data</th><th>Produtos</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhuma venda registrada.</td></tr>'}</tbody></table><div class="total">TOTAL VENDIDO: ${moeda(total)}</div><h2>Resumo por pagamento</h2><table><thead><tr><th>Forma de pagamento</th><th>Valor</th></tr></thead><tbody>${pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')||'<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table><button onclick="window.print()">Imprimir</button><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:25px;color:#222}h1{text-align:center;margin-bottom:5px}.data{text-align:center;color:#666;margin-bottom:20px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.box{border:1px solid #aaa;padding:10px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:11px;page-break-inside:auto}thead{display:table-header-group}tr{page-break-inside:avoid}th,td{border:1px solid #aaa;padding:6px;text-align:left;vertical-align:top}th{background:#eee}td:nth-child(1){width:45px}td:nth-child(2){width:115px}td:nth-child(5),td:nth-child(6){white-space:nowrap;text-align:right}.total{text-align:right;font-size:18px;font-weight:bold;margin-top:15px}@media print{button{display:none}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Emitido em ${esc(new Date().toLocaleString('pt-BR'))}</div><div class="kpis"><div class="box">Vendas<b>${quantidade}</b></div><div class="box">Valor bruto<b>${moeda(bruto)}</b></div><div class="box">Descontos<b>${moeda(descontos)}</b></div><div class="box">Total vendido<b>${moeda(total)}</b></div></div><h2>Vendas</h2><table><thead><tr><th>Nº</th><th>Data</th><th>Produtos</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhuma venda registrada.</td></tr>'}</tbody></table><div class="total">TOTAL VENDIDO: ${moeda(total)}</div><h2>Resumo por pagamento</h2><table><thead><tr><th>Forma de pagamento</th><th>Valor</th></tr></thead><tbody>${pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')||'<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table><button onclick="window.print()">Imprimir</button><script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
   win.document.close();
 }
 
