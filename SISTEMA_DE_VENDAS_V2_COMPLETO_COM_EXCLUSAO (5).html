@@ -162,7 +162,14 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <div class="grid2">
       <div>
         <label>Produto</label>
-        <select id="produtoVenda"></select>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div style="flex:1">
+            <input id="buscaProdutoVenda" type="search" placeholder="🔎 Digite o nome do produto..." oninput="filtrarProdutosVenda()" autocomplete="off">
+            <select id="produtoVenda"></select>
+          </div>
+          <button type="button" class="secundario" onclick="atualizarProdutosVenda()" style="white-space:nowrap">🔄 Atualizar</button>
+        </div>
+        <div id="produtoVendaStatus" class="pequeno" style="margin-top:5px"></div>
       </div>
       <div>
         <label>Quantidade</label>
@@ -451,24 +458,57 @@ function excluirProduto(id){
 /* =========================================================
    CARRINHO
    ========================================================= */
+function nomeProdutoVendaNormalizado(p){
+  return String(p?.nome??p?.produto??p?.descricao??'Produto').trim();
+}
+
 function atualizarSelectProdutos(){
   const select=document.getElementById('produtoVenda');
+  if(!select)return;
   const atual=select.value;
+  const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim().toLocaleLowerCase('pt-BR');
 
   select.innerHTML='<option value="">Selecione um produto</option>';
 
-  produtos.forEach(p=>{
+  const filtrados=produtos
+    .filter(p=>!busca || nomeProdutoVendaNormalizado(p).toLocaleLowerCase('pt-BR').includes(busca))
+    .sort((a,b)=>nomeProdutoVendaNormalizado(a).localeCompare(nomeProdutoVendaNormalizado(b),'pt-BR'));
+
+  filtrados.forEach(p=>{
     const estoque=numero(p.estoque_inteiro);
     const option=document.createElement('option');
     option.value=p.id;
     option.disabled=estoque<=0;
-    option.textContent=p.nome+' — '+moeda(p.preco)+' — estoque: '+estoque;
+    option.textContent=nomeProdutoVendaNormalizado(p)+' — '+moeda(p.preco)+' — estoque: '+estoque;
     select.appendChild(option);
   });
 
   if([...select.options].some(o=>o.value===atual)){
     select.value=atual;
   }
+
+  const status=document.getElementById('produtoVendaStatus');
+  if(status){
+    status.textContent=produtos.length
+      ? (filtrados.length+' produto(s) encontrado(s)'+(busca?' para a busca.':'.'))
+      : 'Nenhum produto cadastrado.';
+  }
+}
+
+function filtrarProdutosVenda(){
+  atualizarSelectProdutos();
+}
+
+function atualizarProdutosVenda(){
+  atualizarSelectProdutos();
+  if(!produtos.length){
+    mostrarMensagem('Nenhum produto cadastrado no Sistema de Vendas.','erro');
+    return;
+  }
+  const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim();
+  mostrarMensagem(busca
+    ? '✓ Produtos atualizados para a busca: '+busca
+    : '✓ Lista de produtos atualizada.','sucesso');
 }
 
 function adicionarAoCarrinho(){
