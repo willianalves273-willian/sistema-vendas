@@ -122,9 +122,9 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
 
   <div class="card" style="margin-top:20px">
     <h2>Sistema local</h2>
-    <p>Este sistema funciona somente com HTML, JavaScript e o armazenamento do próprio navegador.</p>
-    <div class="aviso"><b>Importante:</b> os produtos, estoque e vendas ficam salvos neste aparelho/navegador. Nenhum banco de dados externo é utilizado.</div>
-    <p class="pequeno">Faça backups periódicos se os dados forem importantes.</p>
+    <p>Este sistema usa HTML, JavaScript, armazenamento local e Firebase para sincronização entre aparelhos.</p>
+    <div class="aviso"><b>Importante:</b> os dados continuam protegidos por uma cópia local e são sincronizados com o Firebase quando a conexão está disponível.</div>
+    <p class="pequeno">Faça backups periódicos mesmo com a sincronização ativa.</p>
   </div>
 </section>
 
@@ -163,7 +163,14 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <div class="grid2">
       <div>
         <label>Produto</label>
-        <select id="produtoVenda"></select>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div style="flex:1">
+            <input id="buscaProdutoVenda" type="search" placeholder="🔎 Digite o nome do produto..." oninput="filtrarProdutosVenda()" autocomplete="off">
+            <select id="produtoVenda"></select>
+            <div id="produtoVendaStatus" class="pequeno" style="margin-top:6px">0 produto(s).</div>
+          </div>
+          <button type="button" class="secundario" onclick="atualizarProdutosVenda()">🔄 Atualizar</button>
+        </div>
       </div>
       <div>
         <label>Quantidade</label>
@@ -264,8 +271,8 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <div class="aviso" id="firebaseStatus">Aguardando conexão com o Firebase...</div>
     <div class="acoes">
       <button onclick="firebaseTestarConexao()">🔌 Testar conexão</button>
-      <button onclick="firebaseEnviarProdutos()">☁️ Enviar produtos locais para o Firebase</button>
-      <button onclick="firebaseLerProdutos()" class="secundario">🔎 Ler produtos do Firebase</button>
+      <button onclick="firebaseEnviarProdutos()">☁️ Sincronizar agora</button>
+      <button onclick="firebaseLerProdutos()" class="secundario">🔎 Carregar do Firebase</button>
     </div>
     <div class="aviso" style="margin-top:15px"><b>Importante:</b> os botões acima não alteram vendas nem apagam os produtos locais. O envio grava somente o caminho <code>/produtos</code> no Firebase.</div>
     <pre id="firebaseResultado" style="white-space:pre-wrap;word-break:break-word;background:#f7f7f7;padding:14px;border-radius:9px;max-height:420px;overflow:auto">Nenhum teste executado.</pre>
@@ -402,6 +409,8 @@ function salvarDados(){
   const pacote=JSON.stringify({produtos,vendas});
   localStorage.setItem(CHAVE_DADOS,pacote);
   _assinaturaDados=pacote;
+  // O armazenamento local continua sendo imediato. O Firebase é atualizado em segundo plano.
+  if(window.firebasePronto && !window._firebaseCarregando) firebaseSincronizarDados().catch(e=>console.warn('Firebase:',e));
 }
 function carregarDados(silencioso=false){
   try{
@@ -493,24 +502,47 @@ function excluirProduto(id){
 /* =========================================================
    CARRINHO
    ========================================================= */
+function nomeProdutoVendaNormalizado(p){
+  return String(p?.nome??p?.produto??p?.descricao??'Produto').trim();
+}
+
 function atualizarSelectProdutos(){
   const select=document.getElementById('produtoVenda');
+  if(!select)return;
   const atual=select.value;
+  const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim().toLocaleLowerCase('pt-BR');
 
   select.innerHTML='<option value="">Selecione um produto</option>';
 
-  produtos.forEach(p=>{
+  const filtrados=produtos
+    .filter(p=>!busca || nomeProdutoVendaNormalizado(p).toLocaleLowerCase('pt-BR').includes(busca))
+    .sort((a,b)=>nomeProdutoVendaNormalizado(a).localeCompare(nomeProdutoVendaNormalizado(b),'pt-BR'));
+
+  filtrados.forEach(p=>{
     const estoque=numero(p.estoque_inteiro);
     const option=document.createElement('option');
     option.value=p.id;
     option.disabled=estoque<=0;
-    option.textContent=p.nome+' — '+moeda(p.preco)+' — estoque: '+estoque;
+    option.textContent=nomeProdutoVendaNormalizado(p)+' — '+moeda(p.preco)+' — estoque: '+estoque;
     select.appendChild(option);
   });
 
-  if([...select.options].some(o=>o.value===atual)){
-    select.value=atual;
+  if([...select.options].some(o=>o.value===atual)) select.value=atual;
+
+  const status=document.getElementById('produtoVendaStatus');
+  if(status){
+    status.textContent=produtos.length
+      ? (filtrados.length+' produto(s) encontrado(s)'+(busca?' para a busca.':'.'))
+      : 'Nenhum produto cadastrado.';
   }
+}
+
+function filtrarProdutosVenda(){ atualizarSelectProdutos(); }
+
+function atualizarProdutosVenda(){
+  atualizarSelectProdutos();
+  const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim();
+  mostrarMensagem(busca?'✓ Lista filtrada para: '+busca:'✓ Lista de produtos atualizada.','sucesso');
 }
 
 function adicionarAoCarrinho(){
@@ -1013,16 +1045,61 @@ function imprimirVendas(){
 }
 
 /* =========================================================
-   FIREBASE — TESTES E SINCRONIZAÇÃO
+   FIREBASE — SINCRONIZAÇÃO REAL
    ========================================================= */
+const FIREBASE_CAMINHO='sistema_vendas';
+
+async function firebaseSincronizarDados(){
+  if(!window.firebasePronto || !window.firebaseAPI || window._firebaseCarregando) return;
+  const {ref,set}=window.firebaseAPI;
+  const pacote={
+    data:new Date().toISOString(),
+    origem:'sistema-vendas',
+    produtos:JSON.parse(JSON.stringify(produtos)),
+    vendas:JSON.parse(JSON.stringify(vendas))
+  };
+  await set(ref(window.firebaseDB,FIREBASE_CAMINHO),pacote);
+  window._firebaseUltimaSincronizacao=pacote.data;
+  atualizarStatusFirebaseInicial('☁️ Firebase sincronizado.');
+}
+
+async function firebaseCarregarDados(){
+  if(!window.firebasePronto || !window.firebaseAPI) throw new Error('Firebase não foi inicializado.');
+  const {ref,get,set}=window.firebaseAPI;
+  const snap=await get(ref(window.firebaseDB,FIREBASE_CAMINHO));
+
+  if(snap.exists()) {
+    const v=snap.val()||{};
+    const produtosCloud=Array.isArray(v.produtos)?v.produtos:[];
+    const vendasCloud=Array.isArray(v.vendas)?v.vendas:[];
+    if(produtosCloud.length || vendasCloud.length) {
+      window._firebaseCarregando=true;
+      produtos=JSON.parse(JSON.stringify(produtosCloud));
+      vendas=JSON.parse(JSON.stringify(vendasCloud));
+      carrinhoVenda=[];
+      const pacote=JSON.stringify({produtos,vendas});
+      localStorage.setItem(CHAVE_DADOS,pacote);
+      _assinaturaDados=pacote;
+      window._firebaseCarregando=false;
+      renderizarTudo();
+      atualizarStatusFirebaseInicial('☁️ Firebase carregado: '+produtos.length+' produtos / '+vendas.length+' vendas.');
+      return {carregado:true,produtos:produtos.length,vendas:vendas.length};
+    }
+  }
+
+  // Primeira inicialização: mantém os dados locais e cria a cópia central.
+  await firebaseSincronizarDados();
+  return {carregado:false,produtos:produtos.length,vendas:vendas.length};
+}
+
 async function firebaseTestarConexao(){
   const st=document.getElementById('firebaseStatus'), out=document.getElementById('firebaseResultado');
   try{
     if(!window.firebasePronto || !window.firebaseAPI) throw new Error('Firebase não foi inicializado.');
     const {ref,get}=window.firebaseAPI;
-    const snap=await get(ref(window.firebaseDB,'produtos'));
+    const snap=await get(ref(window.firebaseDB,FIREBASE_CAMINHO));
     st.textContent='● Firebase conectado e acessível.';
-    out.textContent='✅ CONEXÃO FUNCIONOU!\\n\\nCaminho /produtos acessível.\\nProdutos no Firebase: '+(snap.exists()?Object.keys(snap.val()||{}).length:0);
+    out.textContent='✅ CONEXÃO FUNCIONOU!\n\nCaminho /'+FIREBASE_CAMINHO+' acessível.\nProdutos: '+(snap.exists()?((snap.val().produtos||[]).length):0)+'\nVendas: '+(snap.exists()?((snap.val().vendas||[]).length):0);
   }catch(e){
     st.textContent='● Erro na conexão com o Firebase.';
     out.textContent='❌ ERRO: '+e.message;
@@ -1032,14 +1109,11 @@ async function firebaseTestarConexao(){
 async function firebaseEnviarProdutos(){
   const st=document.getElementById('firebaseStatus'), out=document.getElementById('firebaseResultado');
   try{
-    if(!window.firebasePronto || !window.firebaseAPI) throw new Error('Firebase não foi inicializado.');
-    const {ref,set}=window.firebaseAPI;
-    const pacote={data:new Date().toISOString(),origem:'sistema-vendas',produtos:JSON.parse(JSON.stringify(produtos))};
-    await set(ref(window.firebaseDB,'produtos'),pacote);
-    st.textContent='● Produtos locais enviados ao Firebase.';
-    out.textContent='✅ ENVIO FUNCIONOU!\\n\\nProdutos enviados: '+produtos.length+'\\nCaminho: /produtos\\n\\nOs dados locais continuam preservados.';
+    await firebaseSincronizarDados();
+    st.textContent='● Dados locais sincronizados com o Firebase.';
+    out.textContent='✅ SINCRONIZAÇÃO FUNCIONOU!\n\nProdutos enviados: '+produtos.length+'\nVendas enviadas: '+vendas.length+'\nCaminho: /'+FIREBASE_CAMINHO+'\n\nOs dados locais continuam preservados.';
   }catch(e){
-    st.textContent='● Erro ao enviar produtos.';
+    st.textContent='● Erro ao sincronizar.';
     out.textContent='❌ ERRO AO ENVIAR: '+e.message;
   }
 }
@@ -1047,29 +1121,33 @@ async function firebaseEnviarProdutos(){
 async function firebaseLerProdutos(){
   const st=document.getElementById('firebaseStatus'), out=document.getElementById('firebaseResultado');
   try{
-    if(!window.firebasePronto || !window.firebaseAPI) throw new Error('Firebase não foi inicializado.');
-    const {ref,get}=window.firebaseAPI;
-    const snap=await get(ref(window.firebaseDB,'produtos'));
-    if(!snap.exists()){
-      st.textContent='● Firebase acessível, mas /produtos está vazio.';
-      out.textContent='ℹ️ Nenhum produto encontrado no Firebase.';
-      return;
-    }
-    const v=snap.val(), lista=Array.isArray(v.produtos)?v.produtos:[];
-    st.textContent='● Leitura do Firebase funcionou.';
-    out.textContent='✅ LEITURA FUNCIONOU!\\n\\nProdutos encontrados: '+lista.length+'\\nOrigem: '+(v.origem||'-')+'\\nData do envio: '+(v.data||'-')+'\\n\\nNenhum dado local foi alterado.';
+    const r=await firebaseCarregarDados();
+    st.textContent='● Leitura e sincronização do Firebase funcionaram.';
+    out.textContent='✅ LEITURA FUNCIONOU!\n\nProdutos encontrados: '+r.produtos+'\nVendas encontradas: '+r.vendas+'\nCaminho: /'+FIREBASE_CAMINHO+'\n\nOs dados locais foram atualizados com a cópia central.';
   }catch(e){
     st.textContent='● Erro ao ler produtos.';
     out.textContent='❌ ERRO AO LER: '+e.message;
   }
 }
 
-function atualizarStatusFirebaseInicial(){
+function atualizarStatusFirebaseInicial(texto){
   const st=document.getElementById('firebaseStatus');
   if(!st)return;
-  st.textContent=window.firebasePronto?'● Firebase inicializado. Pronto para teste.':'● Firebase não inicializado.';
+  st.textContent=texto || (window.firebasePronto?'● Firebase inicializado. Pronto para sincronizar.':'● Firebase não inicializado.');
 }
-window.addEventListener('load',atualizarStatusFirebaseInicial);
+
+async function iniciarSincronizacaoFirebase(){
+  try{
+    if(!window.firebasePronto) { atualizarStatusFirebaseInicial('● Firebase não inicializado.'); return; }
+    const r=await firebaseCarregarDados();
+    console.log('Firebase inicializado:',r);
+  }catch(e){
+    console.warn('Sincronização inicial com Firebase:',e);
+    atualizarStatusFirebaseInicial('● Sistema local funcionando; sincronização Firebase indisponível.');
+  }
+}
+
+window.addEventListener('load',()=>setTimeout(iniciarSincronizacaoFirebase,300));
 
 /* =========================================================
    ATUALIZAÇÃO AUTOMÁTICA DO ARMAZENAMENTO LOCAL
