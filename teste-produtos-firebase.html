@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste de Produtos - Firebase</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef3f8;margin:0;padding:30px;color:#172033}
+.card{max-width:900px;margin:auto;background:#fff;padding:25px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+h1{margin-top:0}.aviso{background:#fff4cc;padding:14px;border-radius:9px;margin-bottom:18px}
+button{padding:12px 16px;border:0;border-radius:9px;margin:6px;cursor:pointer;font-weight:700}
+#enviar{background:#0878d0;color:#fff}#ler{background:#078b72;color:#fff}#apagar{background:#d33;color:#fff}#local{background:#555;color:#fff}
+#status{margin-top:20px;padding:14px;border-radius:9px;background:#f1f5f9;white-space:pre-wrap;min-height:24px}
+pre{white-space:pre-wrap;word-break:break-word;background:#f7f7f7;padding:14px;border-radius:9px;max-height:420px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>📦 Teste de Produtos com Firebase</h1>
+<div class="aviso"><b>TESTE SEGURO:</b> esta página usa somente o caminho <code>produtos_teste</code>. Ela não altera os produtos, estoque ou vendas reais do sistema.</div>
+<button id="local">📱 Ler produtos locais</button>
+<button id="enviar">🔥 Enviar produtos locais para o Firebase</button>
+<button id="ler">🔎 Ler produtos do Firebase</button>
+<button id="apagar">🗑️ Apagar teste do Firebase</button>
+<div id="status">Aguardando teste...</div>
+<pre id="resultado"></pre>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyC6zgVT1M2MGd5xtHWS6WxH-iuhgPn292s",
+ authDomain:"sistema-vendas-78698.firebaseapp.com",
+ databaseURL:"https://sistema-vendas-78698-default-rtdb.firebaseio.com",
+ projectId:"sistema-vendas-78698",
+ storageBucket:"sistema-vendas-78698.firebasestorage.app",
+ messagingSenderId:"438799530084",
+ appId:"1:438799530084:web:8e14cffb4e29d293584771",
+ measurementId:"G-6ZSNQHJGZ3"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const produtosRef=ref(db,"produtos_teste");
+const CHAVE_DADOS="sistema_vendas_local_v1";
+const status=document.getElementById("status");
+const resultado=document.getElementById("resultado");
+
+function mostrar(msg,erro=false){
+ status.textContent=msg;
+ status.style.background=erro?"#ffe5e5":"#e8f7ef";
+}
+function mostrarJSON(obj){resultado.textContent=JSON.stringify(obj,null,2)}
+function obterProdutosLocais(){
+ const bruto=localStorage.getItem(CHAVE_DADOS);
+ if(!bruto) throw new Error("Não encontrei dados locais neste navegador.");
+ const dados=JSON.parse(bruto);
+ if(!Array.isArray(dados.produtos)) throw new Error("O armazenamento local não contém uma lista de produtos.");
+ return dados.produtos;
+}
+
+document.getElementById("local").onclick=()=>{
+ try{
+  const produtos=obterProdutosLocais();
+  mostrar(`LEITURA LOCAL FUNCIONOU!\n${produtos.length} produto(s) encontrados neste navegador.`);
+  mostrarJSON(produtos.slice(0,10));
+ }catch(e){mostrar("ERRO AO LER DADOS LOCAIS:\n"+e.message,true)}
+};
+
+document.getElementById("enviar").onclick=async()=>{
+ try{
+  const produtos=obterProdutosLocais();
+  const pacote={produtos,quantidade:produtos.length,data:new Date().toISOString(),origem:"teste-produtos-firebase"};
+  await set(produtosRef,pacote);
+  mostrar(`GRAVAÇÃO DE PRODUTOS FUNCIONOU!\n${produtos.length} produto(s) foram enviados para o caminho produtos_teste.`);
+  mostrarJSON(pacote);
+ }catch(e){mostrar("ERRO AO ENVIAR PRODUTOS:\n"+e.message,true)}
+};
+
+document.getElementById("ler").onclick=async()=>{
+ try{
+  const s=await get(produtosRef);
+  if(s.exists()){
+   const dados=s.val();
+   mostrar(`LEITURA DOS PRODUTOS NO FIREBASE FUNCIONOU!\n${Array.isArray(dados.produtos)?dados.produtos.length:0} produto(s) encontrados.`);
+   mostrarJSON(dados);
+  }else{
+   mostrar("O caminho produtos_teste está vazio.");
+   resultado.textContent="";
+  }
+ }catch(e){mostrar("ERRO AO LER FIREBASE:\n"+e.message,true)}
+};
+
+document.getElementById("apagar").onclick=async()=>{
+ try{
+  if(!confirm("Apagar somente o teste produtos_teste do Firebase?"))return;
+  await remove(produtosRef);
+  mostrar("TESTE DE PRODUTOS APAGADO.\nO caminho produtos_teste foi removido.");
+  resultado.textContent="";
+ }catch(e){mostrar("ERRO AO APAGAR TESTE:\n"+e.message,true)}
+};
+</script>
+</body>
+</html>
