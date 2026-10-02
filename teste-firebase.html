@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste Firebase - Sistema de Vendas</title>
+<style>body{font-family:Arial,sans-serif;background:#eef3f8;margin:0;padding:30px;color:#172033}.card{max-width:700px;margin:auto;background:#fff;padding:25px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.12)}button{padding:12px 16px;border:0;border-radius:9px;margin:6px;cursor:pointer;font-weight:700}#gravar{background:#0878d0;color:#fff}#ler{background:#0b7a62;color:#fff}#apagar{background:#d33;color:#fff}#status{margin-top:20px;padding:14px;border-radius:9px;background:#f1f5f9;white-space:pre-wrap}.aviso{background:#fff7d6;padding:12px;border-radius:9px;margin-bottom:18px}</style>
+</head>
+<body><div class="card"><h1>Teste de conexão com Firebase</h1><div class="aviso"><b>TESTE SEGURO:</b> esta página usa somente o caminho <code>teste_conexao</code>. Ela não altera produtos, estoque ou vendas.</div><button id="gravar">🔥 Gravar teste</button><button id="ler">🔎 Ler teste</button><button id="apagar">🗑️ Apagar teste</button><div id="status">Aguardando teste...</div></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyC6zgVT1M2MGd5xtHWS6WxH-iuhgPn292s",authDomain:"sistema-vendas-78698.firebaseapp.com",databaseURL:"https://sistema-vendas-78698-default-rtdb.firebaseio.com",projectId:"sistema-vendas-78698",storageBucket:"sistema-vendas-78698.firebasestorage.app",messagingSenderId:"438799530084",appId:"1:438799530084:web:8e14cffb4e29d293584771",measurementId:"G-6ZSNQHJGZ3"};
+const app=initializeApp(firebaseConfig),db=getDatabase(app),testeRef=ref(db,"teste_conexao"),status=document.getElementById("status");
+function mostrar(msg,erro=false){status.textContent=msg;status.style.background=erro?"#ffe5e5":"#e8f7ef"}
+document.getElementById("gravar").onclick=async()=>{try{await set(testeRef,{mensagem:"Conexão funcionando!",data:new Date().toISOString()});mostrar("✅ GRAVAÇÃO FUNCIONOU!\n\nO navegador conseguiu enviar dados para o Firebase.")}catch(e){mostrar("❌ ERRO AO GRAVAR:\n\n"+e.message,true)}};
+document.getElementById("ler").onclick=async()=>{try{const s=await get(testeRef);mostrar(s.exists()?"✅ LEITURA FUNCIONOU!\n\n"+JSON.stringify(s.val(),null,2):"ℹ️ O caminho teste_conexao ainda está vazio.")}catch(e){mostrar("❌ ERRO AO LER:\n\n"+e.message,true)}};
+document.getElementById("apagar").onclick=async()=>{try{await remove(testeRef);mostrar("✅ TESTE APAGADO.\n\nO caminho teste_conexao foi removido.")}catch(e){mostrar("❌ ERRO AO APAGAR:\n\n"+e.message,true)}};
+</script></body></html>
