@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f2937">
+<script src="https://unpkg.com/@zxing/browser@0.2.1/umd/zxing-browser.min.js"></script>
 <title>Sistema de Vendas</title>
 <style>
 *{box-sizing:border-box}
@@ -81,6 +82,9 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
  body{background:#fff}
  .card,.kpi{box-shadow:none;border:1px solid #ddd}
 }
+
+.scanner-campo{display:flex;gap:8px;align-items:center;margin-top:8px}.scanner-campo input{flex:1;margin:0}.botao-camera{white-space:nowrap;background:linear-gradient(135deg,#0f766e,#047857)}
+.scanner-video-wrap{background:#000;border-radius:12px;overflow:hidden;position:relative;min-height:260px;display:flex;align-items:center;justify-content:center}.scanner-video-wrap video{width:100%;max-height:62vh;display:block;object-fit:cover}.scanner-mira{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:3px solid #22c55e;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}.scanner-status{margin:10px 0;color:#334155;font-weight:600;text-align:center}.scanner-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
 </style>
 </head>
 <body>
@@ -133,6 +137,14 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <h2>Cadastro de Produtos</h2>
     <div class="grid">
       <div><label>Nome</label><input id="novoNome" placeholder="Nome do produto"></div>
+      <div>
+        <label>Código de barras <span class="pequeno">(opcional)</span></label>
+        <div class="scanner-campo">
+          <input id="novoCodigoBarras" inputmode="numeric" autocomplete="off" placeholder="Ex.: 7891234567890">
+          <button type="button" class="botao-camera" onclick="abrirLeitorCodigoBarras('cadastro')">📷 Ler código</button>
+        </div>
+        <div class="pequeno">Pode cadastrar o produto sem código de barras.</div>
+      </div>
       <div><label>Preço de venda</label><input id="novoPreco" type="number" step="0.01" min="0" placeholder="0,00"></div>
       <div><label>Custo / personalizado</label><input id="novoCusto" type="number" step="0.01" min="0" placeholder="0,00"></div>
       <div><label>Estoque</label><input id="novoEstoque" type="number" step="1" min="0" value="0"></div>
@@ -149,7 +161,7 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <div class="tabela-scroll">
       <table>
         <thead>
-          <tr><th>Produto</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Mínimo</th><th>Ações</th></tr>
+          <tr><th>Produto</th><th>Código de barras</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Mínimo</th><th>Ações</th></tr>
         </thead>
         <tbody id="tabelaProdutos"></tbody>
       </table>
@@ -166,6 +178,10 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
         <div style="display:flex;gap:8px;align-items:flex-end">
           <div style="flex:1">
             <input id="buscaProdutoVenda" type="search" placeholder="🔎 Digite o nome do produto..." oninput="filtrarProdutosVenda()" autocomplete="off">
+            <div class="scanner-campo">
+              <input id="codigoBarrasVenda" type="text" inputmode="numeric" autocomplete="off" placeholder="📦 Código de barras (ou use a câmera)" onkeydown="if(event.key==='Enter'){buscarProdutoPorCodigoBarras();}">
+              <button type="button" class="botao-camera" onclick="abrirLeitorCodigoBarras()">📷 Ler código</button>
+            </div>
             <select id="produtoVenda"></select>
             <div id="produtoVendaStatus" class="pequeno" style="margin-top:6px">0 produto(s).</div>
           </div>
@@ -307,12 +323,32 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
 
 </main>
 
+<div id="modalLeitorCodigo" class="modal oculto">
+  <div class="caixa" style="width:min(700px,100%)">
+    <h2>📷 Leitor de código de barras</h2>
+    <p class="pequeno">Aponte a câmera traseira para o código de barras do produto.</p>
+    <div class="scanner-video-wrap">
+      <video id="videoLeitorCodigo" playsinline muted></video>
+      <div class="scanner-mira"></div>
+    </div>
+    <div id="scannerStatus" class="scanner-status">Preparando a câmera...</div>
+    <div class="scanner-acoes">
+      <button type="button" class="secundario" onclick="fecharLeitorCodigoBarras()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalEditar" class="modal oculto">
   <div class="caixa">
     <h2>✏️ Editar produto</h2>
     <div class="aviso">A alteração é feita pelo ID do produto. O cadastro existente é atualizado.</div>
     <input type="hidden" id="editId">
     <label>Produto</label><input id="editNome">
+    <label>Código de barras <span class="pequeno">(opcional)</span></label>
+    <div class="scanner-campo">
+      <input id="editCodigoBarras" inputmode="numeric" autocomplete="off" placeholder="Código de barras">
+      <button type="button" class="botao-camera" onclick="abrirLeitorCodigoBarras('edicao')">📷 Ler código</button>
+    </div>
     <label>Preço de venda</label><input id="editPreco" type="number" step="0.01" min="0">
     <label>Custo / personalizado</label><input id="editCusto" type="number" step="0.01" min="0">
     <label>Estoque atual</label><input id="editEstoque" type="number" step="1" min="0">
@@ -444,6 +480,7 @@ function carregarDados(silencioso=false){
    ========================================================= */
 function limparFormularioProduto(){
   document.getElementById('novoNome').value='';
+  document.getElementById('novoCodigoBarras').value='';
   document.getElementById('novoPreco').value='';
   document.getElementById('novoCusto').value='';
   document.getElementById('novoEstoque').value='0';
@@ -454,7 +491,7 @@ function cadastrarProduto(){
   const nome=document.getElementById('novoNome').value.trim();
   if(!nome){mostrarMensagem('Informe o nome do produto.','erro');return;}
   const dados={
-    id:novoId(),nome,
+    id:novoId(),nome,codigoBarras:String(document.getElementById('novoCodigoBarras').value||'').replace(/\D/g,''),
     preco:Number(numero(document.getElementById('novoPreco').value).toFixed(2)),
     personalizado:Number(numero(document.getElementById('novoCusto').value).toFixed(2)),
     estoque_inteiro:Math.max(0,Math.trunc(numero(document.getElementById('novoEstoque').value))),
@@ -470,6 +507,7 @@ function abrirEdicao(id){
   if(!p)return;
   document.getElementById('editId').value=p.id;
   document.getElementById('editNome').value=p.nome||'';
+  document.getElementById('editCodigoBarras').value=p.codigoBarras||p.codigo||p.ean||'';
   document.getElementById('editPreco').value=numero(p.preco).toFixed(2);
   document.getElementById('editCusto').value=numero(p.personalizado).toFixed(2);
   document.getElementById('editEstoque').value=numero(p.estoque_inteiro);
@@ -483,6 +521,7 @@ function salvarEdicao(){
   const nome=document.getElementById('editNome').value.trim();
   if(!p||!nome){mostrarMensagem('Dados do produto incompletos.','erro');return;}
   p.nome=nome;
+  p.codigoBarras=String(document.getElementById('editCodigoBarras').value||'').replace(/\D/g,'');
   p.preco=Number(numero(document.getElementById('editPreco').value).toFixed(2));
   p.personalizado=Number(numero(document.getElementById('editCusto').value).toFixed(2));
   p.estoque_inteiro=Math.max(0,Math.trunc(numero(document.getElementById('editEstoque').value)));
@@ -543,6 +582,230 @@ function atualizarProdutosVenda(){
   atualizarSelectProdutos();
   const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim();
   mostrarMensagem(busca?'✓ Lista filtrada para: '+busca:'✓ Lista de produtos atualizada.','sucesso');
+}
+
+let scannerStream=null;
+let scannerReader=null;
+let scannerParando=false;
+let scannerDestino='venda';
+let audioContextLeitura=null;
+
+function normalizarCodigoBarras(valor){
+  return String(valor||'').replace(/\D/g,'');
+}
+
+function emitirSomLeitura(){
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx) return;
+    if(!audioContextLeitura) audioContextLeitura=new AudioCtx();
+    if(audioContextLeitura.state==='suspended'){
+      audioContextLeitura.resume().catch(()=>{});
+    }
+
+    const agora=audioContextLeitura.currentTime;
+    const oscilador=audioContextLeitura.createOscillator();
+    const ganho=audioContextLeitura.createGain();
+
+    oscilador.type='sine';
+    oscilador.frequency.setValueAtTime(880,agora);
+    oscilador.frequency.exponentialRampToValueAtTime(1320,agora+0.06);
+
+    ganho.gain.setValueAtTime(0.0001,agora);
+    ganho.gain.exponentialRampToValueAtTime(0.16,agora+0.01);
+    ganho.gain.exponentialRampToValueAtTime(0.0001,agora+0.12);
+
+    oscilador.connect(ganho);
+    ganho.connect(audioContextLeitura.destination);
+    oscilador.start(agora);
+    oscilador.stop(agora+0.13);
+  }catch(e){
+    console.debug('Som da leitura indisponível:',e);
+  }
+
+  try{
+    if(navigator.vibrate) navigator.vibrate(70);
+  }catch(e){}
+}
+
+function localizarProdutoPorCodigo(codigo){
+  const alvo=normalizarCodigoBarras(codigo);
+  if(!alvo) return null;
+  return produtos.find(p=>normalizarCodigoBarras(p.codigoBarras||p.codigo||p.ean)===alvo) || null;
+}
+
+function selecionarProdutoVenda(p){
+  if(!p) return false;
+  const busca=document.getElementById('buscaProdutoVenda');
+  const codigo=document.getElementById('codigoBarrasVenda');
+  const select=document.getElementById('produtoVenda');
+  if(busca) busca.value='';
+  if(codigo) codigo.value=normalizarCodigoBarras(p.codigoBarras||p.codigo||p.ean);
+  atualizarSelectProdutos();
+  if(select) select.value=p.id;
+  if(numero(p.estoque_inteiro)<=0){
+    mostrarMensagem('Produto encontrado, mas está sem estoque.','erro');
+    return false;
+  }
+  return true;
+}
+
+function aplicarCodigoLido(codigo){
+  codigo=normalizarCodigoBarras(codigo);
+  if(!codigo) return;
+
+  emitirSomLeitura();
+
+  if(scannerDestino==='cadastro'){
+    const campo=document.getElementById('novoCodigoBarras');
+    if(campo) campo.value=codigo;
+    mostrarMensagem('✓ Código lido: '+esc(codigo),'sucesso');
+    fecharLeitorCodigoBarras();
+    return;
+  }
+
+  if(scannerDestino==='edicao'){
+    const campo=document.getElementById('editCodigoBarras');
+    if(campo) campo.value=codigo;
+    mostrarMensagem('✓ Código lido: '+esc(codigo),'sucesso');
+    fecharLeitorCodigoBarras();
+    return;
+  }
+
+  const campo=document.getElementById('codigoBarrasVenda');
+  if(campo) campo.value=codigo;
+
+  const produto=localizarProdutoPorCodigo(codigo);
+  if(produto){
+    selecionarProdutoVenda(produto);
+    mostrarMensagem('✓ Produto lido: '+esc(produto.nome),'sucesso');
+    fecharLeitorCodigoBarras();
+  }else{
+    const status=document.getElementById('scannerStatus');
+    if(status) status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
+    scannerParando=true;
+    if(scannerReader){
+      try{scannerReader.reset();}catch(e){}
+      scannerReader=null;
+    }
+    if(scannerStream){
+      scannerStream.getTracks().forEach(track=>{try{track.stop();}catch(e){}});
+      scannerStream=null;
+    }
+    const video=document.getElementById('videoLeitorCodigo');
+    if(video){video.pause();video.srcObject=null;}
+    mostrarMensagem('Código lido, mas este produto ainda não está cadastrado.','erro');
+  }
+}
+
+function buscarProdutoPorCodigoBarras(){
+  const codigo=normalizarCodigoBarras(document.getElementById('codigoBarrasVenda')?.value);
+  if(!codigo){
+    mostrarMensagem('Digite ou leia um código de barras.','erro');
+    return;
+  }
+  const p=localizarProdutoPorCodigo(codigo);
+  if(!p){
+    mostrarMensagem('Código de barras não cadastrado: '+codigo,'erro');
+    return;
+  }
+  selecionarProdutoVenda(p);
+  mostrarMensagem('✓ Produto localizado: '+esc(p.nome),'sucesso');
+}
+
+async function abrirLeitorCodigoBarras(destino='venda'){
+  const modal=document.getElementById('modalLeitorCodigo');
+  const video=document.getElementById('videoLeitorCodigo');
+  const status=document.getElementById('scannerStatus');
+  if(!modal||!video) return;
+
+  scannerDestino=destino;
+  modal.classList.remove('oculto');
+  status.textContent='Solicitando acesso à câmera...';
+  scannerParando=false;
+
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('Este navegador não permite acesso à câmera.');
+    }
+
+    if(window.ZXingBrowser && window.ZXingBrowser.BrowserMultiFormatReader){
+      scannerReader=new window.ZXingBrowser.BrowserMultiFormatReader();
+      status.textContent='Aponte a câmera para o código de barras...';
+
+      await scannerReader.decodeFromConstraints(
+        {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},
+        video,
+        (resultado, erro) => {
+          if(scannerParando) return;
+          if(resultado){
+            const codigo=normalizarCodigoBarras(resultado.getText ? resultado.getText() : resultado.text);
+            if(codigo){
+              scannerParando=true;
+              aplicarCodigoLido(codigo);
+            }
+          }
+        }
+      );
+      return;
+    }
+
+    if('BarcodeDetector' in window){
+      const formatosSuportados=typeof BarcodeDetector.getSupportedFormats==='function'
+        ? await BarcodeDetector.getSupportedFormats() : [];
+      const formatosDesejados=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'];
+      const formatos=formatosDesejados.filter(f=>formatosSuportados.includes(f));
+      const detector=formatos.length ? new BarcodeDetector({formats}) : new BarcodeDetector();
+
+      scannerStream=await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
+      });
+      video.srcObject=scannerStream;
+      await video.play();
+      status.textContent='Aponte a câmera para o código de barras...';
+
+      const procurar=async()=>{
+        if(scannerParando || video.readyState<2) return;
+        try{
+          const codigos=await detector.detect(video);
+          if(codigos.length){
+            const codigo=normalizarCodigoBarras(codigos[0].rawValue);
+            if(codigo){
+              scannerParando=true;
+              aplicarCodigoLido(codigo);
+              return;
+            }
+          }
+        }catch(e){}
+        if(!scannerParando) setTimeout(procurar,180);
+      };
+      procurar();
+      return;
+    }
+
+    throw new Error('Seu navegador não oferece um leitor de código de barras compatível.');
+  }catch(e){
+    console.error('Leitor:',e);
+    status.textContent='Não foi possível abrir a câmera: '+(e.message||e);
+    mostrarMensagem('Não foi possível abrir a câmera. Verifique a permissão do navegador.','erro');
+  }
+}
+
+function fecharLeitorCodigoBarras(){
+  scannerParando=true;
+  if(scannerReader){
+    try{scannerReader.reset();}catch(e){}
+    scannerReader=null;
+  }
+  if(scannerStream){
+    scannerStream.getTracks().forEach(track=>{try{track.stop();}catch(e){}});
+    scannerStream=null;
+  }
+  const video=document.getElementById('videoLeitorCodigo');
+  if(video){video.pause();video.srcObject=null;}
+  const modal=document.getElementById('modalLeitorCodigo');
+  if(modal) modal.classList.add('oculto');
+  scannerDestino='venda';
 }
 
 function adicionarAoCarrinho(){
@@ -828,13 +1091,14 @@ function renderizarProdutos(){
   const tbody=document.getElementById('tabelaProdutos');
 
   if(!produtos.length){
-    tbody.innerHTML='<tr><td colspan="6" class="vazio">Nenhum produto cadastrado.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="7" class="vazio">Nenhum produto cadastrado.</td></tr>';
     return;
   }
 
   tbody.innerHTML=produtos.map(p=>`
     <tr>
       <td>${esc(p.nome)}</td>
+      <td>${esc(p.codigoBarras||p.codigo||p.ean||'—')}</td>
       <td>${moeda(p.preco)}</td>
       <td>${moeda(p.personalizado)}</td>
       <td>${numero(p.estoque_inteiro)}</td>
