@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2937">
+<script src="https://unpkg.com/@zxing/browser@0.2.1/umd/zxing-browser.min.js"></script>
+<title>Sistema de Vendas</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eef7f2 0%,#f5f7fb 48%,#eef3ff 100%);color:#172033}
+header{position:relative;overflow:hidden;background:linear-gradient(135deg,#063b3d 0%,#075e5b 45%,#0b7a62 100%);color:#fff;padding:22px 20px;box-shadow:0 8px 24px rgba(0,0,0,.16)}
+header:after{content:"";position:absolute;right:-70px;top:-100px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.09);box-shadow:-120px 120px 0 rgba(255,193,7,.07)}
+header h1{margin:0 0 5px;font-size:27px;letter-spacing:.3px;text-shadow:0 2px 4px rgba(0,0,0,.18)}
+header small{opacity:.9}
+nav{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);padding:10px;display:flex;gap:8px;flex-wrap:wrap;box-shadow:0 4px 18px rgba(15,23,42,.10);position:sticky;top:0;z-index:10}
+button{padding:10px 14px;border:0;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,#0b78d0,#1769e0);color:#fff;font-size:14px;font-weight:700;box-shadow:0 3px 8px rgba(37,99,235,.20);transition:.15s transform,.15s box-shadow} button:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(15,23,42,.18)}
+button:disabled{opacity:.55;cursor:not-allowed}
+button.excluir{background:linear-gradient(135deg,#ef4444,#c81e1e)}
+button.editar{background:linear-gradient(135deg,#16a34a,#087443)}
+button.secundario{background:linear-gradient(135deg,#64748b,#475569)}
+/* Barra e área de Vendas */
+.nav-vendas{background:linear-gradient(135deg,#7c3aed,#4f46e5);position:relative;padding-right:18px}
+.nav-vendas #badgeVendas{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;margin-left:5px;padding:0 6px;border-radius:999px;background:#fff;color:#4f46e5;font-size:12px;font-weight:800}
+.vendas-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;background:linear-gradient(135deg,#0b4f52,#087f68 55%,#1769e0);color:#fff;border-radius:14px;padding:18px 20px;margin-bottom:15px;box-shadow:0 8px 20px rgba(15,23,42,.12)}
+.vendas-cabecalho h2{margin:0;font-size:25px}.vendas-cabecalho p{margin:4px 0 0;opacity:.9}
+.vendas-acoes{display:flex;gap:8px;flex-wrap:wrap}.vendas-acoes button{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);box-shadow:none}.vendas-acoes button:hover{background:rgba(255,255,255,.25)}
+.vendas-filtros{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:15px}
+.vendas-filtros label{margin:0}.vendas-filtros input,.vendas-filtros select{margin-top:5px}
+.badge-pagamento{display:inline-block;padding:5px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700}
+.venda-numero{font-size:16px;color:#4f46e5}.venda-produtos{line-height:1.45}.venda-produtos div{margin:2px 0}.venda-produtos b{color:#172033}.vendas-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}.venda-mini{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;box-shadow:0 5px 15px rgba(15,23,42,.06)}.venda-mini span{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}.venda-mini strong{display:block;font-size:21px;margin-top:4px;color:#0f766e}
+@media(max-width:700px){.vendas-filtros{grid-template-columns:1fr}.vendas-resumo{grid-template-columns:1fr}.vendas-cabecalho{padding:15px}.vendas-cabecalho h2{font-size:21px}}
+.container{max-width:1150px;margin:20px auto;padding:0 15px}
+.card,.kpi{background:rgba(255,255,255,.97);padding:20px;margin-bottom:20px;border-radius:15px;box-shadow:0 8px 25px rgba(15,23,42,.08);border:1px solid rgba(148,163,184,.16)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+input,select{width:100%;padding:10px;margin:5px 0;border:1px solid #bbb;border-radius:5px;font-size:16px;background:#fff}
+label{font-weight:600;font-size:14px;display:block;margin-top:5px}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border:1px solid #ddd;padding:9px;text-align:left}
+th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
+.tabela-scroll{overflow-x:auto}
+.acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{margin:0}
+.kpi strong{font-size:24px;display:block;margin-top:6px}
+.linha-carrinho{display:grid;grid-template-columns:2fr 90px 110px 50px;gap:8px;align-items:center;border-bottom:1px solid #ddd;padding:8px 0}
+.oculto{display:none!important}
+.aviso,.sucesso,.erro{padding:12px;border-radius:7px;margin:10px 0}
+.aviso{background:#fff7ed;border:1px solid #fed7aa}
+.sucesso{background:#ecfdf5;border:1px solid #a7f3d0}
+.erro{background:#fef2f2;border:1px solid #fecaca}
+.mensagem{position:fixed;right:18px;bottom:18px;z-index:2147483647;max-width:520px;padding:14px 18px;border-radius:10px;font-weight:700;box-shadow:0 10px 28px rgba(0,0,0,.18);border-left:6px solid #16a34a;background:#fff;line-height:1.35;display:block;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .2s ease}.mensagem.erro{border-left-color:#dc2626;background:#fff7f7;visibility:visible;opacity:1}.mensagem.sucesso{left:50%;right:auto;bottom:50%;transform:translate(-50%,50%);width:min(90vw,900px);max-width:900px;padding:34px 42px;border:4px solid #16a34a;border-left-width:4px;border-radius:18px;background:#f0fdf4;color:#166534;font-size:30px;line-height:1.25;text-align:center;box-shadow:0 18px 55px rgba(0,0,0,.28);font-weight:900;visibility:visible;opacity:1}.mensagem.visivel{visibility:visible;opacity:1}
+.vazio{text-align:center;padding:25px;color:#666}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:15px;z-index:20}
+.caixa{background:#fff;border-radius:10px;padding:20px;width:min(620px,100%);max-height:92vh;overflow:auto}
+.caixa h2{margin-top:0}
+.status-online{color:#86efac}
+.status-offline{color:#fca5a5}
+.pequeno{font-size:13px;color:#666}
+.relatorio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0}
+.relatorio-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+.relatorio-box b{display:block;font-size:20px;margin-top:5px}
+@media(max-width:800px){.relatorio-grid{grid-template-columns:repeat(2,1fr)}}
+@media print{.relatorio-grid{grid-template-columns:repeat(4,1fr)}.relatorio-box{border:1px solid #aaa}}
+@media(max-width:800px){
+ .grid{grid-template-columns:repeat(2,1fr)}
+ .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+ header{padding:14px} header h1{font-size:22px}
+ nav{padding:8px} nav button{flex:1 1 45%;min-height:45px}
+ .container{margin:10px auto;padding:0 8px}.card{padding:14px}
+ .grid,.grid2{grid-template-columns:1fr}
+ .kpis{grid-template-columns:1fr 1fr}
+ table{font-size:13px;min-width:680px}
+ button{min-height:42px}
+ .linha-carrinho{grid-template-columns:1fr 70px 85px 45px;font-size:13px}
+}
+@media print{
+ nav,.nao-imprimir,button{display:none!important}
+ body{background:#fff}
+ .card,.kpi{box-shadow:none;border:1px solid #ddd}
+}
+
+.scanner-campo{display:flex;gap:8px;align-items:center;margin-top:8px}.scanner-campo input{flex:1;margin:0}.botao-camera{white-space:nowrap;background:linear-gradient(135deg,#0f766e,#047857)}
+.scanner-video-wrap{background:#000;border-radius:12px;overflow:hidden;position:relative;min-height:260px;display:flex;align-items:center;justify-content:center}.scanner-video-wrap video{width:100%;max-height:62vh;display:block;object-fit:cover}.scanner-mira{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:3px solid #22c55e;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}.scanner-status{margin:10px 0;color:#334155;font-weight:600;text-align:center}.scanner-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sistema de Vendas</h1>
+  <small id="statusConexao" class="status-online">● Modo local • dados salvos neste aparelho</small>
+</header>
+
+<nav>
+  <button onclick="mostrar('inicio')">Início</button>
+  <button onclick="mostrar('produtos')">Produtos</button>
+  <button onclick="mostrar('venda')">Nova Venda</button>
+  <button class="nav-vendas" onclick="mostrar('vendas')">🧾 Vendas <span id="badgeVendas">0</span></button>
+  <button onclick="mostrar('estoque')">Estoque</button>
+  <button onclick="mostrar('relatorios')">Relatórios</button>
+  <button onclick="imprimirCupomUltimaVenda()">🧾 Cupom</button>
+  <button onclick="imprimirVendas()">🖨️ Imprimir</button>
+  <button onclick="mostrar('backup')">💾 Backup / Restaurar</button>
+  <button onclick="mostrar('firebase')">☁️ Firebase</button>
+</nav>
+
+<div id="mensagem" class="mensagem"></div>
+
+<main class="container">
+
+<section id="inicio" class="pagina">
+  <div class="card" style="background:linear-gradient(135deg,#073b3d,#0b7a62 62%,#1687d9);color:#fff;position:relative;overflow:hidden">
+    <div style="position:relative;z-index:1"><div style="font-size:13px;opacity:.85;letter-spacing:1px;text-transform:uppercase">Controle completo</div><h2 style="font-size:30px;margin:6px 0">Sistema de Vendas V2</h2><p style="margin:0;max-width:720px;opacity:.92">Produtos, estoque, vendas, relatórios, backup e impressão em um único sistema local.</p></div>
+    <div style="position:absolute;right:-30px;top:-70px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.10)"></div>
+    <div style="position:absolute;right:90px;bottom:-110px;width:220px;height:220px;border-radius:50%;background:rgba(255,193,7,.10)"></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi">Produtos<strong id="kpiProdutos">0</strong></div>
+    <div class="kpi">Itens em estoque<strong id="kpiEstoque">0</strong></div>
+    <div class="kpi">Vendas registradas<strong id="kpiVendas">0</strong></div>
+    <div class="kpi">Total vendido<strong id="kpiTotal">R$ 0,00</strong></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h2>Sistema local</h2>
+    <p>Este sistema usa HTML, JavaScript, armazenamento local e Firebase para sincronização entre aparelhos.</p>
+    <div class="aviso"><b>Importante:</b> os dados continuam protegidos por uma cópia local e são sincronizados com o Firebase quando a conexão está disponível.</div>
+    <p class="pequeno">Faça backups periódicos mesmo com a sincronização ativa.</p>
+  </div>
+</section>
+
+<section id="produtos" class="pagina oculto">
+  <div class="card">
+    <h2>Cadastro de Produtos</h2>
+    <div class="grid">
+      <div><label>Nome</label><input id="novoNome" placeholder="Nome do produto"></div>
+      <div><label>Código de barras</label><input id="novoCodigoBarras" inputmode="numeric" autocomplete="off" placeholder="Ex.: 7891234567890"></div>
+      <div><label>Preço de venda</label><input id="novoPreco" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div><label>Custo / personalizado</label><input id="novoCusto" type="number" step="0.01" min="0" placeholder="0,00"></div>
+      <div><label>Estoque</label><input id="novoEstoque" type="number" step="1" min="0" value="0"></div>
+      <div><label>Estoque mínimo</label><input id="novoMinimo" type="number" step="1" min="0" value="0"></div>
+    </div>
+    <div class="acoes">
+      <button onclick="cadastrarProduto()">Cadastrar produto</button>
+      <button class="secundario" onclick="limparFormularioProduto()">Limpar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Produtos cadastrados</h2>
+    <div class="tabela-scroll">
+      <table>
+        <thead>
+          <tr><th>Produto</th><th>Código de barras</th><th>Preço</th><th>Custo</th><th>Estoque</th><th>Mínimo</th><th>Ações</th></tr>
+        </thead>
+        <tbody id="tabelaProdutos"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="venda" class="pagina oculto">
+  <div class="card">
+    <h2>Nova Venda</h2>
+    <div class="grid2">
+      <div>
+        <label>Produto</label>
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div style="flex:1">
+            <input id="buscaProdutoVenda" type="search" placeholder="🔎 Digite o nome do produto..." oninput="filtrarProdutosVenda()" autocomplete="off">
+            <div class="scanner-campo">
+              <input id="codigoBarrasVenda" type="text" inputmode="numeric" autocomplete="off" placeholder="📦 Código de barras (ou use a câmera)" onkeydown="if(event.key==='Enter'){buscarProdutoPorCodigoBarras();}">
+              <button type="button" class="botao-camera" onclick="abrirLeitorCodigoBarras()">📷 Ler código</button>
+            </div>
+            <select id="produtoVenda"></select>
+            <div id="produtoVendaStatus" class="pequeno" style="margin-top:6px">0 produto(s).</div>
+          </div>
+          <button type="button" class="secundario" onclick="atualizarProdutosVenda()">🔄 Atualizar</button>
+        </div>
+      </div>
+      <div>
+        <label>Quantidade</label>
+        <input id="quantidadeVenda" type="number" min="1" step="1" value="1">
+      </div>
+    </div>
+    <div class="acoes">
+      <button onclick="adicionarAoCarrinho()">Adicionar ao carrinho</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Carrinho</h3>
+    <div id="carrinho"></div>
+    <hr>
+    <h2>Subtotal: <span id="subtotalCarrinho">R$ 0,00</span></h2>
+    <div class="grid2">
+      <div>
+        <label>Forma de pagamento</label>
+        <select id="formaPagamento" onchange="atualizarPagamento()">
+          <option value="Pix">PIX</option>
+          <option value="Dinheiro">Dinheiro</option>
+          <option value="Cartão de débito">Cartão de débito</option>
+          <option value="Cartão Caixa">Cartão Caixa</option>
+          <option value="Cartão Inter">Cartão Inter</option>
+          <option value="Outros cartões de crédito">Outros cartões de crédito</option>
+        </select>
+      </div>
+      <div>
+        <label>Vai parcelar?</label>
+        <select id="parcelado" onchange="atualizarPagamento()">
+          <option value="nao">Não</option>
+          <option value="sim">Sim</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div id="campoParcelas" class="oculto">
+        <label>Quantidade de parcelas</label>
+        <input id="parcelas" type="number" min="2" max="24" step="1" value="2" oninput="atualizarTotaisVenda()">
+      </div>
+      <div>
+        <label>Desconto (R$)</label>
+        <input id="descontoVenda" type="number" min="0" step="0.01" value="0" oninput="atualizarTotaisVenda()" placeholder="0,00">
+      </div>
+    </div>
+    <div class="aviso" id="resumoPagamento">Total: <b id="totalCarrinho">R$ 0,00</b></div>
+    <div class="acoes">
+      <button onclick="registrarVenda()">✅ Finalizar e registrar venda</button>
+      <button onclick="imprimirCupomUltimaVenda()">🧾 Imprimir cupom</button>
+      <button class="secundario" onclick="limparCarrinho()">Limpar carrinho</button>
+    </div>
+  </div>
+</section>
+
+<section id="vendas" class="pagina oculto">
+  <div class="vendas-cabecalho">
+    <div><h2>🧾 Vendas registradas</h2><p>Consulte, imprima o cupom e acompanhe cada venda realizada.</p></div>
+    <div class="vendas-acoes"><button onclick="imprimirVendas()">🖨️ Imprimir relatório</button><button onclick="imprimirCupomUltimaVenda()">🧾 Último cupom</button><button class="excluir" onclick="excluirVenda()">🗑️ Excluir venda</button></div>
+  </div>
+  <div class="vendas-resumo">
+    <div class="venda-mini"><span>Vendas registradas</span><strong id="vendasQtdBarra">0</strong></div>
+    <div class="venda-mini"><span>Total vendido</span><strong id="vendasTotalBarra">R$ 0,00</strong></div>
+    <div class="venda-mini"><span>Itens vendidos</span><strong id="vendasItensBarra">0</strong></div>
+  </div>
+  <div class="card">
+    <div class="vendas-filtros nao-imprimir">
+      <div><label>🔎 Buscar produto ou número</label><input id="filtroVendas" placeholder="Ex.: Fumo Juriti ou 20" oninput="renderizarVendas()"></div>
+      <div><label>Pagamento</label><select id="filtroPagamento" onchange="renderizarVendas()"><option value="">Todos</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Cartão Caixa</option><option>Cartão Inter</option><option>PIX</option><option>Dinheiro</option><option>Outros</option></select></div>
+      <div><label>Ordenação</label><select id="filtroOrdem" onchange="renderizarVendas()"><option value="desc">Mais recentes</option><option value="asc">Mais antigas</option></select></div>
+      <button class="secundario" onclick="limparFiltroVendas()">Limpar filtros</button>
+    </div>
+    <div class="tabela-scroll">
+      <table>
+        <thead><tr><th>Nº</th><th>Data</th><th>Produtos vendidos</th><th>Pagamento</th><th>Total</th><th>Ações</th></tr></thead>
+        <tbody id="tabelaVendas"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="estoque" class="pagina oculto">
+  <div class="card">
+    <h2>Estoque</h2>
+    <div class="tabela-scroll">
+      <table>
+        <thead><tr><th>Produto</th><th>Estoque</th><th>Mínimo</th><th>Situação</th></tr></thead>
+        <tbody id="tabelaEstoque"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="firebase" class="pagina oculto">
+  <div class="card">
+    <h2>☁️ Firebase — Sincronização segura</h2>
+    <p>Esta etapa conecta o sistema ao Firebase sem substituir os dados locais. O <b>localStorage continua sendo mantido</b> como cópia local.</p>
+    <div class="aviso" id="firebaseStatus">Aguardando conexão com o Firebase...</div>
+    <div class="acoes">
+      <button onclick="firebaseTestarConexao()">🔌 Testar conexão</button>
+      <button onclick="firebaseEnviarProdutos()">☁️ Sincronizar agora</button>
+      <button onclick="firebaseLerProdutos()" class="secundario">🔎 Carregar do Firebase</button>
+    </div>
+    <div class="aviso" style="margin-top:15px"><b>Importante:</b> os botões acima não alteram vendas nem apagam os produtos locais. O envio grava somente o caminho <code>/produtos</code> no Firebase.</div>
+    <pre id="firebaseResultado" style="white-space:pre-wrap;word-break:break-word;background:#f7f7f7;padding:14px;border-radius:9px;max-height:420px;overflow:auto">Nenhum teste executado.</pre>
+  </div>
+</section>
+
+<section id="backup" class="pagina oculto">
+  <div class="card">
+    <h2>💾 Backup e Restauração</h2>
+    <div class="aviso"><b>Segurança:</b> faça um backup antes de trocar de computador, limpar o navegador ou restaurar o sistema.</div>
+    <div class="acoes">
+      <button onclick="baixarBackup()">⬇️ Fazer backup agora</button>
+      <button onclick="selecionarBackup()">⬆️ Restaurar backup</button>
+      <button class="secundario" onclick="restaurarSistemaInicial()">🔄 Restaurar sistema inicial</button>
+    </div>
+    <input id="arquivoBackup" type="file" accept=".json,application/json" class="oculto" onchange="restaurarBackupArquivo(event)">
+    <p class="pequeno">O backup contém produtos e vendas. Restaurar um backup substitui os dados atuais deste navegador.</p>
+  </div>
+</section>
+
+<section id="relatorios" class="pagina oculto">
+  <div class="card">
+    <h2>Relatório de Vendas</h2>
+    <div id="relatorioTexto"></div>
+    <div class="acoes nao-imprimir">
+      <button onclick="imprimirRelatorio()">🖨️ Imprimir relatório</button>
+      <button class="excluir" onclick="excluirVenda()">🗑️ Excluir venda</button>
+      <button class="excluir" onclick="apagarTodosOsDados()">🗑️ Apagar todos os dados</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="modalLeitorCodigo" class="modal oculto">
+  <div class="caixa" style="width:min(700px,100%)">
+    <h2>📷 Leitor de código de barras</h2>
+    <p class="pequeno">Aponte a câmera traseira para o código de barras do produto.</p>
+    <div class="scanner-video-wrap">
+      <video id="videoLeitorCodigo" playsinline muted></video>
+      <div class="scanner-mira"></div>
+    </div>
+    <div id="scannerStatus" class="scanner-status">Preparando a câmera...</div>
+    <div class="scanner-acoes">
+      <button type="button" class="secundario" onclick="fecharLeitorCodigoBarras()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalEditar" class="modal oculto">
+  <div class="caixa">
+    <h2>✏️ Editar produto</h2>
+    <div class="aviso">A alteração é feita pelo ID do produto. O cadastro existente é atualizado.</div>
+    <input type="hidden" id="editId">
+    <label>Produto</label><input id="editNome">
+    <label>Código de barras</label><input id="editCodigoBarras" inputmode="numeric" autocomplete="off" placeholder="Código de barras">
+    <label>Preço de venda</label><input id="editPreco" type="number" step="0.01" min="0">
+    <label>Custo / personalizado</label><input id="editCusto" type="number" step="0.01" min="0">
+    <label>Estoque atual</label><input id="editEstoque" type="number" step="1" min="0">
+    <label>Estoque mínimo</label><input id="editMinimo" type="number" step="1" min="0">
+    <div class="acoes">
+      <button onclick="salvarEdicao()">💾 Salvar alteração</button>
+      <button class="secundario" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC6zgVT1M2MGd5xtHWS6WxH-iuhgPn292s",
+  authDomain: "sistema-vendas-78698.firebaseapp.com",
+  databaseURL: "https://sistema-vendas-78698-default-rtdb.firebaseio.com",
+  projectId: "sistema-vendas-78698",
+  storageBucket: "sistema-vendas-78698.firebasestorage.app",
+  messagingSenderId: "438799530084",
+  appId: "1:438799530084:web:8e14cffb4e29d293584771"
+};
+
+try {
+  const app = initializeApp(firebaseConfig);
+  window.firebaseDB = getDatabase(app);
+  window.firebaseProdutosRef = ref(window.firebaseDB, 'produtos');
+  window.firebaseAPI = { ref, set, get };
+  window.firebasePronto = true;
+} catch (e) {
+  console.error('Firebase:', e);
+  window.firebasePronto = false;
+}
+</script>
+
+<script>
+/* =========================================================
+   ARMAZENAMENTO LOCAL
+   ========================================================= */
+const CHAVE_DADOS='sistema_vendas_local_v1';
+
+/* DADOS IMPORTADOS DO SISTEMA ANTERIOR
+   São carregados somente se este aparelho ainda não tiver dados locais.
+   Não há conexão com Supabase.
+*/
+const DADOS_INICIAIS_IMPORTADOS = {"produtos":[{"id":1789590494039,"nome":"BATATINHA IGLESA KILO","preco":9.2,"custo":6.99,"estoque":999,"minimo":10},{"id":1789590522198,"nome":"ISQUEIRO BIC GRANDE","preco":6,"custo":5.5,"estoque":998,"minimo":10},{"id":1789590545636,"nome":"OVOS DE GRANJA","preco":1.2,"custo":0.5,"estoque":965,"minimo":10},{"id":1789590583268,"nome":"SARDINHA ENLATADAS","preco":7.5,"custo":5.99,"estoque":994,"minimo":10},{"id":1789590615088,"nome":"EXTRATO DE TOMATE LATA","preco":5.5,"custo":4.5,"estoque":997,"minimo":10},{"id":1789590640778,"nome":"TODINHO IBITURUNA","preco":1.5,"custo":1,"estoque":988,"minimo":10},{"id":1789590673868,"nome":"AÇUCAR CRISTAL 5KG","preco":17,"custo":15.99,"estoque":999,"minimo":10},{"id":1789590702268,"nome":"PACOTE DE MACARRÃO 500","preco":4,"custo":2.99,"estoque":996,"minimo":10},{"id":1789590736537,"nome":"CREME DENTAL 180","preco":9,"custo":7.45,"estoque":999,"minimo":10},{"id":1789590766449,"nome":"GILLETE PRESTORBARBA","preco":4,"custo":2.99,"estoque":999,"minimo":10},{"id":1789590792606,"nome":"FUBÁ MIMOSO 1KG","preco":4,"custo":2,"estoque":998,"minimo":10},{"id":1789590824849,"nome":"AGUA SANTARIA 2L","preco":7,"custo":5.5,"estoque":998,"minimo":10},{"id":1789590868236,"nome":"SUCOS SABORES DIV","preco":1.5,"custo":0.5,"estoque":989,"minimo":10},{"id":1789590893756,"nome":"RAÇÃO PARA GATO","preco":10,"custo":8.99,"estoque":999,"minimo":10},{"id":1789590924276,"nome":"CARNE DE PORCO","preco":85,"custo":33,"estoque":997,"minimo":10},{"id":1789590958630,"nome":"DOCE DE AMENDOIM","preco":1.5,"custo":0.95,"estoque":996,"minimo":110},{"id":1789590987488,"nome":"FUMO JURITI ESPECIAL","preco":4.5,"custo":3.5,"estoque":976,"minimo":10},{"id":1789678550585,"nome":"LEITE IBITURUNA 1 L","preco":7.5,"custo":6.2,"estoque":996,"minimo":10},{"id":1789678776877,"nome":"ESCOVA DE DENTE","preco":5,"custo":2.99,"estoque":999,"minimo":10},{"id":1789678819735,"nome":"TOMATE LONGA V KG","preco":4.2,"custo":2.99,"estoque":998,"minimo":10},{"id":1789678864801,"nome":"MORTADELA PEDAÇO","preco":7.5,"custo":4.99,"estoque":997,"minimo":10},{"id":1789678910429,"nome":"SHAMPOO SEDA","preco":15,"custo":13.25,"estoque":999,"minimo":10},{"id":1789678944813,"nome":"CARNE DE BOI","preco":42,"custo":32,"estoque":1000,"minimo":10},{"id":1789688099227,"nome":"FEIJÃO SUPANG 1K","preco":8.99,"custo":6.59,"estoque":975,"minimo":10},{"id":1789688122346,"nome":"OLEO DE SOJA C","preco":7.99,"custo":6.5,"estoque":997,"minimo":10},{"id":1789688148979,"nome":"DETERGENTE YPÊ 500","preco":3.49,"custo":2.5,"estoque":997,"minimo":10},{"id":1789688193264,"nome":"ESPONJA DE AÇO BB","preco":2.49,"custo":0.99,"estoque":999,"minimo":10},{"id":1789688229716,"nome":"LEITE QUATÁ INTEGRAL 1L","preco":5.79,"custo":4.1,"estoque":996,"minimo":10},{"id":1789689832852,"nome":"MARGARINA DELÍCIA 250","preco":7,"custo":5.8,"estoque":999,"minimo":10},{"id":1789689865118,"nome":"LEITE LITRO DESCARTÁVEL","preco":10,"custo":5,"estoque":999,"minimo":10},{"id":1789690056338,"nome":"FUMO JURITI ESPECIAL","preco":4.5,"custo":3.1,"estoque":1000,"minimo":10},{"id":1789690148324,"nome":"LINGUIÇA DEFUMADA KG","preco":30,"custo":22,"estoque":998,"minimo":10},{"id":1789690195930,"nome":"PÃO DE DOCE SACOLA","preco":10,"custo":6.99,"estoque":998,"minimo":10},{"id":1789690419991,"nome":"UNIEPAZ","preco":45,"custo":40,"estoque":999,"minimo":10},{"id":1789690546689,"nome":"CEMIG DISTRIBUIÇÃO SA","preco":34.84,"custo":29.9,"estoque":999,"minimo":10},{"id":1789690593666,"nome":"SAAE RAUL SOARES","preco":51.86,"custo":16,"estoque":999,"minimo":10},{"id":1789690620658,"nome":"FIBROM INTERNET","preco":90,"custo":80,"estoque":999,"minimo":10},{"id":1789690832151,"nome":"PÓ DE CAFÉ 500","preco":24,"custo":20,"estoque":999,"minimo":10},{"id":1789690877384,"nome":"BUCHA DE LAVAR LOUÇA","preco":2.5,"custo":1.2,"estoque":999,"minimo":10},{"id":1789690919426,"nome":"SABONETE GRANDE","preco":5,"custo":2,"estoque":998,"minimo":10},{"id":1789690957042,"nome":"BISCOITO WAFFER","preco":4,"custo":2,"estoque":998,"minimo":10},{"id":1789749627992,"nome":"TORNEIRA DUAS BOCAS","preco":28,"custo":21,"estoque":999,"minimo":10},{"id":1789749660657,"nome":"TEMPERO SALE ALHO POTE 1KG","preco":13,"custo":9.5,"estoque":999,"minimo":10},{"id":1789856232378,"nome":"ARREDODAMENTO DOCE AMENDOIM","preco":0.5,"custo":0.5,"estoque":9,"minimo":2},{"id":1790088454896,"nome":"AMACIANTE DE ROUPAS","preco":11,"custo":10,"estoque":998,"minimo":10},{"id":1790088490917,"nome":"PAR DE CORREIA CHINELO 42","preco":5,"custo":5,"estoque":999,"minimo":10},{"id":1790088534731,"nome":"TABLET DE SABÃO YPÊ","preco":16,"custo":10,"estoque":999,"minimo":10},{"id":1790088570271,"nome":"PILHAS AA","preco":2,"custo":1.2,"estoque":998,"minimo":10},{"id":1790088600959,"nome":"CAIXA DE SABÃO EM PÓ","preco":22,"custo":15.2,"estoque":999,"minimo":10},{"id":1790171537188,"nome":"BALAS MACIA DE FRUTAS","preco":0.1428571428571429,"custo":0.02,"estoque":986,"minimo":10},{"id":1790171669694,"nome":"DESCONTO","preco":0.36,"custo":0.36,"estoque":1000,"minimo":10},{"id":1790218526853,"nome":"TESTE","preco":0.01,"custo":0.01,"estoque":0,"minimo":1},{"id":1790357295019,"nome":"CADERNO B 96FLS","preco":7,"custo":3,"estoque":999,"minimo":10},{"id":1790357328814,"nome":"JOGO DE CABIDES","preco":3,"custo":1,"estoque":994,"minimo":10},{"id":1790463421909,"nome":"CICLOBENZAPRINA 10 MG","preco":13,"custo":6.5,"estoque":999,"minimo":10}],"vendas":[{"numero":1,"data":"16/09/2026, 17:40:23","timestamp":1789591223457,"itens":[{"produtoId":1789590494039,"produto":"BATATINHA IGLESA KILO","quantidade":1,"preco":9.2},{"produtoId":1789590522198,"produto":"ISQUEIRO BIC GRANDE","quantidade":2,"preco":6},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1},{"produtoId":1789590583268,"produto":"SARDINHA ENLATADAS","quantidade":2,"preco":7},{"produtoId":1789590615088,"produto":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":2},{"produtoId":1789590673868,"produto":"AÇUCAR CRISTAL 5KG","quantidade":1,"preco":17},{"produtoId":1789590702268,"produto":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4},{"produtoId":1789590736537,"produto":"CREME DENTAL 180","quantidade":1,"preco":9},{"produtoId":1789590766449,"produto":"GILLETE PRESTORBARBA","quantidade":1,"preco":4},{"produtoId":1789590792606,"produto":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4},{"produtoId":1789590824849,"produto":"AGUA SANTARIA 2L","quantidade":1,"preco":7},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":2,"preco":1},{"produtoId":1789590893756,"produto":"RAÇÃO PARA GATO","quantidade":1,"preco":10},{"produtoId":1789590924276,"produto":"CARNE DE PORCO","quantidade":1,"preco":39},{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5}],"pagamento":"Cartão de crédito","total":151.2},{"numero":2,"data":"18/09/2026, 13:43:09","timestamp":1789749789957,"itens":[{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5},{"produtoId":1789749627992,"produto":"TORNEIRA DUAS BOCAS","quantidade":1,"preco":28},{"produtoId":1789749660657,"produto":"TEMPERO SALE ALHO POTE 1KG","quantidade":1,"preco":13}],"pagamento":"Cartão de crédito","total":42.5},{"numero":3,"data":"19/09/2026, 18:49:50","timestamp":1789854590468,"itens":[{"produtoId":1789678550585,"produto":"LEITE IBITURUNA 1 L","quantidade":2,"preco":7.5},{"produtoId":1789590702268,"produto":"PACOTE DE MACARRÃO 500","quantidade":1,"preco":4},{"produtoId":1789590615088,"produto":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5},{"produtoId":1789678776877,"produto":"ESCOVA DE DENTE","quantidade":1,"preco":5},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":3,"preco":1},{"produtoId":1789678819735,"produto":"TOMATE LONGA V KG","quantidade":1,"preco":3.4},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":2},{"produtoId":1789678864801,"produto":"MORTADELA PEDAÇO","quantidade":1,"preco":6},{"produtoId":1789678910429,"produto":"SHAMPOO SEDA","quantidade":1,"preco":15},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1},{"produtoId":1789590792606,"produto":"FUBÁ MIMOSO 1KG","quantidade":1,"preco":4},{"produtoId":1789590924276,"produto":"CARNE DE PORCO","quantidade":1,"preco":42}],"pagamento":"Cartão de crédito","total":115.9},{"numero":4,"data":"19/09/2026, 18:52:23","timestamp":1789854743750,"itens":[{"produtoId":1789688099227,"produto":"FEIJÃO SUPANG 1K","quantidade":25,"preco":8.99},{"produtoId":1789688122346,"produto":"OLEO DE SOJA C","quantidade":3,"preco":7.99},{"produtoId":1789688148979,"produto":"DETERGENTE YPÊ 500","quantidade":3,"preco":3.49},{"produtoId":1789688193264,"produto":"ESPONJA DE AÇO BB","quantidade":1,"preco":2.49},{"produtoId":1789688229716,"produto":"LEITE QUATÁ INTEGRAL 1L","quantidade":4,"preco":5.79}],"pagamento":"Cartão de crédito","total":284.84000000000003},{"numero":5,"data":"19/09/2026, 18:53:59","timestamp":1789854839436,"itens":[{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":3,"preco":1},{"produtoId":1789689832852,"produto":"MARGARINA DELÍCIA 250","quantidade":1,"preco":7},{"produtoId":1789689865118,"produto":"LEITE LITRO DESCARTÁVEL","quantidade":1,"preco":10}],"pagamento":"Cartão de crédito","total":20},{"numero":6,"data":"19/09/2026, 18:55:25","timestamp":1789854925662,"itens":[{"produtoId":1789690148324,"produto":"LINGUIÇA DEFUMADA KG","quantidade":1,"preco":28},{"produtoId":1789690195930,"produto":"PÃO DE DOCE SACOLA","quantidade":1,"preco":10},{"produtoId":1789690419991,"produto":"UNIEPAZ","quantidade":1,"preco":45},{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5}],"pagamento":"Cartão de crédito","total":101},{"numero":7,"data":"19/09/2026, 19:02:38","timestamp":1789855358566,"itens":[{"produtoId":1789690832151,"produto":"PÓ DE CAFÉ 500","quantidade":1,"preco":24},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":2},{"produtoId":1789690877384,"produto":"BUCHA DE LAVAR LOUÇA","quantidade":1,"preco":2.5},{"produtoId":1789678819735,"produto":"TOMATE LONGA V KG","quantidade":1,"preco":4.2},{"produtoId":1789590583268,"produto":"SARDINHA ENLATADAS","quantidade":2,"preco":7},{"produtoId":1789690919426,"produto":"SABONETE GRANDE","quantidade":2,"preco":5},{"produtoId":1789590702268,"produto":"PACOTE DE MACARRÃO 500","quantidade":2,"preco":4},{"produtoId":1789590615088,"produto":"EXTRATO DE TOMATE LATA","quantidade":1,"preco":5.5},{"produtoId":1789678864801,"produto":"MORTADELA PEDAÇO","quantidade":1,"preco":13.5},{"produtoId":1789690957042,"produto":"BISCOITO WAFFER","quantidade":2,"preco":4},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":3,"preco":1.5}],"pagamento":"Cartão de crédito","total":107.2},{"numero":8,"data":"19/09/2026, 19:04:34","timestamp":1789855474262,"itens":[{"produtoId":1789590924276,"produto":"CARNE DE PORCO","quantidade":1,"preco":85},{"produtoId":1789590824849,"produto":"AGUA SANTARIA 2L","quantidade":1,"preco":7},{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":4,"preco":1},{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5}],"pagamento":"Cartão de crédito","total":115.5},{"numero":9,"data":"19/09/2026, 19:15:56","timestamp":1789856156598,"itens":[{"produtoId":1789690593666,"produto":"SAAE RAUL SOARES","quantidade":1,"preco":51.86},{"produtoId":1789690620658,"produto":"FIBROM INTERNET","quantidade":1,"preco":90},{"produtoId":1789690546689,"produto":"CEMIG DISTRIBUIÇÃO SA","quantidade":1,"preco":34.84}],"pagamento":"Cartão de crédito","total":176.70000000000002},{"numero":10,"data":"19/09/2026, 19:17:25","timestamp":1789856245983,"itens":[{"produtoId":1789856232378,"produto":"ARREDODAMENTO DOCE AMENDOIM","quantidade":1,"preco":0.5}],"pagamento":"Cartão de crédito","total":0.5},{"numero":11,"data":"20/09/2026, 12:46:34","timestamp":1789919194272,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":1,"preco":4.5}],"pagamento":"Cartão de crédito","total":4.5},{"numero":12,"data":"20/09/2026, 12:47:35","timestamp":1789919255163,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":3,"preco":4.5}],"pagamento":"Cartão de crédito","total":13.5},{"numero":13,"data":"20/09/2026, 16:13:43","timestamp":1789931623884,"itens":[{"produtoId":1789929318838,"produto":"MAQUINA DE LAVAR ROUPA CONSUL 16KG","quantidade":1,"preco":2459.9}],"pagamento":"Cartão de crédito","total":2459.9},{"numero":15,"data":"23/09/2026, 23:56:31","timestamp":1790218591492,"itens":[{"produtoId":1790218526853,"produto":"TESTE","quantidade":1,"preco":0.01}],"pagamento":"Dinheiro","total":0.01},{"numero":16,"data":"25/09/2026, 14:36:59","timestamp":1790357819409,"itens":[{"produtoId":1789690195930,"produto":"PÃO DE DOCE SACOLA","quantidade":1,"preco":10},{"produtoId":1789690148324,"produto":"LINGUIÇA DEFUMADA KG","quantidade":1,"preco":30},{"produtoId":1790357295019,"produto":"CADERNO B 96FLS","quantidade":1,"preco":7},{"produtoId":1789678864801,"produto":"MORTADELA PEDAÇO","quantidade":1,"preco":7.5},{"produtoId":1790357328814,"produto":"JOGO DE CABIDES","quantidade":6,"preco":3}],"pagamento":"Cartão de crédito","total":72.5},{"numero":17,"data":"26/09/2026, 19:57:20","timestamp":1790463440916,"itens":[{"produtoId":1790463421909,"produto":"CICLOBENZAPRINA 10 MG","quantidade":1,"preco":13}],"pagamento":"Pix","total":13},{"numero":18,"data":"26/09/2026, 20:17:35","timestamp":1790464655330,"itens":[{"produtoId":1789678550585,"produto":"LEITE IBITURUNA 1 L","quantidade":2,"preco":7.5},{"produtoId":1790088454896,"produto":"AMACIANTE DE ROUPAS","quantidade":2,"preco":11},{"produtoId":1789590640778,"produto":"TODINHO IBITURUNA","quantidade":3,"preco":1.5},{"produtoId":1789590545636,"produto":"OVOS DE GRANJA","quantidade":7,"preco":1.2},{"produtoId":1790088490917,"produto":"PAR DE CORREIA CHINELO 42","quantidade":1,"preco":5},{"produtoId":1789590868236,"produto":"SUCOS SABORES DIV","quantidade":3,"preco":1.5},{"produtoId":1789590583268,"produto":"SARDINHA ENLATADAS","quantidade":2,"preco":7.5},{"produtoId":1790088534731,"produto":"TABLET DE SABÃO YPÊ","quantidade":1,"preco":16},{"produtoId":1790088570271,"produto":"PILHAS AA","quantidade":2,"preco":2},{"produtoId":1790088600959,"produto":"CAIXA DE SABÃO EM PÓ","quantidade":1,"preco":22},{"produtoId":1789590958630,"produto":"DOCE DE AMENDOIM","quantidade":1,"preco":1.5},{"produtoId":1790171537188,"produto":"BALAS MACIA DE FRUTAS","quantidade":14,"preco":0.1428571428571429}],"pagamento":"Cartão de crédito","total":119.9},{"numero":19,"data":"26/09/2026, 20:19:54","timestamp":1790464794054,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":4,"preco":4.5}],"pagamento":"Cartão de crédito","total":18},{"numero":20,"data":"26/09/2026, 21:33:57","timestamp":1790469237226,"itens":[{"produtoId":1789590987488,"produto":"FUMO JURITI ESPECIAL","quantidade":8,"preco":4.5}],"pagamento":"Cartão de crédito","total":36}]};
+
+
+let produtos=[];
+let vendas=[];
+let carrinhoVenda=[];
+let carregando=false;
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+function numero(valor){
+  const n=Number(valor);
+  return Number.isFinite(n)?n:0;
+}
+function moeda(valor){
+  return numero(valor).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function esc(valor){
+  return String(valor ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function novoId(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+}
+function mostrarMensagem(texto,tipo='sucesso'){
+  let box=document.getElementById('mensagem');
+  if(!box){
+    box=document.createElement('div');
+    box.id='mensagem';
+    document.body.appendChild(box);
+  }
+  clearTimeout(window._timerMensagem);
+  box.className='mensagem '+tipo+' visivel';
+  if(tipo==='sucesso') box.innerHTML=String(texto);
+  else box.textContent=String(texto);
+  // Garante que a confirmação seja pintada depois do registro/renderização da tela.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ box.style.display='block'; box.style.visibility='visible'; box.style.opacity='1'; box.style.zIndex='2147483647'; }));
+  window._timerMensagem=setTimeout(()=>{
+    box.className='mensagem';
+    box.textContent='';
+    box.style.visibility='hidden';
+    box.style.opacity='0';
+  },6000);
+}
+function salvarDados(){
+  const pacote=JSON.stringify({produtos,vendas});
+  localStorage.setItem(CHAVE_DADOS,pacote);
+  _assinaturaDados=pacote;
+  // O armazenamento local continua sendo imediato. O Firebase é atualizado em segundo plano.
+  if(window.firebasePronto && !window._firebaseCarregando) firebaseSincronizarDados().catch(e=>console.warn('Firebase:',e));
+}
+function carregarDados(silencioso=false){
+  try{
+    const bruto=localStorage.getItem(CHAVE_DADOS);
+    if(bruto){
+      const dados=JSON.parse(bruto);
+      produtos=Array.isArray(dados.produtos)?dados.produtos:[];
+      vendas=Array.isArray(dados.vendas)?dados.vendas:[];
+    }else{
+      produtos=Array.isArray(DADOS_INICIAIS_IMPORTADOS.produtos)
+        ? JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.produtos)) : [];
+      vendas=Array.isArray(DADOS_INICIAIS_IMPORTADOS.vendas)
+        ? JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.vendas)) : [];
+      salvarDados();
+    }
+    const status=document.getElementById('statusConexao');
+    status.className='status-online';
+    status.textContent='● Modo local • '+produtos.length+' produto(s) • dados salvos neste aparelho';
+    renderizarTudo();
+    return true;
+  }catch(e){
+    console.error(e);
+    document.getElementById('statusConexao').textContent='● Erro ao ler dados locais';
+    if(!silencioso) mostrarMensagem('Erro ao carregar os dados locais: '+e.message,'erro');
+    return false;
+  }
+}
+
+/* =========================================================
+   PRODUTOS
+   ========================================================= */
+function limparFormularioProduto(){
+  document.getElementById('novoNome').value='';
+  document.getElementById('novoCodigoBarras').value='';
+  document.getElementById('novoPreco').value='';
+  document.getElementById('novoCusto').value='';
+  document.getElementById('novoEstoque').value='0';
+  document.getElementById('novoMinimo').value='0';
+}
+
+function cadastrarProduto(){
+  const nome=document.getElementById('novoNome').value.trim();
+  if(!nome){mostrarMensagem('Informe o nome do produto.','erro');return;}
+  const dados={
+    id:novoId(),nome,codigoBarras:String(document.getElementById('novoCodigoBarras').value||'').replace(/\D/g,''),
+    preco:Number(numero(document.getElementById('novoPreco').value).toFixed(2)),
+    personalizado:Number(numero(document.getElementById('novoCusto').value).toFixed(2)),
+    estoque_inteiro:Math.max(0,Math.trunc(numero(document.getElementById('novoEstoque').value))),
+    'mínimo':Math.max(0,Math.trunc(numero(document.getElementById('novoMinimo').value)))
+  };
+  produtos.push(dados);
+  salvarDados(); limparFormularioProduto(); renderizarTudo();
+  mostrarMensagem('✓ PRODUTO CADASTRADO COM SUCESSO!','sucesso');
+}
+
+function abrirEdicao(id){
+  const p=produtos.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  document.getElementById('editId').value=p.id;
+  document.getElementById('editNome').value=p.nome||'';
+  document.getElementById('editCodigoBarras').value=p.codigoBarras||p.codigo||p.ean||'';
+  document.getElementById('editPreco').value=numero(p.preco).toFixed(2);
+  document.getElementById('editCusto').value=numero(p.personalizado).toFixed(2);
+  document.getElementById('editEstoque').value=numero(p.estoque_inteiro);
+  document.getElementById('editMinimo').value=numero(p['mínimo']);
+  document.getElementById('modalEditar').classList.remove('oculto');
+}
+function fecharModal(){document.getElementById('modalEditar').classList.add('oculto');}
+function salvarEdicao(){
+  const id=document.getElementById('editId').value;
+  const p=produtos.find(x=>String(x.id)===String(id));
+  const nome=document.getElementById('editNome').value.trim();
+  if(!p||!nome){mostrarMensagem('Dados do produto incompletos.','erro');return;}
+  p.nome=nome;
+  p.codigoBarras=String(document.getElementById('editCodigoBarras').value||'').replace(/\D/g,'');
+  p.preco=Number(numero(document.getElementById('editPreco').value).toFixed(2));
+  p.personalizado=Number(numero(document.getElementById('editCusto').value).toFixed(2));
+  p.estoque_inteiro=Math.max(0,Math.trunc(numero(document.getElementById('editEstoque').value)));
+  p['mínimo']=Math.max(0,Math.trunc(numero(document.getElementById('editMinimo').value)));
+  salvarDados(); fecharModal(); renderizarTudo(); mostrarMensagem('Produto atualizado sem criar outro cadastro.','sucesso');
+}
+function excluirProduto(id){
+  const p=produtos.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  if(!confirm('Excluir "'+p.nome+'"?'))return;
+  const usado=vendas.some(v=>obterItensVenda(v).some(i=>String(i.produto_id??i.produtoId)===String(id)));
+  if(usado){mostrarMensagem('Este produto aparece em uma venda registrada. Exclua a venda primeiro.','erro');return;}
+  produtos=produtos.filter(x=>String(x.id)!==String(id));
+  salvarDados(); renderizarTudo(); mostrarMensagem('Produto excluído.','sucesso');
+}
+
+/* =========================================================
+   CARRINHO
+   ========================================================= */
+function nomeProdutoVendaNormalizado(p){
+  return String(p?.nome??p?.produto??p?.descricao??'Produto').trim();
+}
+
+function atualizarSelectProdutos(){
+  const select=document.getElementById('produtoVenda');
+  if(!select)return;
+  const atual=select.value;
+  const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim().toLocaleLowerCase('pt-BR');
+
+  select.innerHTML='<option value="">Selecione um produto</option>';
+
+  const filtrados=produtos
+    .filter(p=>!busca || nomeProdutoVendaNormalizado(p).toLocaleLowerCase('pt-BR').includes(busca))
+    .sort((a,b)=>nomeProdutoVendaNormalizado(a).localeCompare(nomeProdutoVendaNormalizado(b),'pt-BR'));
+
+  filtrados.forEach(p=>{
+    const estoque=numero(p.estoque_inteiro);
+    const option=document.createElement('option');
+    option.value=p.id;
+    option.disabled=estoque<=0;
+    option.textContent=nomeProdutoVendaNormalizado(p)+' — '+moeda(p.preco)+' — estoque: '+estoque;
+    select.appendChild(option);
+  });
+
+  if([...select.options].some(o=>o.value===atual)) select.value=atual;
+
+  const status=document.getElementById('produtoVendaStatus');
+  if(status){
+    status.textContent=produtos.length
+      ? (filtrados.length+' produto(s) encontrado(s)'+(busca?' para a busca.':'.'))
+      : 'Nenhum produto cadastrado.';
+  }
+}
+
+function filtrarProdutosVenda(){ atualizarSelectProdutos(); }
+
+function atualizarProdutosVenda(){
+  atualizarSelectProdutos();
+  const busca=(document.getElementById('buscaProdutoVenda')?.value||'').trim();
+  mostrarMensagem(busca?'✓ Lista filtrada para: '+busca:'✓ Lista de produtos atualizada.','sucesso');
+}
+
+let scannerStream=null;
+let scannerReader=null;
+let scannerParando=false;
+
+function normalizarCodigoBarras(valor){
+  return String(valor||'').replace(/\D/g,'');
+}
+
+function localizarProdutoPorCodigo(codigo){
+  const alvo=normalizarCodigoBarras(codigo);
+  if(!alvo) return null;
+  return produtos.find(p=>normalizarCodigoBarras(p.codigoBarras||p.codigo||p.ean)===alvo) || null;
+}
+
+function selecionarProdutoVenda(p){
+  if(!p) return false;
+  const busca=document.getElementById('buscaProdutoVenda');
+  const codigo=document.getElementById('codigoBarrasVenda');
+  const select=document.getElementById('produtoVenda');
+  if(busca) busca.value='';
+  if(codigo) codigo.value=normalizarCodigoBarras(p.codigoBarras||p.codigo||p.ean);
+  atualizarSelectProdutos();
+  if(select) select.value=p.id;
+  if(numero(p.estoque_inteiro)<=0){
+    mostrarMensagem('Produto encontrado, mas está sem estoque.','erro');
+    return false;
+  }
+  return true;
+}
+
+function buscarProdutoPorCodigoBarras(){
+  const codigo=normalizarCodigoBarras(document.getElementById('codigoBarrasVenda')?.value);
+  if(!codigo){
+    mostrarMensagem('Digite ou leia um código de barras.','erro');
+    return;
+  }
+  const p=localizarProdutoPorCodigo(codigo);
+  if(!p){
+    mostrarMensagem('Código de barras não cadastrado: '+codigo,'erro');
+    return;
+  }
+  selecionarProdutoVenda(p);
+  mostrarMensagem('✓ Produto localizado: '+esc(p.nome),'sucesso');
+}
+
+async function abrirLeitorCodigoBarras(){
+  const modal=document.getElementById('modalLeitorCodigo');
+  const video=document.getElementById('videoLeitorCodigo');
+  const status=document.getElementById('scannerStatus');
+  if(!modal||!video) return;
+  modal.classList.remove('oculto');
+  status.textContent='Solicitando acesso à câmera...';
+  scannerParando=false;
+
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error('Este navegador não permite acesso à câmera.');
+    }
+
+    // Primeiro tenta o leitor ZXing, que funciona em navegadores modernos mesmo quando BarcodeDetector não está disponível.
+    if(window.ZXingBrowser && window.ZXingBrowser.BrowserMultiFormatReader){
+      scannerReader=new window.ZXingBrowser.BrowserMultiFormatReader();
+      status.textContent='Aponte a câmera para o código de barras...';
+      await scannerReader.decodeFromConstraints(
+        {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},
+        video,
+        (resultado, erro) => {
+          if(scannerParando) return;
+          if(resultado){
+            const codigo=normalizarCodigoBarras(resultado.getText ? resultado.getText() : resultado.text);
+            if(codigo){
+              document.getElementById('codigoBarrasVenda').value=codigo;
+              const produto=localizarProdutoPorCodigo(codigo);
+              if(produto){
+                selecionarProdutoVenda(produto);
+                mostrarMensagem('✓ Produto lido: '+esc(produto.nome),'sucesso');
+                fecharLeitorCodigoBarras();
+              }else{
+                status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
+              }
+            }
+          }
+        }
+      );
+      return;
+    }
+
+    // Fallback nativo do navegador, quando disponível.
+    if('BarcodeDetector' in window){
+      const formatosSuportados=typeof BarcodeDetector.getSupportedFormats==='function'
+        ? await BarcodeDetector.getSupportedFormats() : [];
+      const formatosDesejados=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'];
+      const formatos=formatosDesejados.filter(f=>formatosSuportados.includes(f));
+      const detector=formatos.length ? new BarcodeDetector({formats}) : new BarcodeDetector();
+      scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+      video.srcObject=scannerStream;
+      await video.play();
+      status.textContent='Aponte a câmera para o código de barras...';
+      const procurar=async()=>{
+        if(scannerParando || video.readyState<2) return;
+        try{
+          const codigos=await detector.detect(video);
+          if(codigos.length){
+            const codigo=normalizarCodigoBarras(codigos[0].rawValue);
+            document.getElementById('codigoBarrasVenda').value=codigo;
+            const produto=localizarProdutoPorCodigo(codigo);
+            if(produto){
+              selecionarProdutoVenda(produto);
+              mostrarMensagem('✓ Produto lido: '+esc(produto.nome),'sucesso');
+              fecharLeitorCodigoBarras();
+              return;
+            }
+            status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
+          }
+        }catch(e){}
+        if(!scannerParando) setTimeout(procurar,180);
+      };
+      procurar();
+      return;
+    }
+
+    throw new Error('Seu navegador não oferece um leitor de código de barras compatível.');
+  }catch(e){
+    console.error('Leitor:',e);
+    status.textContent='Não foi possível abrir a câmera: '+(e.message||e);
+    mostrarMensagem('Não foi possível abrir a câmera. Verifique a permissão do navegador.','erro');
+  }
+}
+
+function fecharLeitorCodigoBarras(){
+  scannerParando=true;
+  if(scannerReader){
+    try{scannerReader.reset();}catch(e){}
+    scannerReader=null;
+  }
+  if(scannerStream){
+    scannerStream.getTracks().forEach(track=>{try{track.stop();}catch(e){}});
+    scannerStream=null;
+  }
+  const video=document.getElementById('videoLeitorCodigo');
+  if(video){video.pause();video.srcObject=null;}
+  const modal=document.getElementById('modalLeitorCodigo');
+  if(modal) modal.classList.add('oculto');
+}
+
+function adicionarAoCarrinho(){
+  const id=document.getElementById('produtoVenda').value;
+  const qtd=Math.max(1,Math.trunc(numero(document.getElementById('quantidadeVenda').value)));
+  const p=produtos.find(x=>String(x.id)===String(id));
+
+  if(!p){
+    mostrarMensagem('Selecione um produto.','erro');
+    return;
+  }
+
+  const estoque=numero(p.estoque_inteiro);
+  const existente=carrinhoVenda.find(x=>String(x.id)===String(id));
+  const novaQtd=(existente?existente.quantidade:0)+qtd;
+
+  if(novaQtd>estoque){
+    mostrarMensagem('Estoque insuficiente. Disponível: '+estoque+'.','erro');
+    return;
+  }
+
+  if(existente){
+    existente.quantidade=novaQtd;
+  }else{
+    carrinhoVenda.push({
+      id:p.id,
+      nome:p.nome,
+      preco:numero(p.preco),
+      quantidade:qtd
+    });
+  }
+
+  // Depois de lançar o produto, limpa o campo para o próximo item.
+  document.getElementById('produtoVenda').value='';
+  document.getElementById('quantidadeVenda').value='1';
+  renderizarCarrinho();
+  document.getElementById('produtoVenda').focus();
+  mostrarMensagem('✓ Produto adicionado ao carrinho.','sucesso');
+}
+
+function removerDoCarrinho(id){
+  carrinhoVenda=carrinhoVenda.filter(x=>String(x.id)!==String(id));
+  renderizarCarrinho();
+}
+
+function alterarQuantidadeCarrinho(id,qtd){
+  const item=carrinhoVenda.find(x=>String(x.id)===String(id));
+  const p=produtos.find(x=>String(x.id)===String(id));
+
+  if(!item || !p) return;
+
+  qtd=Math.max(1,Math.trunc(numero(qtd)));
+
+  if(qtd>numero(p.estoque_inteiro)){
+    mostrarMensagem('Estoque insuficiente. Disponível: '+p.estoque_inteiro+'.','erro');
+    renderizarCarrinho();
+    return;
+  }
+
+  item.quantidade=qtd;
+  renderizarCarrinho();
+}
+
+function totalCarrinho(){
+  return carrinhoVenda.reduce((s,x)=>s+(x.preco*x.quantidade),0);
+}
+
+function valorDesconto(){
+  const el=document.getElementById('descontoVenda');
+  return Math.max(0, Math.min(numero(el ? el.value : 0), totalCarrinho()));
+}
+
+function atualizarTotaisVenda(){
+  const subtotal=totalCarrinho();
+  const desconto=valorDesconto();
+  const total=Math.max(0, subtotal-desconto);
+  const parcelado=document.getElementById('parcelado')?.value==='sim';
+  const parcelas=Math.max(2, Math.min(24, Math.trunc(numero(document.getElementById('parcelas')?.value))||2));
+  document.getElementById('subtotalCarrinho').textContent=moeda(subtotal);
+  document.getElementById('totalCarrinho').textContent=moeda(total);
+  document.getElementById('resumoPagamento').innerHTML='Subtotal: <b>'+moeda(subtotal)+'</b> | Desconto: <b>'+moeda(desconto)+'</b> | Total: <b>'+moeda(total)+'</b>'+(parcelado?' | '+parcelas+'x de <b>'+moeda(total/parcelas)+'</b>':'');
+}
+
+function atualizarPagamento(){
+  const parcelado=document.getElementById('parcelado').value==='sim';
+  document.getElementById('campoParcelas').classList.toggle('oculto',!parcelado);
+  atualizarTotaisVenda();
+}
+
+function renderizarCarrinho(){
+  const el=document.getElementById('carrinho');
+
+  if(!carrinhoVenda.length){
+    el.innerHTML='<div class="vazio">Carrinho vazio.</div>';
+  }else{
+    el.innerHTML=carrinhoVenda.map(x=>`
+      <div class="linha-carrinho">
+        <div><b>${esc(x.nome)}</b><br>${moeda(x.preco)}</div>
+        <input type="number" min="1" value="${x.quantidade}"
+          onchange="alterarQuantidadeCarrinho('${esc(x.id)}',this.value)">
+        <div>${moeda(x.preco*x.quantidade)}</div>
+        <button class="excluir" onclick="removerDoCarrinho('${esc(x.id)}')">✕</button>
+      </div>
+    `).join('');
+  }
+
+  atualizarTotaisVenda();
+}
+
+/* =========================================================
+   REGISTRAR VENDA
+   ========================================================= */
+function registrarVenda(){
+  if(!carrinhoVenda.length){mostrarMensagem('Adicione produtos ao carrinho.','erro');return;}
+  for(const item of carrinhoVenda){
+    const p=produtos.find(x=>String(x.id)===String(item.id));
+    if(!p) {mostrarMensagem('Produto "'+item.nome+'" não foi encontrado.','erro');return;}
+    if(item.quantidade>numero(p.estoque_inteiro)){mostrarMensagem('Estoque insuficiente para "'+item.nome+'". Disponível: '+p.estoque_inteiro+'.','erro');return;}
+  }
+  const subtotal=totalCarrinho();
+  const desconto=valorDesconto();
+  const total=Math.max(0, subtotal-desconto);
+  const forma=document.getElementById('formaPagamento').value;
+  const parcelado=document.getElementById('parcelado').value==='sim';
+  const parcelas=parcelado?Math.max(2,Math.min(24,Math.trunc(numero(document.getElementById('parcelas').value))||2)):1;
+  const proximoNumero=vendas.reduce((m,v)=>Math.max(m,numero(v.numero)),0)+1;
+  const itensVenda=carrinhoVenda.map(x=>({produto_id:x.id,nome:x.nome,quantidade:x.quantidade,preco:Number(x.preco.toFixed(2)),subtotal:Number((x.preco*x.quantidade).toFixed(2))}));
+  const novaVenda={id:novoId(),numero:proximoNumero,timestampz:new Date().toISOString(),subtotal:Number(subtotal.toFixed(2)),desconto:Number(desconto.toFixed(2)),total:Number(total.toFixed(2)),forma_pagamento:forma,parcelado,parcelas,valor_parcela:Number((total/parcelas).toFixed(2)),itens:itensVenda,texto_pagamento:forma+(parcelado?' — '+parcelas+'x de '+moeda(total/parcelas):'')};
+  vendas.unshift(novaVenda);
+  for(const item of carrinhoVenda){
+    const p=produtos.find(x=>String(x.id)===String(item.id));
+    p.estoque_inteiro=numero(p.estoque_inteiro)-item.quantidade;
+  }
+  salvarDados();
+
+  // Venda concluída: limpa completamente o carrinho e prepara a próxima venda.
+  carrinhoVenda=[];
+  document.getElementById('produtoVenda').value='';
+  document.getElementById('quantidadeVenda').value='1';
+  document.getElementById('descontoVenda').value='0';
+  document.getElementById('parcelado').value='nao';
+  document.getElementById('parcelas').value='2';
+  document.getElementById('formaPagamento').value='Pix';
+  atualizarPagamento();
+  renderizarTudo();
+  document.getElementById('produtoVenda').focus();
+  mostrarMensagem('<div style="font-size:34px;letter-spacing:.3px">VENDA CONCLUÍDA COM SUCESSO.</div><div style="font-size:28px;margin-top:12px">OBRIGADO, VOLTE SEMPRE!</div>','sucesso');
+}
+
+function limparCarrinho(){
+  carrinhoVenda=[];
+  renderizarCarrinho();
+}
+
+/* =========================================================
+   EXCLUSÃO DE VENDAS / DADOS
+   ========================================================= */
+function excluirVenda(){
+  const senha=prompt('Digite a senha para excluir vendas:');
+  if(senha===null)return;
+  if(senha!=='8526'){alert('Senha incorreta.');return;}
+  if(!vendas.length){alert('Não existem vendas registradas.');return;}
+
+  let lista='VENDAS REGISTRADAS\n\n';
+  vendas.forEach((v,i)=>{
+    const num=v.numero??(i+1);
+    const data=v.timestampz?new Date(v.timestampz).toLocaleString('pt-BR'):'-';
+    const itens=obterItensVenda(v);
+    lista+='Venda nº '+num+' | '+data+' | '+moeda(v.total)+'\n';
+    itens.forEach(x=>lista+='  • '+x.nome+' — quantidade: '+numero(x.quantidade)+'\n');
+    lista+='\n';
+  });
+
+  const escolhido=prompt(lista+'Digite o NÚMERO da venda que deseja excluir:');
+  if(escolhido===null)return;
+  const numEscolhido=Math.trunc(numero(escolhido));
+  const indice=vendas.findIndex((v,i)=>numero(v.numero??(i+1))===numEscolhido);
+  if(indice<0){alert('Venda não encontrada.');return;}
+
+  const venda=vendas[indice];
+  const itens=obterItensVenda(venda);
+  let confirmacao='EXCLUIR VENDA Nº '+numEscolhido+'?\n\n';
+  itens.forEach(x=>confirmacao+='• '+x.nome+' — quantidade: '+numero(x.quantidade)+'\n');
+  confirmacao+='\nTotal: '+moeda(venda.total)+'\n\nOs produtos voltarão ao estoque.';
+  if(!confirm(confirmacao))return;
+
+  for(const item of itens){
+    const pid=item.produto_id??item.produtoId;
+    const produto=produtos.find(p=>String(p.id)===String(pid));
+    if(produto) produto.estoque_inteiro=numero(produto.estoque_inteiro)+numero(item.quantidade);
+  }
+  vendas.splice(indice,1);
+  salvarDados();
+  renderizarTudo();
+  mostrarMensagem('Venda nº '+numEscolhido+' excluída e estoque restaurado.','sucesso');
+}
+
+function baixarBackup(){
+  try{
+    const pacote={produtos:JSON.parse(JSON.stringify(produtos)),vendas:JSON.parse(JSON.stringify(vendas)),data:new Date().toISOString(),versao:'Sistema de Vendas V2'};
+    const blob=new Blob([JSON.stringify(pacote,null,2)],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const d=new Date().toISOString().slice(0,10);
+    a.href=url; a.download='backup_sistema_vendas_'+d+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    mostrarMensagem('✓ BACKUP GERADO COM SUCESSO!','sucesso');
+  }catch(e){ mostrarMensagem('Não foi possível gerar o backup.','erro'); console.error(e); }
+}
+
+function selecionarBackup(){
+  const input=document.getElementById('arquivoBackup');
+  if(input){ input.value=''; input.click(); }
+}
+
+function restaurarBackupArquivo(event){
+  const arquivo=event.target.files && event.target.files[0];
+  if(!arquivo)return;
+  const leitor=new FileReader();
+  leitor.onload=function(){
+    try{
+      const dados=JSON.parse(leitor.result);
+      if(!Array.isArray(dados.produtos) || !Array.isArray(dados.vendas)) throw new Error('Formato inválido');
+      if(!confirm('Restaurar este backup? Os dados atuais deste navegador serão substituídos.')) return;
+      produtos=JSON.parse(JSON.stringify(dados.produtos));
+      vendas=JSON.parse(JSON.stringify(dados.vendas));
+      carrinhoVenda=[];
+      salvarDados();
+      renderizarTudo();
+      mostrar('inicio');
+      mostrarMensagem('✓ BACKUP RESTAURADO COM SUCESSO! Produtos, vendas e estoque foram recuperados.','sucesso');
+    }catch(e){
+      mostrarMensagem('Arquivo de backup inválido ou corrompido.','erro');
+      console.error(e);
+    }finally{ event.target.value=''; }
+  };
+  leitor.onerror=function(){mostrarMensagem('Não foi possível ler o arquivo de backup.','erro');};
+  leitor.readAsText(arquivo,'UTF-8');
+}
+
+function restaurarSistemaInicial(){
+  const senha=prompt('Digite a senha para restaurar o sistema inicial:');
+  if(senha===null)return;
+  if(senha!=='8526'){mostrarMensagem('Senha incorreta.','erro');return;}
+  if(!confirm('Restaurar os dados iniciais do sistema? Os dados atuais serão substituídos.'))return;
+  produtos=Array.isArray(DADOS_INICIAIS_IMPORTADOS.produtos)?JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.produtos)):[];
+  vendas=Array.isArray(DADOS_INICIAIS_IMPORTADOS.vendas)?JSON.parse(JSON.stringify(DADOS_INICIAIS_IMPORTADOS.vendas)):[];
+  carrinhoVenda=[];
+  salvarDados();
+  renderizarTudo();
+  mostrar('inicio');
+  mostrarMensagem('✓ SISTEMA RESTAURADO COM SUCESSO! Os dados iniciais foram recuperados.','sucesso');
+}
+
+function apagarTodosOsDados(){
+  const senha=prompt('Digite a senha para apagar TODOS os dados:');
+  if(senha===null)return;
+  if(senha!=='8526'){alert('Senha incorreta.');return;}
+  if(!confirm('ATENÇÃO: apagar TODOS os produtos e TODAS as vendas?'))return;
+  if(!confirm('CONFIRMA NOVAMENTE? Esta operação não pode ser desfeita.'))return;
+  produtos=[];
+  vendas=[];
+  carrinhoVenda=[];
+  salvarDados();
+  renderizarTudo();
+  mostrarMensagem('Todos os dados foram apagados deste aparelho.','sucesso');
+}
+
+/* =========================================================
+   TELAS E RELATÓRIOS
+   ========================================================= */
+function mostrar(id){
+  document.querySelectorAll('.pagina').forEach(x=>x.classList.add('oculto'));
+  const pagina=document.getElementById(id);
+  if(pagina) pagina.classList.remove('oculto');
+
+  if(id==='vendas') renderizarVendas();
+  if(id==='estoque') renderizarEstoque();
+  if(id==='relatorios') renderizarRelatorio();
+}
+
+function renderizarProdutos(){
+  const tbody=document.getElementById('tabelaProdutos');
+
+  if(!produtos.length){
+    tbody.innerHTML='<tr><td colspan="7" class="vazio">Nenhum produto cadastrado.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=produtos.map(p=>`
+    <tr>
+      <td>${esc(p.nome)}</td>
+      <td>${esc(p.codigoBarras||p.codigo||p.ean||'—')}</td>
+      <td>${moeda(p.preco)}</td>
+      <td>${moeda(p.personalizado)}</td>
+      <td>${numero(p.estoque_inteiro)}</td>
+      <td>${numero(p['mínimo'])}</td>
+      <td class="acoes">
+        <button class="editar" onclick="abrirEdicao('${esc(p.id)}')">✏️ Editar</button>
+        <button class="excluir" onclick="excluirProduto('${esc(p.id)}')">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function obterItensVenda(v){
+  /*
+    Compatibilidade: o banco correto usa "itens".
+    O teste de "items" é somente para não quebrar registros antigos
+    caso algum tenha sido criado antes da correção.
+  */
+  if(Array.isArray(v.itens)) return v.itens;
+  if(Array.isArray(v.items)) return v.items;
+  return [];
+}
+
+function nomeItemVenda(x){
+  return x?.nome || x?.produto || x?.name || ('Produto #'+(x?.produtoId ?? ''));
+}
+function pagamentoVenda(v){
+  return v.texto_pagamento || v.forma_pagamento || v.pagamento || '-';
+}
+function limparFiltroVendas(){
+  const f=document.getElementById('filtroVendas'), p=document.getElementById('filtroPagamento'), o=document.getElementById('filtroOrdem');
+  if(f)f.value=''; if(p)p.value=''; if(o)o.value='desc'; renderizarVendas();
+}
+function renderizarVendas(){
+  const tbody=document.getElementById('tabelaVendas');
+  if(!tbody)return;
+  const filtro=(document.getElementById('filtroVendas')?.value||'').trim().toLowerCase();
+  const pag=(document.getElementById('filtroPagamento')?.value||'').toLowerCase();
+  const ordem=document.getElementById('filtroOrdem')?.value||'desc';
+  let lista=vendas.filter(v=>{
+    const itens=obterItensVenda(v);
+    const nomes=itens.map(nomeItemVenda).join(' ').toLowerCase();
+    const numeroVenda=String(v.numero??'').toLowerCase();
+    const pagamento=pagamentoVenda(v).toLowerCase();
+    return (!filtro || nomes.includes(filtro) || numeroVenda.includes(filtro)) && (!pag || pagamento.includes(pag));
+  });
+  lista.sort((a,b)=>{
+    const na=Number(a.numero)||0, nb=Number(b.numero)||0;
+    return ordem==='asc'?na-nb:nb-na;
+  });
+  const qtd=vendas.length;
+  const total=vendas.reduce((s,v)=>s+numero(v.total),0);
+  const itensTotais=vendas.reduce((s,v)=>s+obterItensVenda(v).reduce((a,x)=>a+numero(x.quantidade),0),0);
+  const badge=document.getElementById('badgeVendas'); if(badge)badge.textContent=qtd;
+  const qbar=document.getElementById('vendasQtdBarra'); if(qbar)qbar.textContent=qtd;
+  const tbar=document.getElementById('vendasTotalBarra'); if(tbar)tbar.textContent=moeda(total);
+  const ibar=document.getElementById('vendasItensBarra'); if(ibar)ibar.textContent=itensTotais;
+  if(!lista.length){ tbody.innerHTML='<tr><td colspan="6" class="vazio">Nenhuma venda encontrada com esses filtros.</td></tr>'; return; }
+  tbody.innerHTML=lista.map((v,i)=>{
+    const itens=obterItensVenda(v);
+    const resumo=itens.map(x=>'<div>• <b>'+esc(nomeItemVenda(x))+'</b> — '+numero(x.quantidade)+' × '+moeda(x.preco)+'</div>').join('');
+    return '<tr>'+
+      '<td><span class="venda-numero"><b>#'+esc(v.numero??(i+1))+'</b></span></td>'+
+      '<td>'+esc(formatarDataVenda(v))+'</td>'+
+      '<td class="venda-produtos">'+(resumo||'-')+'</td>'+
+      '<td><span class="badge-pagamento">'+esc(pagamentoVenda(v))+'</span></td>'+
+      '<td><b>'+moeda(v.total)+'</b></td>'+
+      '<td><button onclick="imprimirCupomVenda(\''+esc(v.id)+'\')">🧾 Cupom</button></td>'+
+      '</tr>';
+  }).join('');
+}
+
+function renderizarEstoque(){
+  const tbody=document.getElementById('tabelaEstoque');
+
+  if(!produtos.length){
+    tbody.innerHTML='<tr><td colspan="4" class="vazio">Nenhum produto.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=produtos.map(p=>{
+    const e=numero(p.estoque_inteiro);
+    const m=numero(p['mínimo']);
+    const situacao=e<=0?'SEM ESTOQUE':(e<=m?'REPOR':'NORMAL');
+
+    return `
+      <tr>
+        <td>${esc(p.nome)}</td>
+        <td>${e}</td>
+        <td>${m}</td>
+        <td>${situacao}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function resumoPagamentos(){
+  const mapa={};
+  vendas.forEach(v=>{
+    const forma=v.forma_pagamento || v.pagamento || v.texto_pagamento || 'Não informado';
+    mapa[forma]=(mapa[forma]||0)+numero(v.total);
+  });
+  return Object.entries(mapa).sort((a,b)=>b[1]-a[1]);
+}
+
+function formatarDataVenda(v){
+  const valor=v.timestampz||v.timestamp;
+  if(!valor) return v.data||'-';
+  const d=new Date(valor);
+  return isNaN(d.getTime())?(v.data||'-'):d.toLocaleString('pt-BR');
+}
+
+function renderizarRelatorio(){
+  const quantidade=vendas.length;
+  const bruto=vendas.reduce((s,v)=>s+numero(v.subtotal??v.total),0);
+  const descontos=vendas.reduce((s,v)=>s+numero(v.desconto),0);
+  const total=vendas.reduce((s,v)=>s+numero(v.total),0);
+  const ticket=quantidade?total/quantidade:0;
+  const estoque=produtos.reduce((s,p)=>s+numero(p.estoque_inteiro),0);
+  const baixo=produtos.filter(p=>numero(p.estoque_inteiro)<=numero(p['mínimo']));
+  const pagamentos=resumoPagamentos();
+  const ultimas=vendas.slice(0,10);
+
+  document.getElementById('relatorioTexto').innerHTML=`
+    <div class="relatorio-grid">
+      <div class="relatorio-box">Vendas<strong>${quantidade}</strong></div>
+      <div class="relatorio-box">Valor bruto<strong>${moeda(bruto)}</strong></div>
+      <div class="relatorio-box">Descontos<strong>${moeda(descontos)}</strong></div>
+      <div class="relatorio-box">Total vendido<strong>${moeda(total)}</strong></div>
+      <div class="relatorio-box">Ticket médio<strong>${moeda(ticket)}</strong></div>
+      <div class="relatorio-box">Itens em estoque<strong>${numero(estoque)}</strong></div>
+      <div class="relatorio-box">Estoque baixo<strong>${baixo.length}</strong></div>
+      <div class="relatorio-box">Última venda<strong>${ultimas.length?esc(formatarDataVenda(ultimas[0])):'-'}</strong></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" style="margin:0">
+        <h3>Vendas por forma de pagamento</h3>
+        ${pagamentos.length?'<table><thead><tr><th>Forma</th><th>Valor</th></tr></thead><tbody>'+pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')+'</tbody></table>':'<div class="vazio">Nenhuma venda.</div>'}
+      </div>
+      <div class="card" style="margin:0">
+        <h3>Produtos com estoque baixo</h3>
+        ${baixo.length?'<table><thead><tr><th>Produto</th><th>Estoque</th><th>Mínimo</th></tr></thead><tbody>'+baixo.map(p=>'<tr><td>'+esc(p.nome)+'</td><td>'+numero(p.estoque_inteiro)+'</td><td>'+numero(p['mínimo'])+'</td></tr>').join('')+'</tbody></table>':'<div class="sucesso">Nenhum produto está no mínimo ou abaixo.</div>'}
+      </div>
+    </div>
+
+    <div class="card" style="margin:20px 0 0">
+      <h3>Últimas vendas</h3>
+      ${ultimas.length?'<div class="tabela-scroll"><table><thead><tr><th>Nº</th><th>Data</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>'+ultimas.map((v,i)=>'<tr><td>'+esc(v.numero??(i+1))+'</td><td>'+esc(formatarDataVenda(v))+'</td><td>'+esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-')+'</td><td>'+moeda(v.desconto)+'</td><td><b>'+moeda(v.total)+'</b></td></tr>').join('')+'</tbody></table></div>':'<div class="vazio">Nenhuma venda registrada.</div>'}
+    </div>`;
+}
+
+function renderizarKpis(){
+  document.getElementById('kpiProdutos').textContent=produtos.length;
+  document.getElementById('kpiEstoque').textContent=produtos.reduce((s,p)=>s+numero(p.estoque_inteiro),0);
+  document.getElementById('kpiVendas').textContent=vendas.length;
+  document.getElementById('kpiTotal').textContent=moeda(vendas.reduce((s,v)=>s+numero(v.total),0));
+}
+
+function renderizarTudo(){
+  renderizarKpis();
+  renderizarProdutos();
+  atualizarSelectProdutos();
+  renderizarCarrinho();
+  renderizarVendas();
+  renderizarEstoque();
+  renderizarRelatorio();
+}
+
+function imprimirCupomUltimaVenda(){
+  if(!vendas.length){ mostrarMensagem('Nenhuma venda registrada para imprimir.','erro'); return; }
+  imprimirCupomVenda(vendas[0].id);
+}
+
+function imprimirCupomVenda(id){
+  const v=vendas.find(x=>String(x.id)===String(id));
+  if(!v){ mostrarMensagem('Venda não encontrada.','erro'); return; }
+  const win=window.open('','_blank','width=420,height=720');
+  if(!win){ alert('O navegador bloqueou a impressão. Permita pop-ups para este sistema.'); return; }
+  const itens=obterItensVenda(v);
+  const linhas=itens.map(i=>`<tr><td>${esc(i.nome)}</td><td class="q">${numero(i.quantidade)}</td><td class="v">${moeda(numero(i.preco)*numero(i.quantidade))}</td></tr>`).join('');
+  const desconto=numero(v.desconto);
+  const forma=esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cupom ${esc(v.numero)}</title><style>
+  @page{size:80mm auto;margin:4mm} body{font-family:Arial,sans-serif;width:72mm;margin:0 auto;color:#111;font-size:12px} h1{text-align:center;font-size:18px;margin:0 0 3px} .sub{text-align:center;font-size:10px;color:#555;margin-bottom:8px}.linha{border-top:1px dashed #555;margin:7px 0} table{width:100%;border-collapse:collapse} td{padding:3px 0;vertical-align:top} .q{width:25px;text-align:center}.v{width:65px;text-align:right;white-space:nowrap}.total{font-size:17px;font-weight:bold;text-align:right;margin-top:6px}.rodape{text-align:center;font-size:10px;margin-top:10px;line-height:1.35} .nf{font-weight:bold;text-align:center;border:1px solid #222;padding:4px;margin-top:8px}@media print{button{display:none}}</style></head><body><h1>SISTEMA DE VENDAS</h1><div class="sub">COMPROVANTE DE VENDA</div><div>Venda nº <b>${esc(v.numero)}</b><br>${esc(formatarDataVenda(v))}</div><div class="linha"></div><table>${linhas}</table><div class="linha"></div>${desconto>0?'<div>Desconto: '+moeda(desconto)+'</div>':''}<div class="total">TOTAL: ${moeda(v.total)}</div><div style="margin-top:5px">Pagamento: ${forma}</div><div class="nf">SEM VALOR FISCAL</div><div class="rodape">Este comprovante não substitui documento fiscal.<br>Obrigado pela preferência!</div></body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),300);
+}
+
+function imprimirRelatorio(){
+  const win=window.open('','_blank');
+  if(!win){alert('O navegador bloqueou a impressão. Permita pop-ups para este sistema.');return;}
+  const quantidade=vendas.length;
+  const bruto=vendas.reduce((s,v)=>s+numero(v.subtotal??v.total),0);
+  const descontos=vendas.reduce((s,v)=>s+numero(v.desconto),0);
+  const total=vendas.reduce((s,v)=>s+numero(v.total),0);
+  const pagamentos=resumoPagamentos();
+  const linhas=vendas.map((v,i)=>{
+    const itens=obterItensVenda(v).map(x=>'<div><b>'+esc(nomeItemVenda(x))+'</b> — '+numero(x.quantidade)+' × '+moeda(x.preco)+'</div>').join('');
+    return '<tr><td><b>#'+esc(v.numero??(i+1))+'</b></td><td>'+esc(formatarDataVenda(v))+'</td><td>'+itens+'</td><td>'+esc(pagamentoVenda(v))+'</td><td>'+moeda(v.desconto)+'</td><td><b>'+moeda(v.total)+'</b></td></tr>';
+  }).join('');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:25px;color:#222}h1{text-align:center;margin-bottom:5px}.data{text-align:center;color:#666;margin-bottom:20px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.box{border:1px solid #aaa;padding:10px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:11px;page-break-inside:auto}thead{display:table-header-group}tr{page-break-inside:avoid}th,td{border:1px solid #aaa;padding:6px;text-align:left;vertical-align:top}th{background:#eee}td:nth-child(1){width:45px}td:nth-child(2){width:115px}td:nth-child(5),td:nth-child(6){white-space:nowrap;text-align:right}.total{text-align:right;font-size:18px;font-weight:bold;margin-top:15px}@media print{button{display:none}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Emitido em ${esc(new Date().toLocaleString('pt-BR'))}</div><div class="kpis"><div class="box">Vendas<b>${quantidade}</b></div><div class="box">Valor bruto<b>${moeda(bruto)}</b></div><div class="box">Descontos<b>${moeda(descontos)}</b></div><div class="box">Total vendido<b>${moeda(total)}</b></div></div><h2>Vendas</h2><table><thead><tr><th>Nº</th><th>Data</th><th>Produtos</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhuma venda registrada.</td></tr>'}</tbody></table><div class="total">TOTAL VENDIDO: ${moeda(total)}</div><h2>Resumo por pagamento</h2><table><thead><tr><th>Forma de pagamento</th><th>Valor</th></tr></thead><tbody>${pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')||'<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table><button onclick="window.print()">Imprimir</button></body></html>`);
+  win.document.close();
+}
+
+function imprimirVendas(){
+  imprimirRelatorio();
+}
+
+/* =========================================================
+   FIREBASE — SINCRONIZAÇÃO REAL
+   ========================================================= */
+const FIREBASE_CAMINHO='sistema_vendas';
+
+async function firebaseSincronizarDados(){
+  if(!window.firebasePronto || !window.firebaseAPI || window._firebaseCarregando) return;
+  const {ref,set}=window.firebaseAPI;
+  const pacote={
+    data:new Date().toISOString(),
+    origem:'sistema-vendas',
+    produtos:JSON.parse(JSON.stringify(produtos)),
+    vendas:JSON.parse(JSON.stringify(vendas))
+  };
+  await set(ref(window.firebaseDB,FIREBASE_CAMINHO),pacote);
+  window._firebaseUltimaSincronizacao=pacote.data;
+  atualizarStatusFirebaseInicial('☁️ Firebase sincronizado.');
+}
+
+async function firebaseCarregarDados(){
+  if(!window.firebasePronto || !window.firebaseAPI) throw new Error('Firebase não foi inicializado.');
+  const {ref,get,set}=window.firebaseAPI;
+  const snap=await get(ref(window.firebaseDB,FIREBASE_CAMINHO));
+
+  if(snap.exists()) {
+    const v=snap.val()||{};
+    const produtosCloud=Array.isArray(v.produtos)?v.produtos:[];
+    const vendasCloud=Array.isArray(v.vendas)?v.vendas:[];
+    if(produtosCloud.length || vendasCloud.length) {
+      window._firebaseCarregando=true;
+      produtos=JSON.parse(JSON.stringify(produtosCloud));
+      vendas=JSON.parse(JSON.stringify(vendasCloud));
+      carrinhoVenda=[];
+      const pacote=JSON.stringify({produtos,vendas});
+      localStorage.setItem(CHAVE_DADOS,pacote);
+      _assinaturaDados=pacote;
+      window._firebaseCarregando=false;
+      renderizarTudo();
+      atualizarStatusFirebaseInicial('☁️ Firebase carregado: '+produtos.length+' produtos / '+vendas.length+' vendas.');
+      return {carregado:true,produtos:produtos.length,vendas:vendas.length};
+    }
+  }
+
+  // Primeira inicialização: mantém os dados locais e cria a cópia central.
+  await firebaseSincronizarDados();
+  return {carregado:false,produtos:produtos.length,vendas:vendas.length};
+}
+
+async function firebaseTestarConexao(){
+  const st=document.getElementById('firebaseStatus'), out=document.getElementById('firebaseResultado');
+  try{
+    if(!window.firebasePronto || !window.firebaseAPI) throw new Error('Firebase não foi inicializado.');
+    const {ref,get}=window.firebaseAPI;
+    const snap=await get(ref(window.firebaseDB,FIREBASE_CAMINHO));
+    st.textContent='● Firebase conectado e acessível.';
+    out.textContent='✅ CONEXÃO FUNCIONOU!\n\nCaminho /'+FIREBASE_CAMINHO+' acessível.\nProdutos: '+(snap.exists()?((snap.val().produtos||[]).length):0)+'\nVendas: '+(snap.exists()?((snap.val().vendas||[]).length):0);
+  }catch(e){
+    st.textContent='● Erro na conexão com o Firebase.';
+    out.textContent='❌ ERRO: '+e.message;
+  }
+}
+
+async function firebaseEnviarProdutos(){
+  const st=document.getElementById('firebaseStatus'), out=document.getElementById('firebaseResultado');
+  try{
+    await firebaseSincronizarDados();
+    st.textContent='● Dados locais sincronizados com o Firebase.';
+    out.textContent='✅ SINCRONIZAÇÃO FUNCIONOU!\n\nProdutos enviados: '+produtos.length+'\nVendas enviadas: '+vendas.length+'\nCaminho: /'+FIREBASE_CAMINHO+'\n\nOs dados locais continuam preservados.';
+  }catch(e){
+    st.textContent='● Erro ao sincronizar.';
+    out.textContent='❌ ERRO AO ENVIAR: '+e.message;
+  }
+}
+
+async function firebaseLerProdutos(){
+  const st=document.getElementById('firebaseStatus'), out=document.getElementById('firebaseResultado');
+  try{
+    const r=await firebaseCarregarDados();
+    st.textContent='● Leitura e sincronização do Firebase funcionaram.';
+    out.textContent='✅ LEITURA FUNCIONOU!\n\nProdutos encontrados: '+r.produtos+'\nVendas encontradas: '+r.vendas+'\nCaminho: /'+FIREBASE_CAMINHO+'\n\nOs dados locais foram atualizados com a cópia central.';
+  }catch(e){
+    st.textContent='● Erro ao ler produtos.';
+    out.textContent='❌ ERRO AO LER: '+e.message;
+  }
+}
+
+function atualizarStatusFirebaseInicial(texto){
+  const st=document.getElementById('firebaseStatus');
+  if(!st)return;
+  st.textContent=texto || (window.firebasePronto?'● Firebase inicializado. Pronto para sincronizar.':'● Firebase não inicializado.');
+}
+
+async function iniciarSincronizacaoFirebase(){
+  try{
+    if(!window.firebasePronto) { atualizarStatusFirebaseInicial('● Firebase não inicializado.'); return; }
+    const r=await firebaseCarregarDados();
+    console.log('Firebase inicializado:',r);
+  }catch(e){
+    console.warn('Sincronização inicial com Firebase:',e);
+    atualizarStatusFirebaseInicial('● Sistema local funcionando; sincronização Firebase indisponível.');
+  }
+}
+
+window.addEventListener('load',()=>setTimeout(iniciarSincronizacaoFirebase,300));
+
+/* =========================================================
+   ATUALIZAÇÃO AUTOMÁTICA DO ARMAZENAMENTO LOCAL
+   ========================================================= */
+let _assinaturaDados='';
+function assinaturaAtual(){
+  try{return JSON.stringify({produtos,vendas});}catch(e){return '';}
+}
+function sincronizarAutomaticamente(){
+  try{
+    const bruto=localStorage.getItem(CHAVE_DADOS);
+    if(!bruto)return;
+    const assinatura=bruto;
+    if(assinatura!==_assinaturaDados){
+      const dados=JSON.parse(bruto);
+      produtos=Array.isArray(dados.produtos)?dados.produtos:[];
+      vendas=Array.isArray(dados.vendas)?dados.vendas:[];
+      _assinaturaDados=assinatura;
+      renderizarTudo();
+    }
+  }catch(e){console.warn('Atualização automática:',e);}
+}
+window.addEventListener('storage',function(e){
+  if(e.key===CHAVE_DADOS) sincronizarAutomaticamente();
+});
+window.addEventListener('focus',sincronizarAutomaticamente);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)sincronizarAutomaticamente();});
+setInterval(sincronizarAutomaticamente,1000);
+
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+carregarDados(false);
+</script>
+</body>
+</html>
