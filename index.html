@@ -85,6 +85,84 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
 
 .scanner-campo{display:flex;gap:8px;align-items:center;margin-top:8px}.scanner-campo input{flex:1;margin:0}.botao-camera{white-space:nowrap;background:linear-gradient(135deg,#0f766e,#047857)}
 .scanner-video-wrap{background:#000;border-radius:12px;overflow:hidden;position:relative;min-height:260px;display:flex;align-items:center;justify-content:center}.scanner-video-wrap video{width:100%;max-height:62vh;display:block;object-fit:cover}.scanner-mira{position:absolute;left:12%;right:12%;top:30%;bottom:30%;border:3px solid #22c55e;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}.scanner-status{margin:10px 0;color:#334155;font-weight:600;text-align:center}.scanner-acoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+
+/* =========================================================
+   MELHORIAS MOBILE / VENDA
+   ========================================================= */
+@media(max-width:600px){
+  #venda{
+    padding-bottom:88px;
+  }
+  #venda .card{
+    margin-bottom:10px;
+    padding:12px;
+  }
+  #venda .card h2,#venda .card h3{
+    margin:4px 0 9px;
+  }
+  #venda .grid2{
+    gap:6px;
+  }
+  #venda .acoes-barra-venda{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:1000;
+    margin:0;
+    padding:8px;
+    background:rgba(255,255,255,.97);
+    border-top:1px solid #dbe3ea;
+    box-shadow:0 -6px 18px rgba(15,23,42,.16);
+    display:grid;
+    grid-template-columns:1.5fr 1fr 1fr;
+    gap:6px;
+  }
+  #venda .acoes-barra-venda button{
+    min-height:48px;
+    padding:8px 5px;
+    font-size:12px;
+  }
+  #venda .scanner-campo{
+    gap:5px;
+  }
+  #venda .scanner-campo .botao-camera{
+    padding-left:10px;
+    padding-right:10px;
+  }
+  #venda .aviso#resumoPagamento{
+    margin:7px 0;
+    padding:9px;
+    font-size:14px;
+  }
+  .cadastro-codigo-campo{
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .cadastro-codigo-campo input{margin:5px 0}
+  .cadastro-codigo-campo button{white-space:nowrap;padding:9px 10px}
+}
+.cadastro-codigo-campo{display:flex;gap:7px;align-items:center}.cadastro-codigo-campo input{flex:1}
+.cadastro-camera{background:linear-gradient(135deg,#0f766e,#047857);white-space:nowrap}
+.cadastro-rapido-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.cadastro-rapido-grid .campo-full{grid-column:1/-1}
+.cadastro-rapido-codigo{font-size:18px;font-weight:800;background:#f1f5f9}
+@media(max-width:600px){.cadastro-rapido-grid{grid-template-columns:1fr}}
+
+
+/* =========================================================
+   NOVO LAYOUT — NOVA VENDA / PDV
+   ========================================================= */
+.pagina-venda-moderna{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
+.pagina-venda-moderna .venda-topo-rapido{grid-column:1/-1}
+.venda-topo-rapido{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 20px;border-radius:15px;background:linear-gradient(135deg,#063b3d,#087f68 55%,#1769e0);color:#fff;box-shadow:0 8px 22px rgba(15,23,42,.13);margin-bottom:0}
+.venda-topo-rapido h2{margin:2px 0;font-size:25px}.venda-topo-rapido p{margin:2px 0 0;opacity:.88;font-size:13px}.venda-kicker{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.8}.venda-total-destaque{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 16px;text-align:right;min-width:150px}.venda-total-destaque span{display:block;font-size:11px;text-transform:uppercase;opacity:.8}.venda-total-destaque strong{font-size:23px}
+.venda-card-produto,.venda-card-final{margin-bottom:0;padding:16px}.venda-card-final{position:sticky;top:70px}.venda-card-titulo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.venda-card-titulo>div{display:flex;align-items:center;gap:9px}.venda-card-titulo h3{margin:0;font-size:18px}.venda-card-titulo small{display:block;color:#64748b;margin-top:2px}.passo{width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#0f766e;color:#fff;font-weight:900}.atalho-venda,.contador-carrinho{font-size:11px;font-weight:800;color:#475569;background:#f1f5f9;border-radius:999px;padding:6px 9px;white-space:nowrap}.venda-card-produto .acoes{margin-top:8px}.venda-card-final hr{margin:10px 0;border:0;border-top:1px solid #e2e8f0}.botao-finalizar-venda{background:linear-gradient(135deg,#16a34a,#087443)!important;font-size:16px!important}
+#venda .scanner-campo{margin-top:5px}.pagina-venda-moderna #carrinho{max-height:260px;overflow:auto;border:1px solid #e2e8f0;border-radius:9px;padding:0 10px;background:#fbfdff}.pagina-venda-moderna .linha-carrinho:last-child{border-bottom:0}.pagina-venda-moderna #resumoPagamento{font-size:15px}.pagina-venda-moderna #totalCarrinho{font-size:21px;color:#0f766e}
+@media(max-width:900px){.pagina-venda-moderna{grid-template-columns:1fr}.venda-card-final{position:static}.pagina-venda-moderna .venda-topo-rapido{grid-column:1}.pagina-venda-moderna #carrinho{max-height:230px}}
+@media(max-width:600px){.pagina-venda-moderna{gap:8px}.venda-topo-rapido{padding:11px 13px;border-radius:11px}.venda-topo-rapido h2{font-size:20px}.venda-topo-rapido p{font-size:11px}.venda-total-destaque{min-width:105px;padding:6px 9px}.venda-total-destaque strong{font-size:18px}.venda-card-produto,.venda-card-final{padding:11px}.venda-card-titulo{margin-bottom:5px}.venda-card-titulo h3{font-size:16px}.venda-card-titulo small{font-size:11px}.atalho-venda{display:none}.pagina-venda-moderna #carrinho{max-height:190px}.pagina-venda-moderna .acoes-barra-venda{position:fixed;left:0;right:0;bottom:0;z-index:1000;margin:0;padding:7px;background:rgba(255,255,255,.98);border-top:1px solid #dbe3ea;box-shadow:0 -6px 18px rgba(15,23,42,.16);display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:5px}.pagina-venda-moderna .acoes-barra-venda button{min-height:48px;padding:7px 4px;font-size:12px}.pagina-venda-moderna{padding-bottom:78px}}
+
 </style>
 </head>
 <body>
@@ -137,7 +215,13 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <h2>Cadastro de Produtos</h2>
     <div class="grid">
       <div><label>Nome</label><input id="novoNome" placeholder="Nome do produto"></div>
-      <div><label>Código de barras</label><input id="novoCodigoBarras" inputmode="numeric" autocomplete="off" placeholder="Ex.: 7891234567890"></div>
+      <div>
+        <label>Código de barras</label>
+        <div class="cadastro-codigo-campo">
+          <input id="novoCodigoBarras" inputmode="numeric" autocomplete="off" placeholder="Ex.: 7891234567890">
+          <button type="button" class="cadastro-camera" onclick="abrirLeitorCodigoBarras('cadastro')">📷 Ler</button>
+        </div>
+      </div>
       <div><label>Preço de venda</label><input id="novoPreco" type="number" step="0.01" min="0" placeholder="0,00"></div>
       <div><label>Custo / personalizado</label><input id="novoCusto" type="number" step="0.01" min="0" placeholder="0,00"></div>
       <div><label>Estoque</label><input id="novoEstoque" type="number" step="1" min="0" value="0"></div>
@@ -162,9 +246,18 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
   </div>
 </section>
 
-<section id="venda" class="pagina oculto">
-  <div class="card">
-    <h2>Nova Venda</h2>
+<section id="venda" class="pagina oculto pagina-venda-moderna">
+  <div class="venda-topo-rapido">
+    <div>
+      <div class="venda-kicker">PDV • VENDA RÁPIDA</div>
+      <h2>Nova Venda</h2>
+      <p>Leia o código, escolha a quantidade e adicione ao carrinho.</p>
+    </div>
+    <div class="venda-total-destaque"><span>Total</span><strong id="totalVendaTopo">R$ 0,00</strong></div>
+  </div>
+
+  <div class="card venda-card-produto">
+    <div class="venda-card-titulo"><div><span class="passo">1</span><div><h3>Adicionar produto</h3><small>Use a câmera, leitor ou pesquisa.</small></div></div><span class="atalho-venda">📷 Câmera • 🔌 Leitor</span></div>
     <div class="grid2">
       <div>
         <label>Produto</label>
@@ -191,8 +284,8 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     </div>
   </div>
 
-  <div class="card">
-    <h3>Carrinho</h3>
+  <div class="card venda-card-final">
+    <div class="venda-card-titulo"><div><span class="passo">2</span><div><h3>Carrinho e pagamento</h3><small>Confira os itens e finalize a venda.</small></div></div><span class="contador-carrinho" id="contadorCarrinho">0 item(ns)</span></div>
     <div id="carrinho"></div>
     <hr>
     <h2>Subtotal: <span id="subtotalCarrinho">R$ 0,00</span></h2>
@@ -227,10 +320,10 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
       </div>
     </div>
     <div class="aviso" id="resumoPagamento">Total: <b id="totalCarrinho">R$ 0,00</b></div>
-    <div class="acoes">
-      <button onclick="registrarVenda()">✅ Finalizar e registrar venda</button>
-      <button onclick="imprimirCupomUltimaVenda()">🧾 Imprimir cupom</button>
-      <button class="secundario" onclick="limparCarrinho()">Limpar carrinho</button>
+    <div class="acoes acoes-barra-venda">
+      <button onclick="registrarVenda()">✅ Finalizar venda</button>
+      <button onclick="imprimirCupomUltimaVenda()">🧾 Cupom</button>
+      <button class="secundario" onclick="limparCarrinho()">🧹 Limpar</button>
     </div>
   </div>
 </section>
@@ -319,7 +412,7 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
 <div id="modalLeitorCodigo" class="modal oculto">
   <div class="caixa" style="width:min(700px,100%)">
     <h2>📷 Leitor de código de barras</h2>
-    <p class="pequeno">Aponte a câmera traseira para o código de barras do produto.</p>
+    <p class="pequeno" id="scannerInstrucao">Aponte a câmera traseira para o código de barras do produto.</p>
     <div class="scanner-video-wrap">
       <video id="videoLeitorCodigo" playsinline muted></video>
       <div class="scanner-mira"></div>
@@ -327,6 +420,44 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
     <div id="scannerStatus" class="scanner-status">Preparando a câmera...</div>
     <div class="scanner-acoes">
       <button type="button" class="secundario" onclick="fecharLeitorCodigoBarras()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalCadastroRapido" class="modal oculto">
+  <div class="caixa" style="width:min(620px,100%)">
+    <h2>➕ Produto não cadastrado</h2>
+    <p>O código foi lido, mas este produto ainda não está cadastrado. Cadastre-o agora para continuar a venda.</p>
+    <div>
+      <label>Código de barras</label>
+      <input id="rapidoCodigo" class="cadastro-rapido-codigo" readonly>
+    </div>
+    <div class="cadastro-rapido-grid">
+      <div class="campo-full">
+        <label>Nome do produto *</label>
+        <input id="rapidoNome" placeholder="Nome do produto">
+      </div>
+      <div>
+        <label>Preço de venda *</label>
+        <input id="rapidoPreco" type="number" step="0.01" min="0" placeholder="0,00">
+      </div>
+      <div>
+        <label>Custo / personalizado</label>
+        <input id="rapidoCusto" type="number" step="0.01" min="0" value="0">
+      </div>
+      <div>
+        <label>Estoque</label>
+        <input id="rapidoEstoque" type="number" step="1" min="0" value="1">
+      </div>
+      <div>
+        <label>Estoque mínimo</label>
+        <input id="rapidoMinimo" type="number" step="1" min="0" value="0">
+      </div>
+    </div>
+    <div class="aviso">Após cadastrar, o produto será colocado automaticamente no carrinho com <b>1 unidade</b>.</div>
+    <div class="acoes">
+      <button type="button" onclick="cadastrarProdutoRapido()">✅ Cadastrar e adicionar à venda</button>
+      <button type="button" class="secundario" onclick="fecharCadastroRapido()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -643,6 +774,68 @@ function selecionarProdutoVenda(p){
   return true;
 }
 
+function codigoLidoNoCadastro(codigo){
+  const campo=document.getElementById('novoCodigoBarras');
+  if(campo){
+    campo.value=normalizarCodigoBarras(codigo);
+    campo.focus();
+  }
+  emitirBipe('leitura');
+  mostrarMensagem('✓ Código lido. Preencha os dados e cadastre o produto.','sucesso',2500);
+}
+
+function abrirCadastroRapidoCodigo(codigo){
+  const modal=document.getElementById('modalCadastroRapido');
+  if(!modal)return;
+  document.getElementById('rapidoCodigo').value=normalizarCodigoBarras(codigo);
+  document.getElementById('rapidoNome').value='';
+  document.getElementById('rapidoPreco').value='';
+  document.getElementById('rapidoCusto').value='0';
+  document.getElementById('rapidoEstoque').value='1';
+  document.getElementById('rapidoMinimo').value='0';
+  modal.classList.remove('oculto');
+  setTimeout(()=>document.getElementById('rapidoNome')?.focus(),80);
+}
+
+function fecharCadastroRapido(){
+  document.getElementById('modalCadastroRapido')?.classList.add('oculto');
+}
+
+function cadastrarProdutoRapido(){
+  const codigo=normalizarCodigoBarras(document.getElementById('rapidoCodigo')?.value);
+  const nome=(document.getElementById('rapidoNome')?.value||'').trim();
+  const preco=numero(document.getElementById('rapidoPreco')?.value);
+  const custo=numero(document.getElementById('rapidoCusto')?.value);
+  const estoque=Math.max(0,Math.trunc(numero(document.getElementById('rapidoEstoque')?.value)));
+  const minimo=Math.max(0,Math.trunc(numero(document.getElementById('rapidoMinimo')?.value)));
+
+  if(!codigo){mostrarMensagem('Código de barras não informado.','erro');return;}
+  if(!nome){mostrarMensagem('Informe o nome do produto.','erro');return;}
+  if(preco<=0){mostrarMensagem('Informe o preço de venda.','erro');return;}
+  if(localizarProdutoPorCodigo(codigo)){mostrarMensagem('Este código de barras já está cadastrado.','erro');return;}
+  if(estoque<1){mostrarMensagem('Para adicionar o produto à venda, o estoque inicial deve ser pelo menos 1.','erro');return;}
+
+  const dados={
+    id:novoId(),nome,codigoBarras:codigo,
+    preco:Number(preco.toFixed(2)),
+    personalizado:Number(custo.toFixed(2)),
+    estoque_inteiro:estoque,
+    'mínimo':minimo
+  };
+  produtos.push(dados);
+  salvarDados();
+  emitirBipe('cadastro');
+  fecharCadastroRapido();
+  atualizarSelectProdutos();
+  selecionarProdutoVenda(dados);
+  carrinhoVenda.push({id:dados.id,nome:dados.nome,preco:numero(dados.preco),quantidade:1});
+  document.getElementById('codigoBarrasVenda').value='';
+  document.getElementById('quantidadeVenda').value='1';
+  renderizarCarrinho();
+  emitirBipe('leitura');
+  mostrarMensagem('✓ PRODUTO CADASTRADO E ADICIONADO À VENDA!','sucesso',3000);
+}
+
 function buscarProdutoPorCodigoBarras(){
   const codigo=normalizarCodigoBarras(document.getElementById('codigoBarrasVenda')?.value);
   if(!codigo){
@@ -651,60 +844,70 @@ function buscarProdutoPorCodigoBarras(){
   }
   const p=localizarProdutoPorCodigo(codigo);
   if(!p){
-    mostrarMensagem('Código de barras não cadastrado: '+codigo,'erro');
+    abrirCadastroRapidoCodigo(codigo);
     return;
   }
   emitirBipe('leitura');
   if(!selecionarProdutoVenda(p)) return;
-  // Leitura do código = inclusão imediata no carrinho.
   adicionarAoCarrinho();
 }
 
-async function abrirLeitorCodigoBarras(){
+async function abrirLeitorCodigoBarras(modo='venda'){
   const modal=document.getElementById('modalLeitorCodigo');
   const video=document.getElementById('videoLeitorCodigo');
   const status=document.getElementById('scannerStatus');
   if(!modal||!video) return;
+  modal.dataset.modo=modo;
   modal.classList.remove('oculto');
-  status.textContent='Solicitando acesso à câmera...';
+  status.textContent=modo==='cadastro'
+    ? 'Aponte a câmera para o código do produto que será cadastrado...'
+    : 'Aponte a câmera para o código de barras...';
   scannerParando=false;
+
+  const processarCodigo=async(codigo)=>{
+    if(scannerParando || !codigo)return;
+    codigo=normalizarCodigoBarras(codigo);
+    if(!codigo)return;
+    emitirBipe('leitura');
+
+    if(modo==='cadastro'){
+      fecharLeitorCodigoBarras();
+      codigoLidoNoCadastro(codigo);
+      return;
+    }
+
+    document.getElementById('codigoBarrasVenda').value=codigo;
+    const produto=localizarProdutoPorCodigo(codigo);
+    if(produto){
+      if(selecionarProdutoVenda(produto)){
+        fecharLeitorCodigoBarras();
+        adicionarAoCarrinho();
+      }
+    }else{
+      fecharLeitorCodigoBarras();
+      abrirCadastroRapidoCodigo(codigo);
+    }
+  };
 
   try{
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       throw new Error('Este navegador não permite acesso à câmera.');
     }
 
-    // Primeiro tenta o leitor ZXing, que funciona em navegadores modernos mesmo quando BarcodeDetector não está disponível.
     if(window.ZXingBrowser && window.ZXingBrowser.BrowserMultiFormatReader){
       scannerReader=new window.ZXingBrowser.BrowserMultiFormatReader();
-      status.textContent='Aponte a câmera para o código de barras...';
       await scannerReader.decodeFromConstraints(
         {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},
         video,
         (resultado, erro) => {
-          if(scannerParando) return;
-          if(resultado){
-            const codigo=normalizarCodigoBarras(resultado.getText ? resultado.getText() : resultado.text);
-            if(codigo){
-              document.getElementById('codigoBarrasVenda').value=codigo;
-              const produto=localizarProdutoPorCodigo(codigo);
-              if(produto){
-                emitirBipe('leitura');
-                if(selecionarProdutoVenda(produto)){
-                  fecharLeitorCodigoBarras();
-                  adicionarAoCarrinho();
-                }
-              }else{
-                status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
-              }
-            }
-          }
+          if(scannerParando || !resultado)return;
+          const codigo=resultado.getText ? resultado.getText() : resultado.text;
+          processarCodigo(codigo);
         }
       );
       return;
     }
 
-    // Fallback nativo do navegador, quando disponível.
     if('BarcodeDetector' in window){
       const formatosSuportados=typeof BarcodeDetector.getSupportedFormats==='function'
         ? await BarcodeDetector.getSupportedFormats() : [];
@@ -714,26 +917,16 @@ async function abrirLeitorCodigoBarras(){
       scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
       video.srcObject=scannerStream;
       await video.play();
-      status.textContent='Aponte a câmera para o código de barras...';
       const procurar=async()=>{
-        if(scannerParando || video.readyState<2) return;
+        if(scannerParando || video.readyState<2)return;
         try{
           const codigos=await detector.detect(video);
           if(codigos.length){
-            const codigo=normalizarCodigoBarras(codigos[0].rawValue);
-            document.getElementById('codigoBarrasVenda').value=codigo;
-            const produto=localizarProdutoPorCodigo(codigo);
-            if(produto){
-              if(selecionarProdutoVenda(produto)){
-                fecharLeitorCodigoBarras();
-                adicionarAoCarrinho();
-              }
-              return;
-            }
-            status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
+            await processarCodigo(codigos[0].rawValue);
+            return;
           }
         }catch(e){}
-        if(!scannerParando) setTimeout(procurar,180);
+        if(!scannerParando)setTimeout(procurar,180);
       };
       procurar();
       return;
@@ -760,7 +953,10 @@ function fecharLeitorCodigoBarras(){
   const video=document.getElementById('videoLeitorCodigo');
   if(video){video.pause();video.srcObject=null;}
   const modal=document.getElementById('modalLeitorCodigo');
-  if(modal) modal.classList.add('oculto');
+  if(modal){
+    modal.classList.add('oculto');
+    modal.dataset.modo='venda';
+  }
 }
 
 // Leitor físico USB (modo teclado/HID)
@@ -880,15 +1076,38 @@ function valorDesconto(){
   return Math.max(0, Math.min(numero(el ? el.value : 0), totalCarrinho()));
 }
 
+function atualizarResumoTopoVenda(){
+  const total=document.getElementById('totalCarrinho');
+  const topo=document.getElementById('totalVendaTopo');
+  if(topo) topo.textContent=total?total.textContent:'R$ 0,00';
+  const contador=document.getElementById('contadorCarrinho');
+  if(contador) contador.textContent=carrinhoVenda.reduce((s,x)=>s+numero(x.quantidade),0)+' item(ns)';
+}
+
 function atualizarTotaisVenda(){
   const subtotal=totalCarrinho();
   const desconto=valorDesconto();
   const total=Math.max(0, subtotal-desconto);
   const parcelado=document.getElementById('parcelado')?.value==='sim';
   const parcelas=Math.max(2, Math.min(24, Math.trunc(numero(document.getElementById('parcelas')?.value))||2));
-  document.getElementById('subtotalCarrinho').textContent=moeda(subtotal);
-  document.getElementById('totalCarrinho').textContent=moeda(total);
-  document.getElementById('resumoPagamento').innerHTML='Subtotal: <b>'+moeda(subtotal)+'</b> | Desconto: <b>'+moeda(desconto)+'</b> | Total: <b>'+moeda(total)+'</b>'+(parcelado?' | '+parcelas+'x de <b>'+moeda(total/parcelas)+'</b>':'');
+
+  // Primeiro atualiza os valores da venda; somente depois sincroniza o total do topo.
+  const subtotalEl=document.getElementById('subtotalCarrinho');
+  const totalEl=document.getElementById('totalCarrinho');
+  if(subtotalEl) subtotalEl.textContent=moeda(subtotal);
+  if(totalEl) totalEl.textContent=moeda(total);
+
+  const resumo=document.getElementById('resumoPagamento');
+  if(resumo){
+    resumo.innerHTML='Subtotal: <b>'+moeda(subtotal)+'</b> | Desconto: <b>'+moeda(desconto)+'</b> | Total: <b>'+moeda(total)+'</b>'+(parcelado?' | '+parcelas+'x de <b>'+moeda(total/parcelas)+'</b>':'');
+  }
+
+  // Agora o destaque do topo recebe o valor REAL calculado.
+  const topo=document.getElementById('totalVendaTopo');
+  if(topo) topo.textContent=moeda(total);
+
+  const contador=document.getElementById('contadorCarrinho');
+  if(contador) contador.textContent=carrinhoVenda.reduce((s,x)=>s+numero(x.quantidade),0)+' item(ns)';
 }
 
 function atualizarPagamento(){
@@ -1294,7 +1513,20 @@ function imprimirCupomVenda(id){
   const desconto=numero(v.desconto);
   const forma=esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-');
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cupom ${esc(v.numero)}</title><style>
-  @page{size:80mm auto;margin:4mm} body{font-family:Arial,sans-serif;width:72mm;margin:0 auto;color:#111;font-size:12px} h1{text-align:center;font-size:18px;margin:0 0 3px} .sub{text-align:center;font-size:10px;color:#555;margin-bottom:8px}.linha{border-top:1px dashed #555;margin:7px 0} table{width:100%;border-collapse:collapse} td{padding:3px 0;vertical-align:top} .q{width:25px;text-align:center}.v{width:65px;text-align:right;white-space:nowrap}.total{font-size:17px;font-weight:bold;text-align:right;margin-top:6px}.rodape{text-align:center;font-size:10px;margin-top:10px;line-height:1.35} .nf{font-weight:bold;text-align:center;border:1px solid #222;padding:4px;margin-top:8px}@media print{button{display:none}}</style></head><body><h1>SISTEMA DE VENDAS</h1><div class="sub">COMPROVANTE DE VENDA</div><div>Venda nº <b>${esc(v.numero)}</b><br>${esc(formatarDataVenda(v))}</div><div class="linha"></div><table>${linhas}</table><div class="linha"></div>${desconto>0?'<div>Desconto: '+moeda(desconto)+'</div>':''}<div class="total">TOTAL: ${moeda(v.total)}</div><div style="margin-top:5px">Pagamento: ${forma}</div><div class="nf">SEM VALOR FISCAL</div><div class="rodape">Este comprovante não substitui documento fiscal.<br>Obrigado pela preferência!</div></body></html>`);
+  @page{size:80mm auto;margin:4mm} body{font-family:Arial,sans-serif;width:72mm;margin:0 auto;color:#111;font-size:12px} h1{text-align:center;font-size:18px;margin:0 0 3px} .sub{text-align:center;font-size:10px;color:#555;margin-bottom:8px}.linha{border-top:1px dashed #555;margin:7px 0} table{width:100%;border-collapse:collapse} td{padding:3px 0;vertical-align:top} .q{width:25px;text-align:center}.v{width:65px;text-align:right;white-space:nowrap}.total{font-size:17px;font-weight:bold;text-align:right;margin-top:6px}.rodape{text-align:center;font-size:10px;margin-top:10px;line-height:1.35} .nf{font-weight:bold;text-align:center;border:1px solid #222;padding:4px;margin-top:8px}@media print{button{display:none}}
+/* =========================================================
+   NOVO LAYOUT — NOVA VENDA / PDV
+   ========================================================= */
+.pagina-venda-moderna{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
+.pagina-venda-moderna .venda-topo-rapido{grid-column:1/-1}
+.venda-topo-rapido{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 20px;border-radius:15px;background:linear-gradient(135deg,#063b3d,#087f68 55%,#1769e0);color:#fff;box-shadow:0 8px 22px rgba(15,23,42,.13);margin-bottom:0}
+.venda-topo-rapido h2{margin:2px 0;font-size:25px}.venda-topo-rapido p{margin:2px 0 0;opacity:.88;font-size:13px}.venda-kicker{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.8}.venda-total-destaque{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 16px;text-align:right;min-width:150px}.venda-total-destaque span{display:block;font-size:11px;text-transform:uppercase;opacity:.8}.venda-total-destaque strong{font-size:23px}
+.venda-card-produto,.venda-card-final{margin-bottom:0;padding:16px}.venda-card-final{position:sticky;top:70px}.venda-card-titulo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.venda-card-titulo>div{display:flex;align-items:center;gap:9px}.venda-card-titulo h3{margin:0;font-size:18px}.venda-card-titulo small{display:block;color:#64748b;margin-top:2px}.passo{width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#0f766e;color:#fff;font-weight:900}.atalho-venda,.contador-carrinho{font-size:11px;font-weight:800;color:#475569;background:#f1f5f9;border-radius:999px;padding:6px 9px;white-space:nowrap}.venda-card-produto .acoes{margin-top:8px}.venda-card-final hr{margin:10px 0;border:0;border-top:1px solid #e2e8f0}.botao-finalizar-venda{background:linear-gradient(135deg,#16a34a,#087443)!important;font-size:16px!important}
+#venda .scanner-campo{margin-top:5px}.pagina-venda-moderna #carrinho{max-height:260px;overflow:auto;border:1px solid #e2e8f0;border-radius:9px;padding:0 10px;background:#fbfdff}.pagina-venda-moderna .linha-carrinho:last-child{border-bottom:0}.pagina-venda-moderna #resumoPagamento{font-size:15px}.pagina-venda-moderna #totalCarrinho{font-size:21px;color:#0f766e}
+@media(max-width:900px){.pagina-venda-moderna{grid-template-columns:1fr}.venda-card-final{position:static}.pagina-venda-moderna .venda-topo-rapido{grid-column:1}.pagina-venda-moderna #carrinho{max-height:230px}}
+@media(max-width:600px){.pagina-venda-moderna{gap:8px}.venda-topo-rapido{padding:11px 13px;border-radius:11px}.venda-topo-rapido h2{font-size:20px}.venda-topo-rapido p{font-size:11px}.venda-total-destaque{min-width:105px;padding:6px 9px}.venda-total-destaque strong{font-size:18px}.venda-card-produto,.venda-card-final{padding:11px}.venda-card-titulo{margin-bottom:5px}.venda-card-titulo h3{font-size:16px}.venda-card-titulo small{font-size:11px}.atalho-venda{display:none}.pagina-venda-moderna #carrinho{max-height:190px}.pagina-venda-moderna .acoes-barra-venda{position:fixed;left:0;right:0;bottom:0;z-index:1000;margin:0;padding:7px;background:rgba(255,255,255,.98);border-top:1px solid #dbe3ea;box-shadow:0 -6px 18px rgba(15,23,42,.16);display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:5px}.pagina-venda-moderna .acoes-barra-venda button{min-height:48px;padding:7px 4px;font-size:12px}.pagina-venda-moderna{padding-bottom:78px}}
+
+</style></head><body><h1>SISTEMA DE VENDAS</h1><div class="sub">COMPROVANTE DE VENDA</div><div>Venda nº <b>${esc(v.numero)}</b><br>${esc(formatarDataVenda(v))}</div><div class="linha"></div><table>${linhas}</table><div class="linha"></div>${desconto>0?'<div>Desconto: '+moeda(desconto)+'</div>':''}<div class="total">TOTAL: ${moeda(v.total)}</div><div style="margin-top:5px">Pagamento: ${forma}</div><div class="nf">SEM VALOR FISCAL</div><div class="rodape">Este comprovante não substitui documento fiscal.<br>Obrigado pela preferência!</div></body></html>`);
   win.document.close();
   setTimeout(()=>win.print(),300);
 }
@@ -1311,7 +1543,20 @@ function imprimirRelatorio(){
     const itens=obterItensVenda(v).map(x=>'<div><b>'+esc(nomeItemVenda(x))+'</b> — '+numero(x.quantidade)+' × '+moeda(x.preco)+'</div>').join('');
     return '<tr><td><b>#'+esc(v.numero??(i+1))+'</b></td><td>'+esc(formatarDataVenda(v))+'</td><td>'+itens+'</td><td>'+esc(pagamentoVenda(v))+'</td><td>'+moeda(v.desconto)+'</td><td><b>'+moeda(v.total)+'</b></td></tr>';
   }).join('');
-  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:25px;color:#222}h1{text-align:center;margin-bottom:5px}.data{text-align:center;color:#666;margin-bottom:20px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.box{border:1px solid #aaa;padding:10px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:11px;page-break-inside:auto}thead{display:table-header-group}tr{page-break-inside:avoid}th,td{border:1px solid #aaa;padding:6px;text-align:left;vertical-align:top}th{background:#eee}td:nth-child(1){width:45px}td:nth-child(2){width:115px}td:nth-child(5),td:nth-child(6){white-space:nowrap;text-align:right}.total{text-align:right;font-size:18px;font-weight:bold;margin-top:15px}@media print{button{display:none}}</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Emitido em ${esc(new Date().toLocaleString('pt-BR'))}</div><div class="kpis"><div class="box">Vendas<b>${quantidade}</b></div><div class="box">Valor bruto<b>${moeda(bruto)}</b></div><div class="box">Descontos<b>${moeda(descontos)}</b></div><div class="box">Total vendido<b>${moeda(total)}</b></div></div><h2>Vendas</h2><table><thead><tr><th>Nº</th><th>Data</th><th>Produtos</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhuma venda registrada.</td></tr>'}</tbody></table><div class="total">TOTAL VENDIDO: ${moeda(total)}</div><h2>Resumo por pagamento</h2><table><thead><tr><th>Forma de pagamento</th><th>Valor</th></tr></thead><tbody>${pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')||'<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table><button onclick="window.print()">Imprimir</button></body></html>`);
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório de Vendas</title><style>body{font-family:Arial,sans-serif;margin:25px;color:#222}h1{text-align:center;margin-bottom:5px}.data{text-align:center;color:#666;margin-bottom:20px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.box{border:1px solid #aaa;padding:10px}.box b{display:block;font-size:18px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:15px;font-size:11px;page-break-inside:auto}thead{display:table-header-group}tr{page-break-inside:avoid}th,td{border:1px solid #aaa;padding:6px;text-align:left;vertical-align:top}th{background:#eee}td:nth-child(1){width:45px}td:nth-child(2){width:115px}td:nth-child(5),td:nth-child(6){white-space:nowrap;text-align:right}.total{text-align:right;font-size:18px;font-weight:bold;margin-top:15px}@media print{button{display:none}}
+/* =========================================================
+   NOVO LAYOUT — NOVA VENDA / PDV
+   ========================================================= */
+.pagina-venda-moderna{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
+.pagina-venda-moderna .venda-topo-rapido{grid-column:1/-1}
+.venda-topo-rapido{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 20px;border-radius:15px;background:linear-gradient(135deg,#063b3d,#087f68 55%,#1769e0);color:#fff;box-shadow:0 8px 22px rgba(15,23,42,.13);margin-bottom:0}
+.venda-topo-rapido h2{margin:2px 0;font-size:25px}.venda-topo-rapido p{margin:2px 0 0;opacity:.88;font-size:13px}.venda-kicker{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.8}.venda-total-destaque{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 16px;text-align:right;min-width:150px}.venda-total-destaque span{display:block;font-size:11px;text-transform:uppercase;opacity:.8}.venda-total-destaque strong{font-size:23px}
+.venda-card-produto,.venda-card-final{margin-bottom:0;padding:16px}.venda-card-final{position:sticky;top:70px}.venda-card-titulo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.venda-card-titulo>div{display:flex;align-items:center;gap:9px}.venda-card-titulo h3{margin:0;font-size:18px}.venda-card-titulo small{display:block;color:#64748b;margin-top:2px}.passo{width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#0f766e;color:#fff;font-weight:900}.atalho-venda,.contador-carrinho{font-size:11px;font-weight:800;color:#475569;background:#f1f5f9;border-radius:999px;padding:6px 9px;white-space:nowrap}.venda-card-produto .acoes{margin-top:8px}.venda-card-final hr{margin:10px 0;border:0;border-top:1px solid #e2e8f0}.botao-finalizar-venda{background:linear-gradient(135deg,#16a34a,#087443)!important;font-size:16px!important}
+#venda .scanner-campo{margin-top:5px}.pagina-venda-moderna #carrinho{max-height:260px;overflow:auto;border:1px solid #e2e8f0;border-radius:9px;padding:0 10px;background:#fbfdff}.pagina-venda-moderna .linha-carrinho:last-child{border-bottom:0}.pagina-venda-moderna #resumoPagamento{font-size:15px}.pagina-venda-moderna #totalCarrinho{font-size:21px;color:#0f766e}
+@media(max-width:900px){.pagina-venda-moderna{grid-template-columns:1fr}.venda-card-final{position:static}.pagina-venda-moderna .venda-topo-rapido{grid-column:1}.pagina-venda-moderna #carrinho{max-height:230px}}
+@media(max-width:600px){.pagina-venda-moderna{gap:8px}.venda-topo-rapido{padding:11px 13px;border-radius:11px}.venda-topo-rapido h2{font-size:20px}.venda-topo-rapido p{font-size:11px}.venda-total-destaque{min-width:105px;padding:6px 9px}.venda-total-destaque strong{font-size:18px}.venda-card-produto,.venda-card-final{padding:11px}.venda-card-titulo{margin-bottom:5px}.venda-card-titulo h3{font-size:16px}.venda-card-titulo small{font-size:11px}.atalho-venda{display:none}.pagina-venda-moderna #carrinho{max-height:190px}.pagina-venda-moderna .acoes-barra-venda{position:fixed;left:0;right:0;bottom:0;z-index:1000;margin:0;padding:7px;background:rgba(255,255,255,.98);border-top:1px solid #dbe3ea;box-shadow:0 -6px 18px rgba(15,23,42,.16);display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:5px}.pagina-venda-moderna .acoes-barra-venda button{min-height:48px;padding:7px 4px;font-size:12px}.pagina-venda-moderna{padding-bottom:78px}}
+
+</style></head><body><h1>RELATÓRIO DE VENDAS</h1><div class="data">Emitido em ${esc(new Date().toLocaleString('pt-BR'))}</div><div class="kpis"><div class="box">Vendas<b>${quantidade}</b></div><div class="box">Valor bruto<b>${moeda(bruto)}</b></div><div class="box">Descontos<b>${moeda(descontos)}</b></div><div class="box">Total vendido<b>${moeda(total)}</b></div></div><h2>Vendas</h2><table><thead><tr><th>Nº</th><th>Data</th><th>Produtos</th><th>Pagamento</th><th>Desconto</th><th>Total</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhuma venda registrada.</td></tr>'}</tbody></table><div class="total">TOTAL VENDIDO: ${moeda(total)}</div><h2>Resumo por pagamento</h2><table><thead><tr><th>Forma de pagamento</th><th>Valor</th></tr></thead><tbody>${pagamentos.map(([f,v])=>'<tr><td>'+esc(f)+'</td><td>'+moeda(v)+'</td></tr>').join('')||'<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table><button onclick="window.print()">Imprimir</button></body></html>`);
   win.document.close();
 }
 
@@ -1459,4 +1704,3 @@ carregarDados(false);
 </script>
 </body>
 </html>
-
