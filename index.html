@@ -614,8 +614,9 @@ function buscarProdutoPorCodigoBarras(){
     mostrarMensagem('Código de barras não cadastrado: '+codigo,'erro');
     return;
   }
-  selecionarProdutoVenda(p);
-  mostrarMensagem('✓ Produto localizado: '+esc(p.nome),'sucesso',2200);
+  if(!selecionarProdutoVenda(p)) return;
+  // Leitura do código = inclusão imediata no carrinho.
+  adicionarAoCarrinho();
 }
 
 async function abrirLeitorCodigoBarras(){
@@ -647,9 +648,10 @@ async function abrirLeitorCodigoBarras(){
               document.getElementById('codigoBarrasVenda').value=codigo;
               const produto=localizarProdutoPorCodigo(codigo);
               if(produto){
-                selecionarProdutoVenda(produto);
-                mostrarMensagem('✓ Produto lido: '+esc(produto.nome),'sucesso',2200);
-                fecharLeitorCodigoBarras();
+                if(selecionarProdutoVenda(produto)){
+                  fecharLeitorCodigoBarras();
+                  adicionarAoCarrinho();
+                }
               }else{
                 status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
               }
@@ -680,9 +682,10 @@ async function abrirLeitorCodigoBarras(){
             document.getElementById('codigoBarrasVenda').value=codigo;
             const produto=localizarProdutoPorCodigo(codigo);
             if(produto){
-              selecionarProdutoVenda(produto);
-              mostrarMensagem('✓ Produto lido: '+esc(produto.nome),'sucesso',2200);
-              fecharLeitorCodigoBarras();
+              if(selecionarProdutoVenda(produto)){
+                fecharLeitorCodigoBarras();
+                adicionarAoCarrinho();
+              }
               return;
             }
             status.textContent='Código lido: '+codigo+' — produto não cadastrado.';
@@ -794,11 +797,13 @@ function adicionarAoCarrinho(){
   // Depois de lançar o produto, limpa os campos para o próximo item.
   document.getElementById('produtoVenda').value='';
   const campoCodigoBarras=document.getElementById('codigoBarrasVenda');
-  if(campoCodigoBarras) campoCodigoBarras.value='';
+  if(campoCodigoBarras) {
+    campoCodigoBarras.value='';
+    campoCodigoBarras.focus();
+  }
   document.getElementById('quantidadeVenda').value='1';
   renderizarCarrinho();
-  document.getElementById('produtoVenda').focus();
-  mostrarMensagem('✓ Produto adicionado ao carrinho.','sucesso');
+  mostrarMensagem('✓ Produto adicionado ao carrinho.','sucesso',1200);
 }
 
 function removerDoCarrinho(id){
@@ -896,6 +901,15 @@ function registrarVenda(){
   }
   salvarDados();
 
+  // Confirmação independente: aparece assim que a venda foi efetivamente registrada.
+  // Não depende de renderizarTudo() nem do sistema comum de mensagens.
+  const confirmacaoVenda=document.createElement('div');
+  confirmacaoVenda.id='confirmacaoVenda';
+  confirmacaoVenda.style.cssText='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:2147483647;';
+  confirmacaoVenda.innerHTML='<div style="background:#fff;border:4px solid #16a34a;border-radius:18px;padding:32px 42px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35);font-family:Arial,sans-serif;max-width:90vw"><div style="font-size:42px;font-weight:800;color:#15803d">✓ VENDA EFETUADA COM SUCESSO!</div><div style="font-size:30px;font-weight:700;margin-top:14px;color:#222">OBRIGADO, VOLTE SEMPRE!</div></div>';
+  document.body.appendChild(confirmacaoVenda);
+  setTimeout(()=>{ if(confirmacaoVenda.parentNode) confirmacaoVenda.remove(); },4000);
+
   // Venda concluída: limpa completamente o carrinho e prepara a próxima venda.
   carrinhoVenda=[];
   document.getElementById('produtoVenda').value='';
@@ -907,7 +921,6 @@ function registrarVenda(){
   atualizarPagamento();
   renderizarTudo();
   document.getElementById('produtoVenda').focus();
-  mostrarMensagem('<div style="font-size:34px;letter-spacing:.3px">VENDA CONCLUÍDA COM SUCESSO.</div><div style="font-size:28px;margin-top:12px">OBRIGADO, VOLTE SEMPRE!</div>','sucesso');
 }
 
 function limparCarrinho(){
