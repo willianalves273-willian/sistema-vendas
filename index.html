@@ -410,6 +410,44 @@ function novoId(){
   if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
   return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
 }
+/* =========================================================
+   SINAIS SONOROS
+   ========================================================= */
+let audioContextBipe=null;
+function emitirBipe(tipo='leitura'){
+  try{
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    if(!audioContextBipe) audioContextBipe=new AudioCtx();
+    if(audioContextBipe.state==='suspended') audioContextBipe.resume();
+
+    const configuracoes={
+      leitura:{frequencia:880,duracao:0.09,volume:0.08},
+      cadastro:{frequencia:1046,duracao:0.12,volume:0.08},
+      venda:{frequencia:660,duracao:0.16,volume:0.10}
+    };
+    const cfg=configuracoes[tipo]||configuracoes.leitura;
+    const agora=audioContextBipe.currentTime;
+    const osc=audioContextBipe.createOscillator();
+    const ganho=audioContextBipe.createGain();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(cfg.frequencia,agora);
+    ganho.gain.setValueAtTime(0.0001,agora);
+    ganho.gain.exponentialRampToValueAtTime(cfg.volume,agora+0.008);
+    ganho.gain.exponentialRampToValueAtTime(0.0001,agora+cfg.duracao);
+    osc.connect(ganho);
+    ganho.connect(audioContextBipe.destination);
+    osc.start(agora);
+    osc.stop(agora+cfg.duracao+0.01);
+
+    if(navigator.vibrate){
+      navigator.vibrate(tipo==='venda'?[45,35,45]:35);
+    }
+  }catch(e){
+    console.warn('Bipe indisponível:',e);
+  }
+}
+
 function mostrarMensagem(texto,tipo='sucesso',duracao=6000){
   let box=document.getElementById('mensagem');
   if(!box){
@@ -487,7 +525,9 @@ function cadastrarProduto(){
     'mínimo':Math.max(0,Math.trunc(numero(document.getElementById('novoMinimo').value)))
   };
   produtos.push(dados);
-  salvarDados(); limparFormularioProduto(); renderizarTudo();
+  salvarDados();
+  emitirBipe('cadastro');
+  limparFormularioProduto(); renderizarTudo();
   mostrarMensagem('✓ PRODUTO CADASTRADO COM SUCESSO!','sucesso');
 }
 
@@ -614,6 +654,7 @@ function buscarProdutoPorCodigoBarras(){
     mostrarMensagem('Código de barras não cadastrado: '+codigo,'erro');
     return;
   }
+  emitirBipe('leitura');
   if(!selecionarProdutoVenda(p)) return;
   // Leitura do código = inclusão imediata no carrinho.
   adicionarAoCarrinho();
@@ -648,6 +689,7 @@ async function abrirLeitorCodigoBarras(){
               document.getElementById('codigoBarrasVenda').value=codigo;
               const produto=localizarProdutoPorCodigo(codigo);
               if(produto){
+                emitirBipe('leitura');
                 if(selecionarProdutoVenda(produto)){
                   fecharLeitorCodigoBarras();
                   adicionarAoCarrinho();
@@ -900,6 +942,7 @@ function registrarVenda(){
     p.estoque_inteiro=numero(p.estoque_inteiro)-item.quantidade;
   }
   salvarDados();
+  emitirBipe('venda');
 
   // Confirmação independente: aparece assim que a venda foi efetivamente registrada.
   // Não depende de renderizarTudo() nem do sistema comum de mensagens.
@@ -1416,3 +1459,4 @@ carregarDados(false);
 </script>
 </body>
 </html>
+
