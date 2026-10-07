@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área do Cliente — Sistema de Entregas</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6f9;color:#17202a}
+header{background:#123b5d;color:#fff;padding:22px 16px;text-align:center}
+header h1{margin:0;font-size:24px}
+header p{margin:7px 0 0;opacity:.9}
+main{max-width:620px;margin:auto;padding:18px 14px 40px}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px #00000012}
+h2{margin-top:0;color:#123b5d}
+label{display:block;font-weight:bold;margin:12px 0 6px}
+input{width:100%;padding:14px;border:1px solid #c9d2da;border-radius:9px;font-size:16px}
+button{width:100%;padding:15px;border:0;border-radius:10px;font-size:17px;font-weight:bold;cursor:pointer;margin-top:12px}
+.primary{background:#1266a3;color:#fff}
+.success{background:#17834b;color:#fff}
+.secondary{background:#e9eef2;color:#17202a}
+.danger{background:#b42318;color:#fff}
+.hidden{display:none!important}
+.msg{padding:12px;border-radius:9px;margin:12px 0;white-space:pre-line}
+.ok{background:#e8f7ee;color:#17663b}
+.err{background:#fdecec;color:#9b1c1c}
+.info{background:#eaf3fb;color:#174d73}
+.pedido{border:1px solid #d7e0e7;border-radius:12px;padding:16px;margin-top:12px}
+.status{display:inline-block;padding:7px 10px;border-radius:20px;font-weight:bold;font-size:13px}
+.aguardando{background:#fff1c7;color:#775600}
+.entregue{background:#dff5e7;color:#17663b}
+.qrbox{text-align:center;margin-top:15px;padding:15px;background:#f8fafc;border-radius:10px}
+.qrbox img{max-width:260px;width:100%;height:auto}
+.code{font-size:22px;font-weight:bold;letter-spacing:2px;text-align:center;margin:10px 0}
+.small{font-size:13px;color:#5d6872}
+.topline{display:flex;justify-content:space-between;gap:10px;align-items:center}
+</style>
+</head>
+<body>
+<header>
+<h1>📦 Área do Cliente</h1>
+<p>Consulte suas encomendas e apresente o QR Code na retirada.</p>
+</header>
+
+<main>
+<div id="mensagem"></div>
+
+<section id="loginCard" class="card">
+<h2>🔐 Entrar</h2>
+<label>E-mail</label>
+<input id="loginEmail" type="email" autocomplete="email" placeholder="seu@email.com">
+<label>Senha</label>
+<input id="loginSenha" type="password" autocomplete="current-password" placeholder="Sua senha">
+<button class="primary" id="btnLogin">ENTRAR</button>
+<button class="secondary" id="btnMostrarCadastro">CRIAR MINHA CONTA</button>
+</section>
+
+<section id="cadastroCard" class="card hidden">
+<h2>📝 Criar minha conta</h2>
+<div class="info msg">A senha desta conta é criada por você. O vendedor não precisa saber sua senha.</div>
+<label>Nome completo</label>
+<input id="cadNome" type="text" autocomplete="name" placeholder="Seu nome">
+<label>Telefone</label>
+<input id="cadTelefone" type="tel" autocomplete="tel" placeholder="Seu telefone">
+<label>E-mail</label>
+<input id="cadEmail" type="email" autocomplete="email" placeholder="Seu e-mail">
+<label>Senha</label>
+<input id="cadSenha" type="password" autocomplete="new-password" placeholder="Crie uma senha">
+<label>Confirmar senha</label>
+<input id="cadSenha2" type="password" autocomplete="new-password" placeholder="Repita a senha">
+<button class="success" id="btnCadastro">CRIAR CONTA</button>
+<button class="secondary" id="btnVoltarLogin">VOLTAR PARA LOGIN</button>
+</section>
+
+<section id="painel" class="hidden">
+<div class="card">
+<div class="topline">
+<div>
+<h2 style="margin-bottom:4px">Olá, <span id="nomeCliente">cliente</span>!</h2>
+<div class="small" id="emailCliente"></div>
+</div>
+</div>
+<button class="danger" id="btnSair">SAIR</button>
+</div>
+
+<div class="card">
+<h2>📦 Minhas encomendas</h2>
+<div id="pedidos"></div>
+</div>
+</section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import {
+  getDatabase, ref, get, set, push
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyC6zgVT1M2BGd5xtHWS6WxH-iuhgPn292s",
+  authDomain:"sistema-vendas-78698.firebaseapp.com",
+  databaseURL:"https://sistema-vendas-78698-default-rtdb.firebaseio.com",
+  projectId:"sistema-vendas-78698",
+  storageBucket:"sistema-vendas-78698.firebasestorage.app",
+  messagingSenderId:"438799530084",
+  appId:"1:438799530084:web:8e14cffb4e29d293584771"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+
+const $=id=>document.getElementById(id);
+
+function mensagem(texto,tipo="info"){
+  $("mensagem").innerHTML=`<div class="msg ${tipo}">${texto}</div>`;
+}
+function limparMensagem(){ $("mensagem").innerHTML=""; }
+
+function normalizarEmail(v){return String(v||"").trim().toLowerCase()}
+
+async function encontrarClientePorEmail(email){
+  const snap=await get(ref(db,"sistema_entregas/clientes"));
+  if(!snap.exists()) return null;
+  const clientes=snap.val()||{};
+  for(const [id,c] of Object.entries(clientes)){
+    if(normalizarEmail(c.email)===normalizarEmail(email)){
+      return {id,...c};
+    }
+  }
+  return null;
+}
+
+async function encontrarClientePorUid(uid){
+  const snap=await get(ref(db,"sistema_entregas/clientes"));
+  if(!snap.exists()) return null;
+  const clientes=snap.val()||{};
+  for(const [id,c] of Object.entries(clientes)){
+    if(c.uid===uid) return {id,...c};
+  }
+  return null;
+}
+
+async function vincularContaAoCliente(uid,email,nome,telefone){
+  let cliente=await encontrarClientePorEmail(email);
+  if(cliente){
+    await set(ref(db,`sistema_entregas/clientes/${cliente.id}/uid`),uid);
+    return {...cliente,uid};
+  }
+
+  // Para teste: cria um cadastro de cliente quando ainda não existir.
+  const novo=push(ref(db,"sistema_entregas/clientes"));
+  const dados={
+    nome:nome.trim(),
+    telefone:telefone.trim(),
+    email:normalizarEmail(email),
+    uid,
+    criadoEm:new Date().toISOString()
+  };
+  await set(novo,dados);
+  return {id:novo.key,...dados};
+}
+
+async function carregarPedidos(cliente){
+  const snap=await get(ref(db,"sistema_entregas/pedidos"));
+  const area=$("pedidos");
+  area.innerHTML="";
+
+  if(!snap.exists()){
+    area.innerHTML='<div class="msg info">Nenhuma encomenda encontrada.</div>';
+    return;
+  }
+
+  const pedidos=snap.val()||{};
+  const lista=Object.entries(pedidos)
+    .map(([id,p])=>({id,p}))
+    .filter(({p})=>{
+      if(p.clienteId && p.clienteId===cliente.id) return true;
+      if(p.email && normalizarEmail(p.email)===normalizarEmail(cliente.email)) return true;
+      return false;
+    })
+    .sort((a,b)=>String(b.p.criadoEm||"").localeCompare(String(a.p.criadoEm||"")));
+
+  if(!lista.length){
+    area.innerHTML='<div class="msg info">Nenhuma encomenda vinculada a esta conta ainda.</div>';
+    return;
+  }
+
+  for(const {id,p} of lista){
+    const status=p.status||"AGUARDANDO RETIRADA";
+    const entregue=status==="ENTREGUE";
+    const tipo=p.tipo || p.produtos || "Encomenda";
+    const volumes=p.volumes ?? p.quantidade ?? 1;
+    const obs=p.observacoes ?? p.obs ?? "";
+    const codigo=p.codigo || p.numero || id.slice(-6).toUpperCase();
+
+    const box=document.createElement("div");
+    box.className="pedido";
+    box.innerHTML=`
+      <div class="topline">
+        <strong>Encomenda</strong>
+        <span class="status ${entregue?"entregue":"aguardando"}">${status}</span>
+      </div>
+      <p><b>O que está sendo enviado:</b> ${escapeHtml(tipo)}</p>
+      <p><b>Volumes:</b> ${escapeHtml(volumes)}</p>
+      <p><b>Código:</b></p>
+      <div class="code">${escapeHtml(codigo)}</div>
+      ${obs?`<p><b>Observações:</b> ${escapeHtml(obs)}</p>`:""}
+      ${!entregue?`
+      <div class="qrbox">
+        <h3>📱 APRESENTE ESTE QR CODE AO VENDEDOR</h3>
+        <img alt="QR Code da encomenda" src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent("ENTREGA|ID:"+id)}">
+        <p class="small">Mostre esta tela ao vendedor no momento da retirada.</p>
+      </div>`:"<div class='msg ok'>✅ Esta encomenda já foi entregue.</div>"}
+    `;
+    area.appendChild(box);
+  }
+}
+
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+$("btnMostrarCadastro").onclick=()=>{
+  limparMensagem();
+  $("loginCard").classList.add("hidden");
+  $("cadastroCard").classList.remove("hidden");
+};
+$("btnVoltarLogin").onclick=()=>{
+  limparMensagem();
+  $("cadastroCard").classList.add("hidden");
+  $("loginCard").classList.remove("hidden");
+};
+
+$("btnCadastro").onclick=async()=>{
+  limparMensagem();
+  const nome=$("cadNome").value.trim();
+  const telefone=$("cadTelefone").value.trim();
+  const email=normalizarEmail($("cadEmail").value);
+  const senha=$("cadSenha").value;
+  const senha2=$("cadSenha2").value;
+
+  if(!nome||!telefone||!email||!senha){
+    mensagem("Preencha todos os campos.","err"); return;
+  }
+  if(senha!==senha2){
+    mensagem("As senhas não são iguais.","err"); return;
+  }
+  if(senha.length<6){
+    mensagem("A senha precisa ter pelo menos 6 caracteres.","err"); return;
+  }
+
+  $("btnCadastro").disabled=true;
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,senha);
+    await vincularContaAoCliente(cred.user.uid,email,nome,telefone);
+    mensagem("Conta criada com sucesso. Carregando suas encomendas...","ok");
+  }catch(e){
+    console.error(e);
+    let msg=e.message||"Erro ao criar conta.";
+    if(e.code==="auth/email-already-in-use") msg="Este e-mail já possui uma conta. Use ENTRAR.";
+    if(e.code==="auth/invalid-email") msg="E-mail inválido.";
+    if(e.code==="auth/weak-password") msg="A senha é muito fraca.";
+    mensagem(msg,"err");
+  }finally{
+    $("btnCadastro").disabled=false;
+  }
+};
+
+$("btnLogin").onclick=async()=>{
+  limparMensagem();
+  const email=normalizarEmail($("loginEmail").value);
+  const senha=$("loginSenha").value;
+  if(!email||!senha){mensagem("Informe e-mail e senha.","err");return;}
+  $("btnLogin").disabled=true;
+  try{
+    await signInWithEmailAndPassword(auth,email,senha);
+  }catch(e){
+    console.error(e);
+    let msg="Não foi possível entrar.";
+    if(e.code==="auth/invalid-credential") msg="E-mail ou senha incorretos.";
+    mensagem(msg,"err");
+  }finally{$("btnLogin").disabled=false;}
+};
+
+$("btnSair").onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,async user=>{
+  if(!user){
+    $("painel").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    return;
+  }
+
+  $("loginCard").classList.add("hidden");
+  $("cadastroCard").classList.add("hidden");
+  $("painel").classList.remove("hidden");
+  $("emailCliente").textContent=user.email||"";
+
+  try{
+    let cliente=await encontrarClientePorUid(user.uid);
+    if(!cliente) cliente=await encontrarClientePorEmail(user.email);
+
+    if(!cliente){
+      $("nomeCliente").textContent="cliente";
+      $("pedidos").innerHTML='<div class="msg err">Sua conta foi criada, mas não encontramos o cadastro do cliente. Peça ao vendedor para cadastrar seu e-mail.</div>';
+      return;
+    }
+
+    $("nomeCliente").textContent=cliente.nome||"cliente";
+    await carregarPedidos(cliente);
+  }catch(e){
+    console.error(e);
+    $("pedidos").innerHTML='<div class="msg err">Não foi possível carregar suas encomendas. Verifique a conexão e tente novamente.</div>';
+  }
+});
+</script>
+</body>
+</html>
