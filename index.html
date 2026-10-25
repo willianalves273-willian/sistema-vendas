@@ -1513,19 +1513,21 @@ function imprimirCupomVenda(id){
   const desconto=numero(v.desconto);
   const forma=esc(v.texto_pagamento||v.forma_pagamento||v.pagamento||'-');
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cupom ${esc(v.numero)}</title><style>
-  @page{size:80mm auto;margin:4mm} body{font-family:Arial,sans-serif;width:72mm;margin:0 auto;color:#111;font-size:12px} h1{text-align:center;font-size:18px;margin:0 0 3px} .sub{text-align:center;font-size:10px;color:#555;margin-bottom:8px}.linha{border-top:1px dashed #555;margin:7px 0} table{width:100%;border-collapse:collapse} td{padding:3px 0;vertical-align:top} .q{width:25px;text-align:center}.v{width:65px;text-align:right;white-space:nowrap}.total{font-size:17px;font-weight:bold;text-align:right;margin-top:6px}.rodape{text-align:center;font-size:10px;margin-top:10px;line-height:1.35} .nf{font-weight:bold;text-align:center;border:1px solid #222;padding:4px;margin-top:8px}@media print{button{display:none}}
-/* =========================================================
-   NOVO LAYOUT — NOVA VENDA / PDV
-   ========================================================= */
-.pagina-venda-moderna{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
-.pagina-venda-moderna .venda-topo-rapido{grid-column:1/-1}
-.venda-topo-rapido{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 20px;border-radius:15px;background:linear-gradient(135deg,#063b3d,#087f68 55%,#1769e0);color:#fff;box-shadow:0 8px 22px rgba(15,23,42,.13);margin-bottom:0}
-.venda-topo-rapido h2{margin:2px 0;font-size:25px}.venda-topo-rapido p{margin:2px 0 0;opacity:.88;font-size:13px}.venda-kicker{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.8}.venda-total-destaque{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 16px;text-align:right;min-width:150px}.venda-total-destaque span{display:block;font-size:11px;text-transform:uppercase;opacity:.8}.venda-total-destaque strong{font-size:23px}
-.venda-card-produto,.venda-card-final{margin-bottom:0;padding:16px}.venda-card-final{position:sticky;top:70px}.venda-card-titulo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.venda-card-titulo>div{display:flex;align-items:center;gap:9px}.venda-card-titulo h3{margin:0;font-size:18px}.venda-card-titulo small{display:block;color:#64748b;margin-top:2px}.passo{width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#0f766e;color:#fff;font-weight:900}.atalho-venda,.contador-carrinho{font-size:11px;font-weight:800;color:#475569;background:#f1f5f9;border-radius:999px;padding:6px 9px;white-space:nowrap}.venda-card-produto .acoes{margin-top:8px}.venda-card-final hr{margin:10px 0;border:0;border-top:1px solid #e2e8f0}.botao-finalizar-venda{background:linear-gradient(135deg,#16a34a,#087443)!important;font-size:16px!important}
-#venda .scanner-campo{margin-top:5px}.pagina-venda-moderna #carrinho{max-height:260px;overflow:auto;border:1px solid #e2e8f0;border-radius:9px;padding:0 10px;background:#fbfdff}.pagina-venda-moderna .linha-carrinho:last-child{border-bottom:0}.pagina-venda-moderna #resumoPagamento{font-size:15px}.pagina-venda-moderna #totalCarrinho{font-size:21px;color:#0f766e}
-@media(max-width:900px){.pagina-venda-moderna{grid-template-columns:1fr}.venda-card-final{position:static}.pagina-venda-moderna .venda-topo-rapido{grid-column:1}.pagina-venda-moderna #carrinho{max-height:230px}}
-@media(max-width:600px){.pagina-venda-moderna{gap:8px}.venda-topo-rapido{padding:11px 13px;border-radius:11px}.venda-topo-rapido h2{font-size:20px}.venda-topo-rapido p{font-size:11px}.venda-total-destaque{min-width:105px;padding:6px 9px}.venda-total-destaque strong{font-size:18px}.venda-card-produto,.venda-card-final{padding:11px}.venda-card-titulo{margin-bottom:5px}.venda-card-titulo h3{font-size:16px}.venda-card-titulo small{font-size:11px}.atalho-venda{display:none}.pagina-venda-moderna #carrinho{max-height:190px}.pagina-venda-moderna .acoes-barra-venda{position:fixed;left:0;right:0;bottom:0;z-index:1000;margin:0;padding:7px;background:rgba(255,255,255,.98);border-top:1px solid #dbe3ea;box-shadow:0 -6px 18px rgba(15,23,42,.16);display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:5px}.pagina-venda-moderna .acoes-barra-venda button{min-height:48px;padding:7px 4px;font-size:12px}.pagina-venda-moderna{padding-bottom:78px}}
-
+  @page{size:58mm auto;margin:0} 
+  *{box-sizing:border-box}
+  html,body{width:58mm;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;width:48mm;margin:0 auto;padding:2mm 0;color:#111;font-size:11px}
+  h1{text-align:center;font-size:16px;margin:0 0 3px}
+  .sub{text-align:center;font-size:10px;color:#555;margin-bottom:8px}
+  .linha{border-top:1px dashed #555;margin:7px 0}
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  td{padding:3px 0;vertical-align:top;overflow-wrap:anywhere}
+  .q{width:20px;text-align:center}
+  .v{width:62px;text-align:right;white-space:nowrap}
+  .total{font-size:16px;font-weight:bold;text-align:right;margin-top:6px;overflow-wrap:anywhere}
+  .rodape{text-align:center;font-size:10px;margin-top:10px;line-height:1.35}
+  .nf{font-weight:bold;text-align:center;border:1px solid #222;padding:4px;margin-top:8px}
+  @media print{button{display:none}}
 </style></head><body><h1>SISTEMA DE VENDAS</h1><div class="sub">COMPROVANTE DE VENDA</div><div>Venda nº <b>${esc(v.numero)}</b><br>${esc(formatarDataVenda(v))}</div><div class="linha"></div><table>${linhas}</table><div class="linha"></div>${desconto>0?'<div>Desconto: '+moeda(desconto)+'</div>':''}<div class="total">TOTAL: ${moeda(v.total)}</div><div style="margin-top:5px">Pagamento: ${forma}</div><div class="nf">SEM VALOR FISCAL</div><div class="rodape">Este comprovante não substitui documento fiscal.<br>Obrigado pela preferência!</div></body></html>`);
   win.document.close();
   setTimeout(()=>win.print(),300);
