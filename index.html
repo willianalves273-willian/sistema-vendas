@@ -279,9 +279,8 @@ th{background:linear-gradient(135deg,#e8f5f0,#eaf1ff);color:#163b46}
         <input id="quantidadeVenda" type="number" min="1" step="1" value="1">
       </div>
     </div>
-    <div class="acoes" style="flex-direction:column;align-items:flex-start">
+    <div class="acoes">
       <button onclick="adicionarAoCarrinho()">Adicionar ao carrinho</button>
-      <button type="button" class="editar" onclick="alterarPrecoNaVenda()">✏️ Alterar preço</button>
     </div>
   </div>
 
@@ -748,6 +747,8 @@ function atualizarProdutosVenda(){
 let scannerStream=null;
 let scannerReader=null;
 let scannerParando=false;
+// Identifica cada abertura do leitor e invalida callbacks antigos da câmera.
+let scannerSession=0;
 
 function normalizarCodigoBarras(valor){
   return String(valor||'').replace(/\D/g,'');
@@ -858,6 +859,12 @@ async function abrirLeitorCodigoBarras(modo='venda'){
   const video=document.getElementById('videoLeitorCodigo');
   const status=document.getElementById('scannerStatus');
   if(!modal||!video) return;
+
+  // Encerra qualquer leitura anterior antes de iniciar uma nova sessão.
+  fecharLeitorCodigoBarras();
+  const minhaSessao=++scannerSession;
+  let codigoJaProcessado=false;
+
   modal.dataset.modo=modo;
   modal.classList.remove('oculto');
   status.textContent=modo==='cadastro'
@@ -866,9 +873,13 @@ async function abrirLeitorCodigoBarras(modo='venda'){
   scannerParando=false;
 
   const processarCodigo=async(codigo)=>{
-    if(scannerParando || !codigo)return;
+    if(scannerParando || minhaSessao!==scannerSession || codigoJaProcessado || !codigo)return;
     codigo=normalizarCodigoBarras(codigo);
     if(!codigo)return;
+
+    // Trava imediatamente para impedir que vários frames adicionem o mesmo item.
+    codigoJaProcessado=true;
+    scannerParando=true;
     emitirBipe('leitura');
 
     if(modo==='cadastro'){
@@ -877,13 +888,12 @@ async function abrirLeitorCodigoBarras(modo='venda'){
       return;
     }
 
-    document.getElementById('codigoBarrasVenda').value=codigo;
+    const campoCodigo=document.getElementById('codigoBarrasVenda');
+    if(campoCodigo) campoCodigo.value=codigo;
     const produto=localizarProdutoPorCodigo(codigo);
     if(produto){
-      if(selecionarProdutoVenda(produto)){
-        fecharLeitorCodigoBarras();
-        adicionarAoCarrinho();
-      }
+      fecharLeitorCodigoBarras();
+      if(selecionarProdutoVenda(produto)) adicionarAoCarrinho();
     }else{
       fecharLeitorCodigoBarras();
       abrirCadastroRapidoCodigo(codigo);
@@ -901,7 +911,7 @@ async function abrirLeitorCodigoBarras(modo='venda'){
         {video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},
         video,
         (resultado, erro) => {
-          if(scannerParando || !resultado)return;
+          if(scannerParando || minhaSessao!==scannerSession || !resultado)return;
           const codigo=resultado.getText ? resultado.getText() : resultado.text;
           processarCodigo(codigo);
         }
@@ -912,22 +922,29 @@ async function abrirLeitorCodigoBarras(modo='venda'){
     if('BarcodeDetector' in window){
       const formatosSuportados=typeof BarcodeDetector.getSupportedFormats==='function'
         ? await BarcodeDetector.getSupportedFormats() : [];
+      if(scannerParando || minhaSessao!==scannerSession)return;
       const formatosDesejados=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'];
       const formatos=formatosDesejados.filter(f=>formatosSuportados.includes(f));
       const detector=formatos.length ? new BarcodeDetector({formats}) : new BarcodeDetector();
       scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+      if(scannerParando || minhaSessao!==scannerSession){
+        scannerStream.getTracks().forEach(track=>{try{track.stop();}catch(e){}});
+        scannerStream=null;
+        return;
+      }
       video.srcObject=scannerStream;
       await video.play();
       const procurar=async()=>{
-        if(scannerParando || video.readyState<2)return;
+        if(scannerParando || minhaSessao!==scannerSession || video.readyState<2)return;
         try{
           const codigos=await detector.detect(video);
+          if(scannerParando || minhaSessao!==scannerSession)return;
           if(codigos.length){
             await processarCodigo(codigos[0].rawValue);
             return;
           }
         }catch(e){}
-        if(!scannerParando)setTimeout(procurar,180);
+        if(!scannerParando && minhaSessao===scannerSession)setTimeout(procurar,180);
       };
       procurar();
       return;
@@ -935,6 +952,7 @@ async function abrirLeitorCodigoBarras(modo='venda'){
 
     throw new Error('Seu navegador não oferece um leitor de código de barras compatível.');
   }catch(e){
+    if(minhaSessao!==scannerSession)return;
     console.error('Leitor:',e);
     status.textContent='Não foi possível abrir a câmera: '+(e.message||e);
     mostrarMensagem('Não foi possível abrir a câmera. Verifique a permissão do navegador.','erro');
@@ -942,6 +960,8 @@ async function abrirLeitorCodigoBarras(modo='venda'){
 }
 
 function fecharLeitorCodigoBarras(){
+  // Invalida callbacks que ainda venham de uma leitura anterior.
+  scannerSession++;
   scannerParando=true;
   if(scannerReader){
     try{scannerReader.reset();}catch(e){}
@@ -1002,36 +1022,6 @@ document.addEventListener('keydown', function(event){
     buscarProdutoPorCodigoBarras();
   }
 });
-
-function alterarPrecoNaVenda(){
-  const id=document.getElementById('produtoVenda').value;
-  const p=produtos.find(x=>String(x.id)===String(id));
-  if(!p){
-    mostrarMensagem('Selecione um produto antes de alterar o preço.','erro');
-    return;
-  }
-
-  const precoAtual=numero(p.preco);
-  const resposta=prompt(
-    'ALTERAR PREÇO DO PRODUTO\\n\\n'+p.nome+
-    '\\nPreço atual: '+moeda(precoAtual)+
-    '\\n\\nInforme o novo preço (ex.: 12,50):',
-    precoAtual.toFixed(2).replace('.',',')
-  );
-  if(resposta===null)return;
-
-  const novoPreco=Number(String(resposta).trim().replace(/\\./g,'').replace(',','.'));
-  if(!Number.isFinite(novoPreco)||novoPreco<0){
-    mostrarMensagem('Informe um preço válido.','erro');
-    return;
-  }
-
-  p.preco=Number(novoPreco.toFixed(2));
-  salvarDados();
-  atualizarSelectProdutos();
-  document.getElementById('produtoVenda').value=p.id;
-  mostrarMensagem('✓ Preço de '+esc(p.nome)+' alterado para '+moeda(p.preco)+'. O novo preço ficará salvo no cadastro.','sucesso',3500);
-}
 
 function adicionarAoCarrinho(){
   const id=document.getElementById('produtoVenda').value;
