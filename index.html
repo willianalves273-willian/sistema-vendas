@@ -850,8 +850,7 @@ function buscarProdutoPorCodigoBarras(){
     return;
   }
   emitirBipe('leitura');
-  if(!selecionarProdutoVenda(p)) return;
-  adicionarAoCarrinho();
+  if(selecionarProdutoVenda(p)) adicionarAoCarrinho();
 }
 
 async function abrirLeitorCodigoBarras(modo='venda'){
@@ -1070,6 +1069,24 @@ function removerDoCarrinho(id){
   renderizarCarrinho();
 }
 
+function alterarPrecoCarrinho(id){
+  const item=carrinhoVenda.find(x=>String(x.id)===String(id));
+  if(!item) return;
+
+  const informado=prompt('Informe o novo preço para "'+item.nome+'" (R$):',numero(item.preco).toFixed(2).replace('.',','));
+  if(informado===null) return;
+
+  const novoPreco=numero(String(informado).trim().replace(',','.'));
+  if(!Number.isFinite(novoPreco) || novoPreco<0){
+    mostrarMensagem('Informe um preço válido, igual ou maior que zero.','erro');
+    return;
+  }
+
+  item.preco=novoPreco;
+  renderizarCarrinho();
+  mostrarMensagem('✓ Preço do item atualizado nesta venda.','sucesso',1800);
+}
+
 function alterarQuantidadeCarrinho(id,qtd){
   const item=carrinhoVenda.find(x=>String(x.id)===String(id));
   const p=produtos.find(x=>String(x.id)===String(id));
@@ -1145,7 +1162,9 @@ function renderizarCarrinho(){
   }else{
     el.innerHTML=carrinhoVenda.map(x=>`
       <div class="linha-carrinho">
-        <div><b>${esc(x.nome)}</b><br>${moeda(x.preco)}</div>
+        <div><b>${esc(x.nome)}</b><br>${moeda(x.preco)}
+          <br><button type="button" class="secundario" onclick="alterarPrecoCarrinho('${esc(x.id)}')">✏️ Alterar preço</button>
+        </div>
         <input type="number" min="1" value="${x.quantidade}"
           onchange="alterarQuantidadeCarrinho('${esc(x.id)}',this.value)">
         <div>${moeda(x.preco*x.quantidade)}</div>
